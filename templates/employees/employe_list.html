@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Employes{% endblock %}
+{% block page_titre %}Employes{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-semibold text-slate-800">Employes</h1>
+    <a href="{% url 'employees:creer_employe' %}" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">
+        <i class='bx bx-plus'></i> Nouvelle fiche employe
+    </a>
+</div>
+
+<form method="get" class="flex flex-wrap gap-3 mb-5">
+    <div class="relative flex-1 min-w-[220px]">
+        <i class='bx bx-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400'></i>
+        <input type="text" name="q" value="{{ recherche }}" placeholder="Rechercher (nom, matricule, poste)..."
+               class="w-full rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary-500">
+    </div>
+    <select name="statut" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+        <option value="">Tous les statuts</option>
+        <option value="ACTIF" {% if statut_filtre == "ACTIF" %}selected{% endif %}>Actif</option>
+        <option value="INACTIF" {% if statut_filtre == "INACTIF" %}selected{% endif %}>Inactif</option>
+    </select>
+    <button type="submit" class="px-4 py-2 rounded-lg bg-slate-800 text-white text-sm font-medium hover:bg-slate-900">Filtrer</button>
+</form>
+
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500 text-left">
+            <tr>
+                <th class="px-4 py-3">Matricule</th>
+                <th class="px-4 py-3">Nom</th>
+                <th class="px-4 py-3">Poste</th>
+                <th class="px-4 py-3">Service</th>
+                <th class="px-4 py-3">Embauche</th>
+                <th class="px-4 py-3">Statut</th>
+                <th class="px-4 py-3"></th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+            {% for employe in employes %}
+            <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 font-medium text-slate-700">{{ employe.matricule }}</td>
+                <td class="px-4 py-3">{{ employe.nom_complet }}</td>
+                <td class="px-4 py-3">{{ employe.poste }}</td>
+                <td class="px-4 py-3">{{ employe.service }}</td>
+                <td class="px-4 py-3 text-slate-500">{{ employe.date_embauche }}</td>
+                <td class="px-4 py-3">
+                    {% if employe.statut == "ACTIF" %}
+                        <span class="text-green-600 text-xs font-medium">Actif</span>
+                    {% else %}
+                        <span class="text-red-600 text-xs font-medium">Inactif</span>
+                    {% endif %}
+                </td>
+                <td class="px-4 py-3 text-right">
+                    <a href="{% url 'employees:detail_employe' employe.pk %}" class="text-primary-600 hover:underline text-xs font-medium">Voir</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" class="px-4 py-6 text-center text-slate-400">Aucun employe trouve.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% include "includes/pagination.html" %}
+{% endblock %}

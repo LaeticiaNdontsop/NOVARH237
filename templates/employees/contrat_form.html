@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Nouveau contrat{% endblock %}
+{% block page_titre %}Nouveau contrat{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-semibold text-slate-800 mb-2">Nouveau contrat</h1>
+<p class="text-slate-500 text-sm mb-6">Pour {{ employe.nom_complet }}</p>
+
+<div class="bg-white rounded-xl border border-slate-200 p-6 max-w-2xl">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% include "includes/form_champs.html" %}
+        <button type="submit" class="mt-2 px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">
+            Enregistrer le contrat
+        </button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,19 @@
+<header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6">
+    <div class="md:hidden font-semibold text-primary-700">NOVA RH</div>
+    <div class="hidden md:block text-slate-500 text-sm">{% block page_titre %}{% endblock %}</div>
+
+    <div class="flex items-center gap-4">
+        <span class="hidden sm:inline text-sm text-slate-600">
+            {{ user.get_full_name|default:user.username }}
+            <span class="ml-1 inline-block px-2 py-0.5 rounded-full text-xs bg-primary-50 text-primary-700 font-medium">
+                {{ user.get_role_display }}
+            </span>
+        </span>
+        <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="flex items-center gap-1.5 text-sm text-slate-500 hover:text-red-600">
+                <i class='bx bx-log-out'></i> Deconnexion
+            </button>
+        </form>
+    </div>
+</header>

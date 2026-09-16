@@ -1,0 +1,12 @@
+Django>=5.0,<5.1
+psycopg2-binary>=2.9
+dj-database-url>=2.1
+python-dotenv>=1.0
+Pillow>=10.0
+django-widget-tweaks>=1.5
+
+# A ajouter au Jour 4 (analyse / IA)
+pandas>=2.2
+scikit-learn>=1.4
+joblib>=1.3
+google-generativeai>=0.5

@@ -1,0 +1,52 @@
+<aside class="hidden md:flex md:flex-col w-64 bg-primary-900 text-white shrink-0">
+    <div class="h-16 flex items-center gap-2 px-5 border-b border-white/10">
+        <!-- Logo NOVA RH (placeholder texte, remplacable par un logo image) -->
+        <div class="w-9 h-9 rounded-lg bg-primary-500 flex items-center justify-center font-bold">N</div>
+        <span class="text-lg font-semibold tracking-wide">NOVA RH</span>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto py-4 space-y-1 text-sm">
+        <a href="{% url 'core:redirection_dashboard' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bxs-dashboard text-lg'></i>
+            Tableau de bord
+        </a>
+
+        {% if user.peut_gerer_employes %}
+        <p class="px-5 pt-4 pb-1 text-xs uppercase tracking-wider text-white/40">Ressources humaines</p>
+        <a href="{% url 'employees:liste_employes' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-group text-lg'></i>
+            Employes
+        </a>
+        <span class="flex items-center gap-3 px-5 py-2.5 text-white/40 mx-2 cursor-not-allowed" title="Disponible au Jour 2">
+            <i class='bx bx-calendar-check text-lg'></i>
+            Conges &amp; permissions
+        </span>
+        <span class="flex items-center gap-3 px-5 py-2.5 text-white/40 mx-2 cursor-not-allowed" title="Disponible au Jour 3">
+            <i class='bx bx-line-chart text-lg'></i>
+            Evaluations &amp; formations
+        </span>
+        <span class="flex items-center gap-3 px-5 py-2.5 text-white/40 mx-2 cursor-not-allowed" title="Disponible au Jour 3">
+            <i class='bx bx-briefcase-alt-2 text-lg'></i>
+            Recrutement
+        </span>
+        {% endif %}
+
+        {% if user.est_admin %}
+        <p class="px-5 pt-4 pb-1 text-xs uppercase tracking-wider text-white/40">Administration</p>
+        <a href="{% url 'accounts:liste_utilisateurs' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bxs-user-badge text-lg'></i>
+            Comptes utilisateurs
+        </a>
+        {% endif %}
+
+        <p class="px-5 pt-4 pb-1 text-xs uppercase tracking-wider text-white/40">Mon espace</p>
+        <a href="{% url 'accounts:profil' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-user-circle text-lg'></i>
+            Mon profil
+        </a>
+    </nav>
+
+    <div class="p-4 border-t border-white/10 text-xs text-white/50">
+        NOVA RH &middot; PME camerounaises
+    </div>
+</aside>

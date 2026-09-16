@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Nouveau compte utilisateur{% endblock %}
+{% block page_titre %}Nouveau compte utilisateur{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-semibold text-slate-800 mb-6">Creer un compte utilisateur</h1>
+
+<div class="bg-white rounded-xl border border-slate-200 p-6 max-w-lg">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% include "includes/form_champs.html" %}
+        <button type="submit" class="mt-2 px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">
+            Creer le compte
+        </button>
+    </form>
+</div>
+{% endblock %}
