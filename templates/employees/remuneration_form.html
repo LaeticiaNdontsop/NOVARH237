@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Nouvelle remuneration{% endblock %}
+{% block page_titre %}Nouvelle remuneration{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-semibold text-slate-800 mb-2">Nouvelle remuneration</h1>
+<p class="text-slate-500 text-sm mb-6">Pour {{ employe.nom_complet }} &middot; donnee confidentielle (RG-12)</p>
+
+<div class="bg-white rounded-xl border border-slate-200 p-6 max-w-lg">
+    <form method="post">
+        {% csrf_token %}
+        {% include "includes/form_champs.html" %}
+        <button type="submit" class="mt-2 px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">
+            Enregistrer
+        </button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+node_modules/
+__pycache__/
+*.py[cod]
+*.sqlite3
+.env
+venv/
+env/
+.venv/
+media/
+staticfiles/
+.DS_Store
+*.log
+db.sqlite3
+/media/documents/*
+!/media/documents/.gitkeep
