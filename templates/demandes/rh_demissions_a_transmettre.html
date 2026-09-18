@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Demissions a transmettre{% endblock %}
+{% block page_titre %}Demissions - a transmettre{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-semibold text-slate-800">Demissions declarees a transmettre</h1>
+    <a href="{% url 'demandes:rh_demissions_a_communiquer' %}" class="text-sm text-primary-600 hover:underline">Voir les decisions a communiquer →</a>
+</div>
+
+{% for demission in demissions %}
+<div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
+    <div class="flex items-start justify-between mb-3">
+        <div>
+            <p class="font-medium text-slate-800">{{ demission.employe.nom_complet }}</p>
+            <p class="text-sm text-slate-500">Declaree le {{ demission.date_declaration }} &middot; Depart souhaite : {{ demission.date_effective_souhaitee }}</p>
+            {% if demission.motif %}<p class="text-sm text-slate-600 mt-1">{{ demission.motif }}</p>{% endif %}
+        </div>
+        {% include "includes/badge_couleur.html" with couleur="orange" texte="A transmettre" %}
+    </div>
+    <form method="post" action="{% url 'demandes:transmettre_demission' demission.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">
+            <i class='bx bx-send'></i> Transmettre a l'Administrateur
+        </button>
+    </form>
+</div>
+{% empty %}
+<div class="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-400">Aucune demission en attente de transmission.</div>
+{% endfor %}
+{% endblock %}

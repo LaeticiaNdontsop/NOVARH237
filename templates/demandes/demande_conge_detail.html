@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Demande #{{ demande.pk }}{% endblock %}
+{% block page_titre %}Detail de la demande{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-semibold text-slate-800">{{ demande.get_type_demande_display }} - {{ demande.employe.nom_complet }}</h1>
+    {% include "includes/badge_couleur.html" with couleur=demande.couleur texte=demande.get_statut_display %}
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-5">
+        <h2 class="font-medium text-slate-700 mb-3">Informations</h2>
+        <dl class="grid grid-cols-2 gap-3 text-sm mb-6">
+            <div><dt class="text-slate-400">Periode</dt><dd class="font-medium">{{ demande.date_debut }} → {{ demande.date_fin }}</dd></div>
+            <div><dt class="text-slate-400">Duree</dt><dd class="font-medium">{{ demande.duree_jours }} jour(s)</dd></div>
+            <div class="col-span-2"><dt class="text-slate-400">Motif</dt><dd class="font-medium">{{ demande.motif }}</dd></div>
+        </dl>
+
+        <h2 class="font-medium text-slate-700 mb-3">Suivi du circuit</h2>
+        <ol class="relative border-l border-slate-200 ml-2 space-y-4">
+            <li class="pl-4">
+                <p class="text-sm font-medium text-slate-700">Soumise par l'employe</p>
+                <p class="text-xs text-slate-400">{{ demande.date_soumission }}</p>
+            </li>
+            {% if demande.date_traitement_rh %}
+            <li class="pl-4">
+                <p class="text-sm font-medium text-slate-700">Transmise / traitee par le Responsable RH</p>
+                <p class="text-xs text-slate-400">{{ demande.date_traitement_rh }}</p>
+                {% if demande.commentaire_rh %}<p class="text-xs text-slate-500 mt-1">{{ demande.commentaire_rh }}</p>{% endif %}
+            </li>
+            {% endif %}
+            {% if demande.date_decision_admin %}
+            <li class="pl-4">
+                <p class="text-sm font-medium text-slate-700">Evaluee par l'Administrateur</p>
+                <p class="text-xs text-slate-400">{{ demande.date_decision_admin }}</p>
+                {% if demande.commentaire_admin %}<p class="text-xs text-slate-500 mt-1">{{ demande.commentaire_admin }}</p>{% endif %}
+            </li>
+            {% endif %}
+            {% if demande.date_cloture %}
+            <li class="pl-4">
+                <p class="text-sm font-medium text-slate-700">Notifiee a l'employe (cloturee)</p>
+                <p class="text-xs text-slate-400">{{ demande.date_cloture }}</p>
+            </li>
+            {% endif %}
+        </ol>
+    </div>
+
+    <div class="bg-white rounded-xl border border-slate-200 p-5 h-fit">
+        <h2 class="font-medium text-slate-700 mb-3">Legende</h2>
+        <div class="space-y-2 text-sm">
+            <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-orange-400"></span> En attente de traitement</div>
+            <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-green-500"></span> Acceptee</div>
+            <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> Refusee</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

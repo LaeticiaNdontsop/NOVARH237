@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Tableau de bord - Administrateur{% endblock %}
+{% block page_titre %}Tableau de bord Administrateur{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-semibold text-slate-800 mb-1">Bonjour {{ user.first_name|default:user.username }} 👋</h1>
+<p class="text-slate-500 mb-6">Vue d'ensemble de la plateforme NOVA RH.</p>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <p class="text-sm text-slate-500">Effectif actif</p>
+        <p class="text-3xl font-semibold text-primary-700 mt-1">{{ effectif_total }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <p class="text-sm text-slate-500">Conges/permissions a decider</p>
+        <p class="text-3xl font-semibold text-primary-700 mt-1">{{ demandes_a_decider }}</p>
+        <a href="{% url 'demandes:admin_a_decider' %}" class="text-xs text-primary-600 hover:underline">Traiter →</a>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <p class="text-sm text-slate-500">Demissions a traiter</p>
+        <p class="text-3xl font-semibold text-primary-700 mt-1">{{ demissions_a_traiter }}</p>
+        <a href="{% url 'demandes:admin_demissions' %}" class="text-xs text-primary-600 hover:underline">Traiter →</a>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <p class="text-sm text-slate-500">Turnover (12 mois)</p>
+        <p class="text-3xl font-semibold text-primary-700 mt-1">{{ turnover_12_mois }}%</p>
+        <a href="{% url 'analytics:tableaux_bord' %}" class="text-xs text-primary-600 hover:underline">Voir les indicateurs →</a>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl border border-slate-200 p-5">
+    <h2 class="font-medium text-slate-700 mb-3">Acces rapide</h2>
+    <div class="flex flex-wrap gap-3">
+        <a href="{% url 'employees:liste_employes' %}" class="px-4 py-2 rounded-lg bg-primary-50 text-primary-700 text-sm font-medium hover:bg-primary-100">Gerer les employes</a>
+        <a href="{% url 'accounts:liste_utilisateurs' %}" class="px-4 py-2 rounded-lg bg-primary-50 text-primary-700 text-sm font-medium hover:bg-primary-100">Gerer les comptes</a>
+        <a href="{% url 'accounts:creer_utilisateur' %}" class="px-4 py-2 rounded-lg bg-primary-50 text-primary-700 text-sm font-medium hover:bg-primary-100">Creer un compte</a>
+        <a href="{% url 'analytics:tableaux_bord' %}" class="px-4 py-2 rounded-lg bg-primary-50 text-primary-700 text-sm font-medium hover:bg-primary-100">Tableaux de bord</a>
+        <a href="{% url 'analytics:assistant' %}" class="px-4 py-2 rounded-lg bg-primary-50 text-primary-700 text-sm font-medium hover:bg-primary-100">Assistant RH</a>
+    </div>
+</div>
+{% endblock %}

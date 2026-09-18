@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Absences a valider{% endblock %}
+{% block page_titre %}Suivi des absences{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-semibold text-slate-800 mb-6">Absences a valider</h1>
+
+{% for absence in absences %}
+<div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
+    <div class="flex items-start justify-between mb-3">
+        <div>
+            <p class="font-medium text-slate-800">{{ absence.employe.nom_complet }}</p>
+            <p class="text-sm text-slate-500">{{ absence.date_debut }} → {{ absence.date_fin }}</p>
+            <p class="text-sm text-slate-600 mt-1">{{ absence.motif }}</p>
+            {% if absence.justificatif %}<a href="{{ absence.justificatif.url }}" class="text-xs text-primary-600 hover:underline">Voir le justificatif</a>{% endif %}
+        </div>
+        {% include "includes/badge_couleur.html" with couleur=absence.couleur texte=absence.get_statut_display %}
+    </div>
+    <div class="flex gap-3">
+        <form method="post" action="{% url 'demandes:valider_absence' absence.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700">Valider</button>
+        </form>
+        <form method="post" action="{% url 'demandes:rejeter_absence' absence.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="px-4 py-2 rounded-lg border border-red-200 text-red-600 text-sm font-medium hover:bg-red-50">Rejeter</button>
+        </form>
+    </div>
+</div>
+{% empty %}
+<div class="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-400">Aucune absence en attente.</div>
+{% endfor %}
+{% endblock %}

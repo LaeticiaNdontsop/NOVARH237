@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Nouvelle demande{% endblock %}
+{% block page_titre %}Nouvelle demande{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-semibold text-slate-800 mb-6">Nouvelle demande de conge ou de permission</h1>
+
+<div class="bg-white rounded-xl border border-slate-200 p-6 max-w-lg">
+    <form method="post">
+        {% csrf_token %}
+        {% include "includes/form_champs.html" %}
+        <button type="submit" class="mt-2 px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">
+            Soumettre la demande
+        </button>
+    </form>
+    <p class="text-xs text-slate-400 mt-4">
+        Votre demande sera transmise a votre Responsable RH, qui la soumettra a l'Administrateur pour decision.
+        Vous pourrez suivre son statut par code couleur : <span class="text-orange-500 font-medium">en attente</span>,
+        <span class="text-green-600 font-medium">acceptee</span>, <span class="text-red-600 font-medium">refusee</span>.
+    </p>
+</div>
+{% endblock %}

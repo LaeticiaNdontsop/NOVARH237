@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Historique des predictions{% endblock %}
+{% block page_titre %}Historique des predictions d'attrition{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-semibold text-slate-800 mb-6">Historique des simulations</h1>
+
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500 text-left">
+            <tr>
+                <th class="px-4 py-3">Date</th>
+                <th class="px-4 py-3">Employe</th>
+                <th class="px-4 py-3">Demande par</th>
+                <th class="px-4 py-3">Probabilite</th>
+                <th class="px-4 py-3">Niveau</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+            {% for prediction in predictions %}
+            <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 text-slate-500">{{ prediction.date_prediction|date:"d/m/Y H:i" }}</td>
+                <td class="px-4 py-3 font-medium">{{ prediction.employe.nom_complet|default:"Profil libre" }}</td>
+                <td class="px-4 py-3 text-slate-500">{{ prediction.demande_par.get_full_name|default:"--" }}</td>
+                <td class="px-4 py-3">{{ prediction.probabilite_depart|floatformat:1 }}%</td>
+                <td class="px-4 py-3">
+                    {% if prediction.niveau_risque == "eleve" %}
+                        {% include "includes/badge_couleur.html" with couleur="rouge" texte="Eleve" %}
+                    {% elif prediction.niveau_risque == "modere" %}
+                        {% include "includes/badge_couleur.html" with couleur="orange" texte="Modere" %}
+                    {% else %}
+                        {% include "includes/badge_couleur.html" with couleur="vert" texte="Faible" %}
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="px-4 py-6 text-center text-slate-400">Aucune simulation effectuee.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% include "includes/pagination.html" %}
+{% endblock %}

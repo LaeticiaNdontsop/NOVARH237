@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Tableau de bord - Responsable RH{% endblock %}
+{% block page_titre %}Tableau de bord Responsable RH{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-semibold text-slate-800 mb-1">Bonjour {{ user.first_name|default:user.username }} 👋</h1>
+<p class="text-slate-500 mb-6">Vos operations RH du jour.</p>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <p class="text-sm text-slate-500">Effectif actif</p>
+        <p class="text-3xl font-semibold text-primary-700 mt-1">{{ effectif_total }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <p class="text-sm text-slate-500">Demandes a traiter</p>
+        <p class="text-3xl font-semibold text-primary-700 mt-1">{{ demandes_a_traiter }}</p>
+        <a href="{% url 'demandes:rh_a_traiter' %}" class="text-xs text-primary-600 hover:underline">Traiter →</a>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <p class="text-sm text-slate-500">Absences a valider</p>
+        <p class="text-3xl font-semibold text-primary-700 mt-1">{{ absences_a_valider }}</p>
+        <a href="{% url 'demandes:rh_absences' %}" class="text-xs text-primary-600 hover:underline">Valider →</a>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <p class="text-sm text-slate-500">Departs en cours</p>
+        <p class="text-3xl font-semibold text-primary-700 mt-1">{{ demissions_en_cours }}</p>
+        <a href="{% url 'demandes:rh_demissions_a_transmettre' %}" class="text-xs text-primary-600 hover:underline">Suivre →</a>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl border border-slate-200 p-5">
+    <h2 class="font-medium text-slate-700 mb-3">Acces rapide</h2>
+    <div class="flex flex-wrap gap-3">
+        <a href="{% url 'employees:liste_employes' %}" class="px-4 py-2 rounded-lg bg-primary-50 text-primary-700 text-sm font-medium hover:bg-primary-100">Gerer les employes</a>
+        <a href="{% url 'employees:creer_employe' %}" class="px-4 py-2 rounded-lg bg-primary-50 text-primary-700 text-sm font-medium hover:bg-primary-100">Nouvelle fiche employe</a>
+        <a href="{% url 'analytics:tableaux_bord' %}" class="px-4 py-2 rounded-lg bg-primary-50 text-primary-700 text-sm font-medium hover:bg-primary-100">Tableaux de bord</a>
+        <a href="{% url 'analytics:assistant' %}" class="px-4 py-2 rounded-lg bg-primary-50 text-primary-700 text-sm font-medium hover:bg-primary-100">Assistant RH</a>
+    </div>
+</div>
+{% endblock %}

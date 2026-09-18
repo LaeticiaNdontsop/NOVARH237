@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Journal d'activité{% endblock %}
+{% block page_titre %}Journal d'activité{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <h1 class="text-2xl font-semibold text-slate-800">Journal d'activité</h1>
+
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <h2 class="font-medium text-slate-700 mb-4">Activités récentes</h2>
+        <div class="space-y-3">
+            {% for log in activites %}
+            <div class="border border-slate-200 rounded-lg p-3 text-sm">
+                <p class="font-medium text-slate-700">{{ log.action }}</p>
+                <p class="text-slate-500">{{ log.utilisateur.get_full_name|default:log.utilisateur.username|default:'Système' }} • {{ log.date_creation|date:'d/m/Y H:i' }}</p>
+                {% if log.details %}<p class="text-slate-500 mt-1">{{ log.details }}</p>{% endif %}
+            </div>
+            {% empty %}
+            <p class="text-sm text-slate-400">Aucune activité enregistrée pour le moment.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <h2 class="font-medium text-slate-700 mb-4">Notifications récentes</h2>
+        <div class="space-y-3">
+            {% for notif in notifications_recentes %}
+            <div class="border border-slate-200 rounded-lg p-3 text-sm">
+                <p class="font-medium text-slate-700">{{ notif.message }}</p>
+                <p class="text-slate-500">De {{ notif.expediteur.get_full_name|default:notif.expediteur.username|default:'Système' }} • {{ notif.date_creation|date:'d/m/Y H:i' }}</p>
+            </div>
+            {% empty %}
+            <p class="text-sm text-slate-400">Aucune notification récente.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

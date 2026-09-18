@@ -1,0 +1,14 @@
+{% comment %} Usage : {% include "includes/badge_couleur.html" with couleur=demande.couleur texte=demande.get_statut_display %} {% endcomment %}
+{% if couleur == "vert" %}
+    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">
+        <i class='bx bxs-circle text-[8px]'></i> {{ texte }}
+    </span>
+{% elif couleur == "rouge" %}
+    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700">
+        <i class='bx bxs-circle text-[8px]'></i> {{ texte }}
+    </span>
+{% else %}
+    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-600">
+        <i class='bx bxs-circle text-[8px]'></i> {{ texte }}
+    </span>
+{% endif %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Demandes a evaluer{% endblock %}
+{% block page_titre %}Conges/permissions - decision{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-semibold text-slate-800 mb-6">Demandes transmises par le Responsable RH</h1>
+
+{% for demande in demandes %}
+<div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
+    <div class="flex items-start justify-between mb-3">
+        <div>
+            <p class="font-medium text-slate-800">{{ demande.get_type_demande_display }} - {{ demande.employe.nom_complet }}</p>
+            <p class="text-sm text-slate-500">{{ demande.date_debut }} → {{ demande.date_fin }} ({{ demande.duree_jours }} j)</p>
+            <p class="text-sm text-slate-600 mt-1">{{ demande.motif }}</p>
+            {% if demande.commentaire_rh %}<p class="text-xs text-slate-400 mt-1">Note RH : {{ demande.commentaire_rh }}</p>{% endif %}
+        </div>
+        {% include "includes/badge_couleur.html" with couleur=demande.couleur texte=demande.get_statut_display %}
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-3 mt-3">
+        <form method="post" action="{% url 'demandes:approuver_par_admin' demande.pk %}" class="flex-1 flex gap-2">
+            {% csrf_token %}
+            <input type="text" name="commentaire" placeholder="Commentaire (optionnel)" class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm">
+            <button type="submit" class="px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 whitespace-nowrap">
+                <i class='bx bx-check'></i> Approuver
+            </button>
+        </form>
+        <form method="post" action="{% url 'demandes:rejeter_par_admin' demande.pk %}" class="flex gap-2" onsubmit="return confirm('Rejeter cette demande ?');">
+            {% csrf_token %}
+            <input type="text" name="commentaire" placeholder="Motif du refus" required class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+            <button type="submit" class="px-4 py-2 rounded-lg border border-red-200 text-red-600 text-sm font-medium hover:bg-red-50 whitespace-nowrap">
+                <i class='bx bx-x'></i> Rejeter
+            </button>
+        </form>
+    </div>
+</div>
+{% empty %}
+<div class="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-400">
+    Aucune demande en attente de decision.
+</div>
+{% endfor %}
+{% endblock %}

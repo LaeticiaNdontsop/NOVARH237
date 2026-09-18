@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Demissions a communiquer{% endblock %}
+{% block page_titre %}Demissions - a communiquer{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-semibold text-slate-800 mb-6">Preavis definis, a communiquer a l'employe</h1>
+
+{% for demission in demissions %}
+<div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
+    <div class="flex items-start justify-between mb-3">
+        <div>
+            <p class="font-medium text-slate-800">{{ demission.employe.nom_complet }}</p>
+            <p class="text-sm text-slate-500">Preavis fixe par l'Administrateur : <strong>{{ demission.preavis_jours }} jour(s)</strong></p>
+            {% if demission.commentaire_admin %}<p class="text-sm text-slate-600 mt-1">{{ demission.commentaire_admin }}</p>{% endif %}
+        </div>
+        {% include "includes/badge_couleur.html" with couleur="orange" texte="A communiquer" %}
+    </div>
+    <form method="post" action="{% url 'demandes:communiquer_demission' demission.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">
+            <i class='bx bx-check'></i> Communiquer a l'employe
+        </button>
+    </form>
+    <p class="text-xs text-slate-400 mt-2">La decision de l'Administrateur est transmise telle quelle, sans modification (RG-22).</p>
+</div>
+{% empty %}
+<div class="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-400">Aucune decision en attente de communication.</div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,11 @@
+{% if is_paginated %}
+<div class="flex items-center justify-center gap-2 mt-6 text-sm">
+    {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50">Precedent</a>
+    {% endif %}
+    <span class="text-slate-500">Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50">Suivant</a>
+    {% endif %}
+</div>
+{% endif %}

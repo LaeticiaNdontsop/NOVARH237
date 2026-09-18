@@ -1,0 +1,134 @@
+<aside class="hidden md:flex md:flex-col w-64 bg-primary-900 text-white shrink-0">
+    <div class="h-16 flex items-center gap-2 px-5 border-b border-white/10">
+        <!-- Logo NOVA RH (placeholder texte, remplacable par un logo image) -->
+        <div class="w-9 h-9 rounded-lg bg-primary-500 flex items-center justify-center font-bold">N</div>
+        <span class="text-lg font-semibold tracking-wide">NOVA RH</span>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto py-4 space-y-1 text-sm">
+        <a href="{% url 'core:redirection_dashboard' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bxs-dashboard text-lg'></i>
+            Tableau de bord
+        </a>
+
+        {% if user.est_rh %}
+        <p class="px-5 pt-4 pb-1 text-xs uppercase tracking-wider text-white/40">Ressources humaines</p>
+        <a href="{% url 'employees:liste_employes' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-group text-lg'></i>
+            Employes
+        </a>
+        <a href="{% url 'demandes:rh_a_traiter' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-calendar-check text-lg'></i>
+            Conges &amp; permissions
+        </a>
+        <a href="{% url 'demandes:rh_absences' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-calendar-x text-lg'></i>
+            Absences
+        </a>
+        <a href="{% url 'demandes:rh_demissions_a_transmettre' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-log-out-circle text-lg'></i>
+            Departs &amp; demissions
+        </a>
+        <a href="{% url 'analytics:prediction_libre' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-line-chart text-lg'></i>
+            Prediction attrition
+        </a>
+        <a href="{% url 'analytics:tableaux_bord' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bxs-bar-chart-alt-2 text-lg'></i>
+            Tableaux de bord
+        </a>
+        <a href="{% url 'core:evaluations_formations' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-line-chart text-lg'></i>
+            Evaluations &amp; formations
+        </a>
+        <a href="{% url 'core:recrutements' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-briefcase-alt-2 text-lg'></i>
+            Recrutements
+        </a>
+        <a href="{% url 'core:offres' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-file-find text-lg'></i>
+            Offres
+        </a>
+        <a href="{% url 'notifications:mes_notifications' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-bell text-lg'></i>
+            Notifications
+        </a>
+        <a href="{% url 'analytics:assistant' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-bot text-lg'></i>
+            Assistant RH
+        </a>
+        {% elif user.est_employe %}
+        <p class="px-5 pt-4 pb-1 text-xs uppercase tracking-wider text-white/40">Mes demandes</p>
+        <a href="{% url 'demandes:mes_demandes' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-calendar-check text-lg'></i>
+            Conges &amp; permissions
+        </a>
+        <a href="{% url 'demandes:mes_absences' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-calendar-x text-lg'></i>
+            Mes absences
+        </a>
+        <a href="{% url 'demandes:ma_demission' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-log-out-circle text-lg'></i>
+            Ma demission
+        </a>
+        <a href="{% url 'employees:mon_contrat' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-file text-lg'></i>
+            Mon contrat
+        </a>
+        <a href="{% url 'employees:mes_documents' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-folder text-lg'></i>
+            Mes documents
+        </a>
+        <a href="{% url 'employees:mes_remunerations' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-wallet text-lg'></i>
+            Mes remunerations
+        </a>
+        <a href="{% url 'employees:mes_evaluations_formations' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-book-reader text-lg'></i>
+            Mes evaluations &amp; formations
+        </a>
+        <a href="{% url 'notifications:mes_notifications' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-bell text-lg'></i>
+            Notifications
+        </a>
+        {% endif %}
+
+        {% if user.est_admin %}
+        <p class="px-5 pt-4 pb-1 text-xs uppercase tracking-wider text-white/40">Administration</p>
+        <a href="{% url 'accounts:liste_utilisateurs' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bxs-user-badge text-lg'></i>
+            Comptes utilisateurs
+        </a>
+        <a href="{% url 'core:roles_droits' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-shield-quarter text-lg'></i>
+            Roles et droits d'acces
+        </a>
+        <a href="{% url 'core:journal_activite' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-history text-lg'></i>
+            Journal d'activite
+        </a>
+        <a href="{% url 'demandes:admin_a_decider' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-calendar-check text-lg'></i>
+            Conges/permissions a decider
+        </a>
+        <a href="{% url 'demandes:admin_demissions' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-log-out-circle text-lg'></i>
+            Demissions - preavis
+        </a>
+        <a href="{% url 'notifications:mes_notifications' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-bell text-lg'></i>
+            Notifications
+        </a>
+        {% endif %}
+
+        <p class="px-5 pt-4 pb-1 text-xs uppercase tracking-wider text-white/40">Mon espace</p>
+        <a href="{% url 'accounts:profil' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-user-circle text-lg'></i>
+            Mon profil
+        </a>
+    </nav>
+
+    <div class="p-4 border-t border-white/10 text-xs text-white/50">
+        NOVA RH &middot; PME camerounaises
+    </div>
+</aside>

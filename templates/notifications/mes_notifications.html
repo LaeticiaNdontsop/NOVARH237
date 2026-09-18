@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Mes notifications{% endblock %}
+{% block page_titre %}Mes notifications{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-semibold text-slate-800">Mes notifications</h1>
+        {% if peut_envoyer %}
+        <form method="post" action="{% url 'notifications:envoyer' %}" class="flex gap-2 items-center">
+            {% csrf_token %}
+            <input type="text" name="message" placeholder="Publier une notification" class="border border-slate-300 rounded-lg px-3 py-2 text-sm">
+            <select name="role_cible" class="border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                <option value="TOUS">Tous</option>
+                <option value="EMPLOYE">Employés</option>
+                <option value="RH">RH</option>
+                <option value="ADMIN">Admin</option>
+            </select>
+            <button type="submit" class="px-3 py-2 rounded-lg bg-primary-600 text-white text-sm hover:bg-primary-700">Envoyer</button>
+        </form>
+        {% endif %}
+    </div>
+
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        {% if notifications %}
+        <div class="space-y-3">
+            {% for notification in notifications %}
+            <div class="flex items-start justify-between gap-4 border border-slate-200 rounded-lg p-3">
+                <div>
+                    <p class="font-medium text-slate-700 {% if not notification.lu %}text-primary-700{% endif %}">{{ notification.message }}</p>
+                    <p class="text-xs text-slate-500 mt-1">{{ notification.date_creation|date:'d/m/Y H:i' }} • {{ notification.role_cible }}</p>
+                </div>
+                {% if not notification.lu %}
+                <form method="post" action="{% url 'notifications:marquer_lue' notification.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="text-xs text-primary-600 hover:underline">Marquer lue</button>
+                </form>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-sm text-slate-400">Aucune notification pour le moment.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

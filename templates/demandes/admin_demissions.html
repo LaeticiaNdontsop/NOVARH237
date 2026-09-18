@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Demissions - preavis{% endblock %}
+{% block page_titre %}Demissions transmises{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-semibold text-slate-800 mb-6">Demissions transmises par le Responsable RH</h1>
+
+{% for demission in demissions %}
+<div class="bg-white rounded-xl border border-slate-200 p-5 mb-4 flex items-center justify-between">
+    <div>
+        <p class="font-medium text-slate-800">{{ demission.employe.nom_complet }}</p>
+        <p class="text-sm text-slate-500">Declaree le {{ demission.date_declaration }} &middot; Depart souhaite : {{ demission.date_effective_souhaitee }}</p>
+        {% if demission.motif %}<p class="text-sm text-slate-600 mt-1">{{ demission.motif }}</p>{% endif %}
+    </div>
+    <a href="{% url 'demandes:definir_preavis' demission.pk %}" class="px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 whitespace-nowrap">
+        Definir le preavis
+    </a>
+</div>
+{% empty %}
+<div class="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-400">Aucune demission en attente de decision.</div>
+{% endfor %}
+{% endblock %}
