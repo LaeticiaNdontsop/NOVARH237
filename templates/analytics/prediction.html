@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Prediction d'attrition{% endblock %}
+{% block page_titre %}Prediction d'attrition (experimental){% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <div>
+        <h1 class="text-2xl font-semibold text-slate-800">
+            Prediction d'attrition{% if employe %} - {{ employe.nom_complet }}{% endif %}
+        </h1>
+        <p class="text-slate-500 text-sm mt-1">
+            Estimation experimentale (BF-RH-19) basee sur un modele de regression logistique.
+        </p>
+    </div>
+    {% if employe %}
+    <a href="{% url 'analytics:historique_employe' employe.pk %}" class="text-sm text-primary-600 hover:underline">Historique →</a>
+    {% else %}
+    <a href="{% url 'analytics:historique' %}" class="text-sm text-primary-600 hover:underline">Historique →</a>
+    {% endif %}
+</div>
+
+<div class="mb-6 px-4 py-3 rounded-lg text-sm bg-yellow-50 text-yellow-700 border border-yellow-200">
+    <i class='bx bx-info-circle'></i>
+    Modele experimental entraine sur un jeu de donnees historique (type IBM HR Analytics).
+    Certaines variables ci-dessous ne sont pas encore collectees nativement par NOVA RH et sont
+    a ajuster manuellement. <strong>Ce resultat est une aide a la decision, jamais une decision automatique.</strong>
+</div>
+
+{% if resultat %}
+<div class="bg-white rounded-xl border border-slate-200 p-6 mb-6">
+    <h2 class="font-medium text-slate-700 mb-4">Resultat de la simulation</h2>
+    <div class="flex items-center gap-6 flex-wrap">
+        <div class="text-center">
+            <p class="text-4xl font-bold
+                {% if resultat.niveau_risque == 'eleve' %}text-red-600
+                {% elif resultat.niveau_risque == 'modere' %}text-orange-500
+                {% else %}text-green-600{% endif %}">
+                {{ resultat.probabilite_depart|floatformat:1 }}%
+            </p>
+            <p class="text-xs text-slate-400 mt-1">probabilite de depart</p>
+        </div>
+        <div>
+            {% if resultat.niveau_risque == 'eleve' %}
+                {% include "includes/badge_couleur.html" with couleur="rouge" texte="Risque eleve" %}
+            {% elif resultat.niveau_risque == 'modere' %}
+                {% include "includes/badge_couleur.html" with couleur="orange" texte="Risque modere" %}
+            {% else %}
+                {% include "includes/badge_couleur.html" with couleur="vert" texte="Risque faible" %}
+            {% endif %}
+            <p class="text-sm text-slate-600 mt-3 max-w-md">{{ resultat.message }}</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="bg-white rounded-xl border border-slate-200 p-6">
+    <form method="post">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
+            {% include "includes/form_champs.html" %}
+        </div>
+        <button type="submit" class="mt-2 px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">
+            <i class='bx bx-line-chart'></i> Lancer la simulation
+        </button>
+    </form>
+</div>
+{% endblock %}

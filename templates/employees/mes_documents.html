@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Mes documents{% endblock %}
+{% block page_titre %}Mes documents{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <h1 class="text-2xl font-semibold text-slate-800">Mes documents</h1>
+
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        {% if documents %}
+        <div class="space-y-3">
+            {% for document in documents %}
+            <div class="flex items-center justify-between border border-slate-200 rounded-lg p-3 text-sm">
+                <div>
+                    <p class="font-medium text-slate-700">{{ document.get_type_document_display }}</p>
+                    <p class="text-slate-500">{{ document.date_ajout|date:'d/m/Y H:i' }}</p>
+                </div>
+                <a href="{{ document.fichier.url }}" class="text-primary-600 hover:underline">Télécharger</a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-sm text-slate-400">Aucun document disponible pour le moment.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Styles personnalises NOVA RH, ajoutes au besoin au fil du projet */
+[x-cloak] {
+  display: none !important;
+}

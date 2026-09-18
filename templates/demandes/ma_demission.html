@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Ma demission{% endblock %}
+{% block page_titre %}Ma demission{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-semibold text-slate-800 mb-6">Ma demission</h1>
+
+{% if demission %}
+<div class="bg-white rounded-xl border border-slate-200 p-6 max-w-lg">
+    <p class="text-sm text-slate-500 mb-1">Declaree le {{ demission.date_declaration }}</p>
+    <p class="text-sm text-slate-700 mb-4">Date de depart souhaitee : <strong>{{ demission.date_effective_souhaitee }}</strong></p>
+
+    <div class="mb-4">{% include "includes/badge_couleur.html" with couleur=demission.couleur texte=demission.get_statut_display %}</div>
+
+    {% if demission.statut == "COMMUNIQUEE" %}
+    <div class="bg-primary-50 border border-primary-100 rounded-lg p-4">
+        <p class="text-sm text-primary-800 font-medium">Preavis fixe par l'Administrateur : {{ demission.preavis_jours }} jour(s)</p>
+        {% if demission.commentaire_admin %}<p class="text-sm text-primary-700 mt-1">{{ demission.commentaire_admin }}</p>{% endif %}
+    </div>
+    {% else %}
+    <p class="text-sm text-slate-400">Les modalites (duree du preavis) seront communiquees par votre Responsable RH une fois determinees par l'Administrateur.</p>
+    {% endif %}
+</div>
+{% else %}
+<div class="bg-white rounded-xl border border-slate-200 p-6 max-w-lg">
+    <div class="mb-4 px-4 py-3 rounded-lg text-sm bg-yellow-50 text-yellow-700 border border-yellow-200">
+        Attention : une declaration de demission est <strong>irrevocable</strong>. Elle n'est jamais soumise a
+        approbation ; seules les modalites de preavis seront determinees par l'Administrateur.
+    </div>
+    <form method="post">
+        {% csrf_token %}
+        {% include "includes/form_champs.html" %}
+        <button type="submit" onclick="return confirm('Confirmez-vous cette declaration de demission ? Elle est irrevocable.');"
+                class="mt-2 px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700">
+            Declarer ma demission
+        </button>
+    </form>
+</div>
+{% endif %}
+{% endblock %}

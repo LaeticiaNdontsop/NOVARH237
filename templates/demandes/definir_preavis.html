@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Definir le preavis{% endblock %}
+{% block page_titre %}Definir le preavis{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-semibold text-slate-800 mb-2">Definir le preavis</h1>
+<p class="text-slate-500 text-sm mb-6">
+    Demission de {{ demission.employe.nom_complet }} &middot; depart souhaite le {{ demission.date_effective_souhaitee }}.
+    Determinez les modalites selon le code du travail camerounais et le contrat de l'employe.
+</p>
+
+<div class="bg-white rounded-xl border border-slate-200 p-6 max-w-lg">
+    <form method="post">
+        {% csrf_token %}
+        {% include "includes/form_champs.html" %}
+        <button type="submit" class="mt-2 px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">
+            Valider le preavis
+        </button>
+    </form>
+</div>
+{% endblock %}

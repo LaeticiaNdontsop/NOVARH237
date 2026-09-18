@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Recrutements{% endblock %}
+{% block page_titre %}Recrutements{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <h1 class="text-2xl font-semibold text-slate-800">Recrutements</h1>
+
+    <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="font-medium text-slate-700">Candidatures en cours</h2>
+            <a href="{% url 'core:creer_offre' %}" class="px-3 py-2 rounded-lg bg-primary-600 text-white text-sm hover:bg-primary-700">Publier une offre</a>
+        </div>
+        <div class="space-y-3">
+            {% for candidat in candidatures %}
+                <div class="flex items-center justify-between border border-slate-200 rounded-lg p-3 gap-4">
+                <div>
+                    <p class="font-medium text-slate-700">{{ candidat.nom_candidat }}</p>
+                    <p class="text-sm text-slate-500">{{ candidat.offre.poste }} · {{ candidat.email }}</p>
+                </div>
+                <form method="post" action="{% url 'core:modifier_statut_candidature' candidat.pk %}" class="flex items-center gap-2">
+                    {% csrf_token %}
+                    <select name="statut" class="rounded-lg border border-slate-300 text-sm">
+                        {% for value, label in candidat.statut_choices %}<option value="{{ value }}" {% if candidat.statut == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                    </select>
+                    <button type="submit" class="px-3 py-2 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Enregistrer</button>
+                </form>
+            </div>
+            {% empty %}
+            <p class="text-sm text-slate-400">Aucune candidature pour le moment.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

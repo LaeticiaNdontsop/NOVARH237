@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Changer mon mot de passe{% endblock %}
+{% block page_titre %}Changer mon mot de passe{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-semibold text-slate-800 mb-6">Changer mon mot de passe</h1>
+
+{% if user.doit_changer_mot_de_passe %}
+<div class="mb-4 px-4 py-3 rounded-lg text-sm bg-yellow-50 text-yellow-700 border border-yellow-200 max-w-lg">
+    Pour votre securite, veuillez changer le mot de passe temporaire qui vous a ete attribue.
+</div>
+{% endif %}
+
+<div class="bg-white rounded-xl border border-slate-200 p-6 max-w-lg">
+    <form method="post">
+        {% csrf_token %}
+        {% include "includes/form_champs.html" %}
+        <button type="submit" class="mt-2 px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">
+            Mettre a jour le mot de passe
+        </button>
+    </form>
+</div>
+{% endblock %}

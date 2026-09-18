@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Fiche employe{% endblock %}
+{% block page_titre %}Fiche employe{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-semibold text-slate-800 mb-6">
+    {% if object %}Modifier la fiche employe{% else %}Nouvelle fiche employe{% endif %}
+</h1>
+
+<div class="bg-white rounded-xl border border-slate-200 p-6 max-w-2xl">
+    <form method="post">
+        {% csrf_token %}
+        {% include "includes/form_champs.html" %}
+        <button type="submit" class="mt-2 px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">
+            Enregistrer
+        </button>
+    </form>
+</div>
+{% endblock %}

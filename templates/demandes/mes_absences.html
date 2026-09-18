@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Mes absences{% endblock %}
+{% block page_titre %}Mes absences{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-semibold text-slate-800">Mes absences</h1>
+    <a href="{% url 'demandes:creer_absence' %}" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">
+        <i class='bx bx-plus'></i> Declarer une absence
+    </a>
+</div>
+
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500 text-left">
+            <tr>
+                <th class="px-4 py-3">Periode</th>
+                <th class="px-4 py-3">Motif</th>
+                <th class="px-4 py-3">Statut</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+            {% for absence in absences %}
+            <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 font-medium">{{ absence.date_debut }} → {{ absence.date_fin }}</td>
+                <td class="px-4 py-3 text-slate-500">{{ absence.motif }}</td>
+                <td class="px-4 py-3">{% include "includes/badge_couleur.html" with couleur=absence.couleur texte=absence.get_statut_display %}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="px-4 py-6 text-center text-slate-400">Aucune absence declaree.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

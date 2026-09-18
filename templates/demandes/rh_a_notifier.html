@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Demandes a notifier{% endblock %}
+{% block page_titre %}Conges/permissions a notifier{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-semibold text-slate-800 mb-6">Decisions de l'Administrateur a notifier</h1>
+
+{% for demande in demandes %}
+<div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
+    <div class="flex items-start justify-between mb-3">
+        <div>
+            <p class="font-medium text-slate-800">{{ demande.get_type_demande_display }} - {{ demande.employe.nom_complet }}</p>
+            <p class="text-sm text-slate-500">{{ demande.date_debut }} → {{ demande.date_fin }}</p>
+            {% if demande.commentaire_admin %}<p class="text-sm text-slate-600 mt-1">Avis Admin : {{ demande.commentaire_admin }}</p>{% endif %}
+        </div>
+        {% include "includes/badge_couleur.html" with couleur="orange" texte="Approuvee - a notifier" %}
+    </div>
+    <form method="post" action="{% url 'demandes:cloturer_demande' demande.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">
+            <i class='bx bx-check'></i> Notifier l'employe (cloturer)
+        </button>
+    </form>
+</div>
+{% empty %}
+<div class="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-400">
+    Aucune decision en attente de notification.
+</div>
+{% endfor %}
+{% endblock %}
