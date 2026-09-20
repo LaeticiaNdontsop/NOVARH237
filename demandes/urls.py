@@ -6,6 +6,7 @@ app_name = "demandes"
 urlpatterns = [
     # Espace employe - conges/permissions
     path("mes-demandes/", views.MesDemandesCongeListView.as_view(), name="mes_demandes"),
+    path("mes-demandes/historique/", views.HistoriqueCongesView.as_view(), name="historique_conges"),
     path("mes-demandes/nouvelle/", views.CreerDemandeCongeView.as_view(), name="creer_demande"),
     path("mes-demandes/<int:pk>/", views.DetailDemandeCongeView.as_view(), name="detail_demande"),
 
@@ -23,6 +24,7 @@ urlpatterns = [
 
     # Absences
     path("mes-absences/", views.MesAbsencesListView.as_view(), name="mes_absences"),
+    path("mes-absences/historique/", views.HistoriqueAbsencesView.as_view(), name="historique_absences"),
     path("mes-absences/nouvelle/", views.CreerAbsenceView.as_view(), name="creer_absence"),
     path("rh/absences/", views.AbsencesRHView.as_view(), name="rh_absences"),
     path("rh/absences/<int:pk>/valider/", views.valider_absence, name="valider_absence"),
@@ -30,6 +32,7 @@ urlpatterns = [
 
     # Demission (RG-22 : Employe -> RH -> Admin -> RH -> Employe)
     path("ma-demission/", views.MaDemissionView.as_view(), name="ma_demission"),
+    path("ma-demission/historique/", views.HistoriqueDemissionsView.as_view(), name="historique_demissions"),
     path("rh/demissions/a-transmettre/", views.DemissionsATransmettreRHView.as_view(), name="rh_demissions_a_transmettre"),
     path("rh/demissions/<int:pk>/transmettre/", views.transmettre_demission, name="transmettre_demission"),
     path("admin/demissions/", views.DemissionsAdminView.as_view(), name="admin_demissions"),

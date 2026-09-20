@@ -7,6 +7,7 @@
     <div class="flex items-center justify-between">
         <h1 class="text-2xl font-semibold text-slate-800">Évaluations & formations</h1>
         <div class="flex gap-2">
+            <a href="{% url 'core:historique_evaluations_formations' %}" class="px-3 py-2 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Historique</a>
             <a href="{% url 'core:creer_evaluation' %}" class="px-3 py-2 rounded-lg bg-primary-600 text-white text-sm hover:bg-primary-700">Nouvelle evaluation</a>
             <a href="{% url 'core:creer_formation' %}" class="px-3 py-2 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Planifier une formation</a>
         </div>

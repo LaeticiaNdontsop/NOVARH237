@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Détail du document{% endblock %}
+{% block page_titre %}Détail du document{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between gap-3">
+        <h1 class="text-2xl font-semibold text-slate-800">
+            {% if document.type_document == 'CONTRAT' %}
+            Contrat de travail
+            {% else %}
+            {{ document.get_type_document_display }}
+            {% endif %}
+        </h1>
+        <a href="{% url 'employees:mes_documents' %}" class="px-3 py-2 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Retour</a>
+    </div>
+
+    <div class="bg-white rounded-xl border border-slate-200 p-6 max-w-3xl">
+        <dl class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-600">
+            <div class="space-y-1">
+                <dt class="font-medium text-slate-500">Type</dt>
+                <dd class="text-slate-800">
+                    {% if document.type_document == 'CONTRAT' %}
+                    Contrat de travail
+                    {% else %}
+                    {{ document.get_type_document_display }}
+                    {% endif %}
+                </dd>
+            </div>
+            <div class="space-y-1">
+                <dt class="font-medium text-slate-500">Ajouté le</dt>
+                <dd class="text-slate-800">{{ document.date_ajout|date:'d/m/Y H:i' }}</dd>
+            </div>
+            <div class="space-y-1">
+                <dt class="font-medium text-slate-500">Employé</dt>
+                <dd class="text-slate-800">{{ document.employe.nom_complet }}</dd>
+            </div>
+            <div class="space-y-1">
+                <dt class="font-medium text-slate-500">Ajouté par</dt>
+                <dd class="text-slate-800">{{ document.ajoute_par.get_full_name|default:document.ajoute_par.username|default:'Système' }}</dd>
+            </div>
+        </dl>
+
+        {% if document.type_document == 'CONTRAT' and contrat %}
+        <div class="mt-6 border-t border-slate-200 pt-6">
+            <h2 class="text-lg font-semibold text-slate-800 mb-4">Informations du contrat</h2>
+            <dl class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-600">
+                <div class="space-y-1"><dt class="font-medium text-slate-500">Type de contrat</dt><dd class="text-slate-800">{{ contrat.get_type_contrat_display }}</dd></div>
+                <div class="space-y-1"><dt class="font-medium text-slate-500">Poste</dt><dd class="text-slate-800">{{ contrat.poste }}</dd></div>
+                <div class="space-y-1"><dt class="font-medium text-slate-500">Service</dt><dd class="text-slate-800">{{ contrat.service }}</dd></div>
+                <div class="space-y-1"><dt class="font-medium text-slate-500">Salaire</dt><dd class="text-slate-800">{{ contrat.salaire }} FCFA</dd></div>
+                <div class="space-y-1"><dt class="font-medium text-slate-500">Date de début</dt><dd class="text-slate-800">{{ contrat.date_debut }}</dd></div>
+                <div class="space-y-1"><dt class="font-medium text-slate-500">Date de fin</dt><dd class="text-slate-800">{% if contrat.date_fin %}{{ contrat.date_fin }}{% else %}Non renseignée{% endif %}</dd></div>
+                <div class="space-y-1"><dt class="font-medium text-slate-500">Période d'essai</dt><dd class="text-slate-800">{{ contrat.periode_essai_mois }} mois</dd></div>
+                <div class="space-y-1"><dt class="font-medium text-slate-500">Signé</dt><dd class="text-slate-800">{% if contrat.signe %}Oui{% else %}Non{% endif %}</dd></div>
+            </dl>
+        </div>
+        {% endif %}
+
+        {% if document.fichier %}
+        <div class="mt-6 flex flex-wrap gap-3">
+            <a href="{{ document.fichier.url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700">Télécharger le document</a>
+            {% if document.type_document == 'CONTRAT' and contrat and contrat.fichier_contrat %}
+            <a href="{{ contrat.fichier_contrat.url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Ouvrir le fichier contrat</a>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="mt-6 rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-500">
+            Aucun fichier n'est associé à ce document.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

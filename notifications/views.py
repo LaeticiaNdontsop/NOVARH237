@@ -1,12 +1,23 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect
-from django.views.generic import ListView, View
+from django.views.generic import ListView, View, TemplateView
 
 from accounts.mixins import AdminOuRHRequiredMixin
 from .forms import NotificationForm
 from .models import ActivityLog, Notification, log_activity
+
+
+class HistoriqueNotificationsView(AdminOuRHRequiredMixin, TemplateView):
+    template_name = "notifications/historique_notifications.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        filtre = Q(action__icontains="notification") | Q(details__icontains="notification")
+        ctx["historique"] = ActivityLog.objects.filter(filtre).order_by("-date_creation")[:200]
+        return ctx
 
 
 class MesNotificationsView(LoginRequiredMixin, ListView):

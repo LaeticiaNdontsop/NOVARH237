@@ -3,7 +3,10 @@
 {% block page_titre %}Demissions - a communiquer{% endblock %}
 
 {% block content %}
-<h1 class="text-2xl font-semibold text-slate-800 mb-6">Preavis definis, a communiquer a l'employe</h1>
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-semibold text-slate-800">Preavis definis, a communiquer a l'employe</h1>
+    <a href="{% url 'demandes:historique_demissions' %}" class="px-3 py-2 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Historique</a>
+</div>
 
 {% for demission in demissions %}
 <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
