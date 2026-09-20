@@ -1,6 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 from django.views.decorators.http import require_POST
@@ -11,7 +12,7 @@ from django.urls import reverse_lazy
 from accounts.mixins import AdminOuRHRequiredMixin, AdminRequiredMixin
 from employees.models import Employe, StatutEmploye
 from demandes.models import DemandeConge, StatutDemande, Absence, StatutAbsence, Demission, StatutDemission
-from notifications.models import ActivityLog, Notification
+from notifications.models import ActivityLog, Notification, log_activity
 from analytics import indicateurs
 from .forms import CandidatureForm, EvaluationForm, FormationForm, OffreForm
 from .models import Candidature, Evaluation, Formation, Offre, StatutOffre
@@ -77,6 +78,17 @@ class DashboardEmployeView(LoginRequiredMixin, TemplateView):
         return ctx
 
 
+class HistoriqueEvaluationsFormationsView(AdminOuRHRequiredMixin, TemplateView):
+    template_name = "core/historique_evaluations_formations.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        filtre = Q(action__icontains="evaluation") | Q(details__icontains="evaluation")
+        filtre |= Q(action__icontains="formation") | Q(details__icontains="formation")
+        ctx["historique"] = ActivityLog.objects.filter(filtre).order_by("-date_creation")[:200]
+        return ctx
+
+
 class EvaluationsFormationsView(AdminOuRHRequiredMixin, TemplateView):
     template_name = "core/evaluations_formations.html"
 
@@ -97,8 +109,14 @@ class CreerEvaluationView(AdminOuRHRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.creee_par = self.request.user
+        response = super().form_valid(form)
+        log_activity(
+            self.request.user,
+            "Creation d'une evaluation",
+            f"Evaluation pour {form.instance.employe.nom_complet} enregistree.",
+        )
         messages.success(self.request, "Evaluation enregistree.")
-        return super().form_valid(form)
+        return response
 
 
 class CreerFormationView(AdminOuRHRequiredMixin, CreateView):
@@ -109,8 +127,26 @@ class CreerFormationView(AdminOuRHRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.creee_par = self.request.user
+        response = super().form_valid(form)
+        log_activity(
+            self.request.user,
+            "Planification d'une formation",
+            f"Formation {form.instance.titre} planifiee.",
+        )
         messages.success(self.request, "Formation planifiee.")
-        return super().form_valid(form)
+        return response
+
+
+class HistoriqueRecrutementsView(AdminOuRHRequiredMixin, TemplateView):
+    template_name = "core/historique_recrutements.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        filtre = Q(action__icontains="candidature") | Q(details__icontains="candidature")
+        filtre |= Q(action__icontains="offre") | Q(details__icontains="offre")
+        filtre |= Q(action__icontains="recrutement") | Q(details__icontains="recrutement")
+        ctx["historique"] = ActivityLog.objects.filter(filtre).order_by("-date_creation")[:200]
+        return ctx
 
 
 class RecrutementsView(AdminOuRHRequiredMixin, TemplateView):
@@ -145,8 +181,14 @@ class CreerOffreView(AdminOuRHRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.creee_par = self.request.user
+        response = super().form_valid(form)
+        log_activity(
+            self.request.user,
+            "Creation d'une offre",
+            f"Offre {form.instance.poste} enregistree.",
+        )
         messages.success(self.request, "Offre enregistree.")
-        return super().form_valid(form)
+        return response
 
 
 @method_decorator(require_POST, name="dispatch")
@@ -160,6 +202,11 @@ class PostulerOffreView(LoginRequiredMixin, View):
             candidature = form.save(commit=False)
             candidature.offre = offre
             candidature.save()
+            log_activity(
+                request.user,
+                "Candidature soumise",
+                f"Candidature soumise pour l'offre {offre.poste}.",
+            )
             messages.success(request, "Votre candidature a ete enregistree.")
         else:
             messages.error(request, "Verifiez les informations de votre candidature.")
@@ -179,6 +226,11 @@ def modifier_statut_candidature(request, pk):
     else:
         candidature.statut = statut
         candidature.save(update_fields=["statut"])
+        log_activity(
+            request.user,
+            "Mise a jour du statut d'une candidature",
+            f"Candidature {candidature.email} : {statut}.",
+        )
         messages.success(request, "Statut de candidature mis a jour.")
     return redirect("core:recrutements")
 
@@ -201,6 +253,6 @@ class JournalActiviteView(AdminRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["activites"] = list(ActivityLog.objects.select_related("utilisateur").order_by("-date_creation")[:20])
+        ctx["activites"] = list(ActivityLog.objects.select_related("utilisateur").order_by("-date_creation")[:200])
         ctx["notifications_recentes"] = list(Notification.objects.select_related("expediteur", "destinataire").order_by("-date_creation")[:10])
         return ctx

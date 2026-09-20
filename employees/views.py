@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, View, TemplateView
 
 from accounts.mixins import AdminOuRHRequiredMixin
+from notifications.models import log_activity
 from .forms import EmployeForm, ContratForm, RemunerationForm, DocumentForm
 from .models import Employe, Contrat, Remuneration, Document, StatutEmploye
 
@@ -72,8 +73,24 @@ class CreerEmployeView(AdminOuRHRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.cree_par = self.request.user
+        response = super().form_valid(form)
+        Contrat.objects.get_or_create(
+            employe=self.object,
+            defaults={
+                "type_contrat": "CDI",
+                "poste": self.object.poste,
+                "service": self.object.service,
+                "salaire": 0,
+                "date_debut": self.object.date_embauche,
+            },
+        )
+        log_activity(
+            self.request.user,
+            "Creation d'une fiche employe",
+            f"Fiche employe {self.object.matricule} creee pour {self.object.nom_complet}.",
+        )
         messages.success(self.request, "Fiche employe creee avec succes.")
-        return super().form_valid(form)
+        return response
 
 
 class ModifierEmployeView(AdminOuRHRequiredMixin, UpdateView):
@@ -83,8 +100,14 @@ class ModifierEmployeView(AdminOuRHRequiredMixin, UpdateView):
     success_url = reverse_lazy("employees:liste_employes")
 
     def form_valid(self, form):
+        response = super().form_valid(form)
+        log_activity(
+            self.request.user,
+            "Modification d'une fiche employe",
+            f"Fiche employe {self.object.matricule} mise a jour.",
+        )
         messages.success(self.request, "Fiche employe mise a jour.")
-        return super().form_valid(form)
+        return response
 
 
 class DesactiverEmployeView(AdminOuRHRequiredMixin, View):
@@ -95,6 +118,11 @@ class DesactiverEmployeView(AdminOuRHRequiredMixin, View):
         employe.statut = StatutEmploye.INACTIF
         employe.date_desactivation = timezone.now()
         employe.save(update_fields=["statut", "date_desactivation"])
+        log_activity(
+            request.user,
+            "Desactivation d'une fiche employe",
+            f"Fiche employe {employe.matricule} desactivee.",
+        )
         messages.success(request, f"La fiche de {employe.nom_complet} a ete desactivee.")
         return redirect("employees:liste_employes")
 
@@ -113,8 +141,14 @@ class AjouterContratView(AdminOuRHRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.employe = self.employe
+        response = super().form_valid(form)
+        log_activity(
+            self.request.user,
+            "Enregistrement d'un contrat",
+            f"Contrat pour {self.employe.nom_complet} enregistre.",
+        )
         messages.success(self.request, "Contrat enregistre.")
-        return super().form_valid(form)
+        return response
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -139,8 +173,14 @@ class AjouterRemunerationView(AdminOuRHRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.employe = self.employe
+        response = super().form_valid(form)
+        log_activity(
+            self.request.user,
+            "Enregistrement d'une remuneration",
+            f"Remuneration pour {self.employe.nom_complet} enregistree.",
+        )
         messages.success(self.request, "Remuneration enregistree.")
-        return super().form_valid(form)
+        return response
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -172,8 +212,14 @@ class AjouterDocumentView(AdminOuRHRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.employe = self.employe
         form.instance.ajoute_par = self.request.user
+        response = super().form_valid(form)
+        log_activity(
+            self.request.user,
+            "Ajout d'un document",
+            f"Document {self.object.get_type_document_display()} ajoute pour {self.employe.nom_complet}.",
+        )
         messages.success(self.request, "Document ajoute.")
-        return super().form_valid(form)
+        return response
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -184,16 +230,67 @@ class AjouterDocumentView(AdminOuRHRequiredMixin, CreateView):
         return reverse_lazy("employees:detail_employe", kwargs={"pk": self.employe.pk})
 
 
-class MesDocumentsView(LoginRequiredMixin, ListView):
-    model = Document
-    template_name = "employees/mes_documents.html"
-    context_object_name = "documents"
+class DocumentDetailView(LoginRequiredMixin, TemplateView):
+    template_name = "employees/document_detail.html"
 
-    def get_queryset(self):
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        document = get_object_or_404(Document, pk=self.kwargs["pk"])
+        user = self.request.user
+
+        if not (user.est_admin or user.est_rh or document.employe.utilisateur_id == user.id):
+            raise PermissionDenied("Vous ne pouvez pas consulter ce document.")
+
+        ctx["document"] = document
+        ctx["contrat"] = document.employe.contrats.order_by("-date_debut").first() if document.type_document == "CONTRAT" else None
+        return ctx
+
+
+class MesDocumentsView(LoginRequiredMixin, TemplateView):
+    template_name = "employees/mes_documents.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
         fiche = getattr(self.request.user, "fiche_employe", None)
         if fiche is None:
-            return Document.objects.none()
-        return Document.objects.filter(employe=fiche).select_related("employe")
+            ctx["documents"] = []
+        else:
+            contrat = fiche.contrats.order_by("-date_debut").first()
+            if contrat:
+                document_contrat, _ = Document.objects.get_or_create(
+                    employe=fiche,
+                    type_document="CONTRAT",
+                )
+                if contrat.fichier_contrat:
+                    document_contrat.fichier = contrat.fichier_contrat
+                document_contrat.ajoute_par = fiche.utilisateur
+                document_contrat.save()
+            ctx["documents"] = Document.objects.filter(employe=fiche).select_related("employe")
+        ctx["document_form"] = DocumentForm()
+        return ctx
+
+    def post(self, request, *args, **kwargs):
+        fiche = getattr(request.user, "fiche_employe", None)
+        if fiche is None:
+            messages.error(request, "Aucune fiche employe n'est associee a votre compte.")
+            return redirect("employees:mes_documents")
+
+        form = DocumentForm(request.POST, request.FILES)
+        if form.is_valid():
+            document = form.save(commit=False)
+            document.employe = fiche
+            document.ajoute_par = request.user
+            document.save()
+            log_activity(
+                request.user,
+                "Import d'un document personnel",
+                f"Document {document.get_type_document_display()} importe pour {fiche.nom_complet}.",
+            )
+            messages.success(request, "Document importe avec succes.")
+            return redirect("employees:mes_documents")
+
+        messages.error(request, "Le document est invalide. Veuillez verifier le type et le fichier.")
+        return redirect("employees:mes_documents")
 
 
 class MesRemunerationsView(LoginRequiredMixin, ListView):
@@ -206,24 +303,6 @@ class MesRemunerationsView(LoginRequiredMixin, ListView):
         if fiche is None:
             return Remuneration.objects.none()
         return Remuneration.objects.filter(employe=fiche).select_related("employe")
-
-
-class MonContratView(LoginRequiredMixin, TemplateView):
-    template_name = "employees/mon_contrat.html"
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        fiche = getattr(self.request.user, "fiche_employe", None)
-        if fiche is None:
-            ctx["fiche"] = None
-            ctx["contrat"] = None
-            ctx["derniere_remuneration"] = None
-            return ctx
-
-        ctx["fiche"] = fiche
-        ctx["contrat"] = fiche.contrats.order_by("-date_debut").first()
-        ctx["derniere_remuneration"] = fiche.remunerations.order_by("-date_effective").first()
-        return ctx
 
 
 class MesEvaluationsFormationsView(LoginRequiredMixin, TemplateView):

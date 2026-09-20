@@ -6,8 +6,10 @@
 <div class="space-y-6">
     <div class="flex items-center justify-between">
         <h1 class="text-2xl font-semibold text-slate-800">Mes notifications</h1>
-        {% if peut_envoyer %}
-        <form method="post" action="{% url 'notifications:envoyer' %}" class="flex gap-2 items-center">
+        <div class="flex gap-2 items-center">
+            <a href="{% url 'notifications:historique_notifications' %}" class="px-3 py-2 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Historique</a>
+            {% if peut_envoyer %}
+            <form method="post" action="{% url 'notifications:envoyer' %}" class="flex gap-2 items-center">
             {% csrf_token %}
             <input type="text" name="message" placeholder="Publier une notification" class="border border-slate-300 rounded-lg px-3 py-2 text-sm">
             <select name="role_cible" class="border border-slate-300 rounded-lg px-3 py-2 text-sm">
@@ -16,9 +18,10 @@
                 <option value="RH">RH</option>
                 <option value="ADMIN">Admin</option>
             </select>
-            <button type="submit" class="px-3 py-2 rounded-lg bg-primary-600 text-white text-sm hover:bg-primary-700">Envoyer</button>
-        </form>
-        {% endif %}
+                <button type="submit" class="px-3 py-2 rounded-lg bg-primary-600 text-white text-sm hover:bg-primary-700">Envoyer</button>
+            </form>
+            {% endif %}
+        </div>
     </div>
 
     <div class="bg-white rounded-xl border border-slate-200 p-5">

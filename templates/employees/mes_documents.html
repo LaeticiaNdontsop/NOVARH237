@@ -7,16 +7,45 @@
     <h1 class="text-2xl font-semibold text-slate-800">Mes documents</h1>
 
     <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <form method="post" enctype="multipart/form-data" class="space-y-4 mb-6">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="id_type_document" class="block text-sm font-medium text-slate-700 mb-1">Type de document</label>
+                    {{ document_form.type_document }}
+                </div>
+                <div>
+                    <label for="id_fichier" class="block text-sm font-medium text-slate-700 mb-1">Fichier</label>
+                    {{ document_form.fichier }}
+                </div>
+            </div>
+            <button type="submit" class="inline-flex items-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700">Importer le document</button>
+        </form>
+
         {% if documents %}
         <div class="space-y-3">
             {% for document in documents %}
-            <div class="flex items-center justify-between border border-slate-200 rounded-lg p-3 text-sm">
-                <div>
-                    <p class="font-medium text-slate-700">{{ document.get_type_document_display }}</p>
-                    <p class="text-slate-500">{{ document.date_ajout|date:'d/m/Y H:i' }}</p>
+            <a href="{% url 'employees:document_detail' document.pk %}" class="block border border-slate-200 rounded-lg p-3 text-sm hover:bg-slate-50 transition">
+                <div class="flex items-center justify-between gap-4">
+                    <div>
+                        <p class="font-medium text-slate-700">
+                            {% if document.type_document == 'CONTRAT' %}
+                            Contrat de travail
+                            {% else %}
+                            {{ document.get_type_document_display }}
+                            {% endif %}
+                        </p>
+                        <p class="text-slate-500">{{ document.date_ajout|date:'d/m/Y H:i' }}</p>
+                    </div>
+                    {% if document.fichier %}
+                    <span class="text-primary-600 hover:underline">Voir les détails</span>
+                    {% elif document.type_document == 'CONTRAT' %}
+                    <span class="text-slate-400">Contrat associé à la fiche</span>
+                    {% else %}
+                    <span class="text-slate-400">Document de référence</span>
+                    {% endif %}
                 </div>
-                <a href="{{ document.fichier.url }}" class="text-primary-600 hover:underline">Télécharger</a>
-            </div>
+            </a>
             {% endfor %}
         </div>
         {% else %}
