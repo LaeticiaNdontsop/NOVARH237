@@ -86,6 +86,17 @@ class Contrat(models.Model):
     def __str__(self):
         return f"{self.get_type_contrat_display()} - {self.employe.nom_complet}"
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        document, _ = Document.objects.get_or_create(
+            employe=self.employe,
+            type_document=TypeDocument.CONTRAT,
+        )
+        if self.fichier_contrat:
+            document.fichier = self.fichier_contrat
+        document.ajoute_par = self.employe.utilisateur
+        document.save(update_fields=["fichier", "ajoute_par"] if self.fichier_contrat else ["ajoute_par"])
+
 
 class Remuneration(models.Model):
     """
@@ -130,7 +141,7 @@ class Document(models.Model):
     """
     employe = models.ForeignKey(Employe, on_delete=models.CASCADE, related_name="documents")
     type_document = models.CharField(max_length=15, choices=TypeDocument.choices)
-    fichier = models.FileField(upload_to="documents/")
+    fichier = models.FileField(upload_to="documents/", null=True, blank=True)
     date_ajout = models.DateTimeField(auto_now_add=True)
     ajoute_par = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="documents_ajoutes"

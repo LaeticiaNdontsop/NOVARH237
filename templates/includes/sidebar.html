@@ -57,6 +57,32 @@
             <i class='bx bx-bot text-lg'></i>
             Assistant RH
         </a>
+
+        <p class="px-5 pt-4 pb-1 text-xs uppercase tracking-wider text-white/40">Mon espace employe</p>
+        <a href="{% url 'demandes:mes_demandes' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-calendar-check text-lg'></i>
+            Conges &amp; permissions
+        </a>
+        <a href="{% url 'demandes:mes_absences' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-calendar-x text-lg'></i>
+            Mes absences
+        </a>
+        <a href="{% url 'demandes:ma_demission' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-log-out-circle text-lg'></i>
+            Ma demission
+        </a>
+        <a href="{% url 'employees:mes_documents' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-folder text-lg'></i>
+            Mes documents
+        </a>
+        <a href="{% url 'employees:mes_remunerations' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-wallet text-lg'></i>
+            Mes remunerations
+        </a>
+        <a href="{% url 'employees:mes_evaluations_formations' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
+            <i class='bx bx-book-reader text-lg'></i>
+            Mes evaluations &amp; formations
+        </a>
         {% elif user.est_employe %}
         <p class="px-5 pt-4 pb-1 text-xs uppercase tracking-wider text-white/40">Mes demandes</p>
         <a href="{% url 'demandes:mes_demandes' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
@@ -70,10 +96,6 @@
         <a href="{% url 'demandes:ma_demission' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
             <i class='bx bx-log-out-circle text-lg'></i>
             Ma demission
-        </a>
-        <a href="{% url 'employees:mon_contrat' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-file text-lg'></i>
-            Mon contrat
         </a>
         <a href="{% url 'employees:mes_documents' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
             <i class='bx bx-folder text-lg'></i>
