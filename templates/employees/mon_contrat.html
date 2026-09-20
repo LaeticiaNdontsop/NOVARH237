@@ -1,79 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Mon contrat{% endblock %}
-{% block page_titre %}Mon contrat{% endblock %}
+{% block title %}Documents{% endblock %}
+{% block page_titre %}Documents{% endblock %}
 
 {% block content %}
 <div class="space-y-6">
-    <div class="flex items-center justify-between">
-        <h1 class="text-2xl font-semibold text-slate-800">Mon contrat</h1>
+    <div class="bg-white rounded-xl border border-slate-200 p-5 text-sm text-slate-500">
+        Le contrat est intégré dans les documents de l'employé. Il est généré lors de la fiche employé par le responsable RH et reste accessible dans la section des documents.
     </div>
-
-    {% if not fiche %}
-        <div class="bg-white rounded-xl border border-slate-200 p-5 text-sm text-slate-500">
-            Aucune fiche employe n'est associee a votre compte pour le moment.
-        </div>
-    {% elif not contrat %}
-        <div class="bg-white rounded-xl border border-slate-200 p-5 text-sm text-slate-500">
-            Aucun contrat n'a encore ete enregistre pour votre fiche.
-        </div>
-    {% else %}
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="bg-white rounded-xl border border-slate-200 p-5">
-                <h2 class="font-medium text-slate-700 mb-4">Informations contractuelles</h2>
-                <dl class="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                        <dt class="text-slate-400">Type</dt>
-                        <dd class="font-medium">{{ contrat.get_type_contrat_display }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-slate-400">Poste</dt>
-                        <dd class="font-medium">{{ contrat.poste }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-slate-400">Service</dt>
-                        <dd class="font-medium">{{ contrat.service }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-slate-400">Salaire</dt>
-                        <dd class="font-medium">{{ contrat.salaire }} FCFA</dd>
-                    </div>
-                    <div>
-                        <dt class="text-slate-400">Date de debut</dt>
-                        <dd class="font-medium">{{ contrat.date_debut }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-slate-400">Date de fin</dt>
-                        <dd class="font-medium">{{ contrat.date_fin|default:"--" }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-slate-400">Periode d'essai</dt>
-                        <dd class="font-medium">{{ contrat.periode_essai_mois }} mois</dd>
-                    </div>
-                    <div>
-                        <dt class="text-slate-400">Signature</dt>
-                        <dd class="font-medium">{% if contrat.signe %}Oui{% else %}Non{% endif %}</dd>
-                    </div>
-                </dl>
-                {% if contrat.fichier_contrat %}
-                    <div class="mt-4">
-                        <a href="{{ contrat.fichier_contrat.url }}" class="inline-flex items-center rounded-lg bg-primary-600 px-3 py-2 text-sm font-medium text-white hover:bg-primary-700">
-                            Telecharger le contrat
-                        </a>
-                    </div>
-                {% endif %}
-            </div>
-
-            <div class="bg-white rounded-xl border border-slate-200 p-5">
-                <h2 class="font-medium text-slate-700 mb-4">Derniere remuneration</h2>
-                {% if derniere_remuneration %}
-                    <p class="text-2xl font-semibold text-primary-700">{{ derniere_remuneration.total }} FCFA</p>
-                    <p class="text-xs text-slate-400 mt-1">Base {{ derniere_remuneration.salaire_base }} + primes {{ derniere_remuneration.primes }}</p>
-                    <p class="text-xs text-slate-400 mt-2">Effective le {{ derniere_remuneration.date_effective }}</p>
-                {% else %}
-                    <p class="text-sm text-slate-400">Aucune remuneration enregistree.</p>
-                {% endif %}
-            </div>
-        </div>
-    {% endif %}
 </div>
 {% endblock %}

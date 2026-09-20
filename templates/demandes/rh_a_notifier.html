@@ -3,7 +3,10 @@
 {% block page_titre %}Conges/permissions a notifier{% endblock %}
 
 {% block content %}
-<h1 class="text-2xl font-semibold text-slate-800 mb-6">Decisions de l'Administrateur a notifier</h1>
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-semibold text-slate-800">Decisions de l'Administrateur a notifier</h1>
+    <a href="{% url 'demandes:historique_conges' %}" class="px-3 py-2 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Historique</a>
+</div>
 
 {% for demande in demandes %}
 <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">

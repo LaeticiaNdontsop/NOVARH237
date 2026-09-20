@@ -2,13 +2,15 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from django.views.generic import ListView, DetailView, CreateView, TemplateView
 
-from accounts.mixins import RoleRequiredMixin
+from accounts.mixins import AdminOuRHRequiredMixin, RoleRequiredMixin
+from notifications.models import ActivityLog, log_activity
 from .forms import DemandeCongeForm, TraitementCommentaireForm, AbsenceForm, DemissionForm, PreavisForm
 from .models import (
     DemandeConge, StatutDemande, DELAI_REAFFECTATION,
@@ -25,9 +27,33 @@ def _fiche_employe_ou_403(request):
     return fiche
 
 
+def _historique_par_mots_cles(*mots_cles):
+    filtre = Q()
+    for mot in mots_cles:
+        filtre |= Q(action__icontains=mot) | Q(details__icontains=mot)
+    return ActivityLog.objects.filter(filtre).order_by("-date_creation")[:200]
+
+
 # ---------------------------------------------------------------------------
 # Espace Employe : conges & permissions
 # ---------------------------------------------------------------------------
+class HistoriqueCongesView(AdminOuRHRequiredMixin, TemplateView):
+    template_name = "demandes/historique_conges.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["historique"] = _historique_par_mots_cles(
+            "demande",
+            "conge",
+            "permission",
+            "transmission d'une demande",
+            "refus d'une demande",
+            "approbation d'une demande",
+            "cloture d'une demande",
+        )
+        return ctx
+
+
 class MesDemandesCongeListView(LoginRequiredMixin, ListView):
     template_name = "demandes/mes_demandes.html"
     context_object_name = "demandes"
@@ -49,8 +75,14 @@ class CreerDemandeCongeView(LoginRequiredMixin, CreateView):
         form.instance.employe = fiche
         form.instance.rh_assigne = choisir_rh_disponible()
         form.instance.date_limite_rh = timezone.now() + DELAI_REAFFECTATION
+        response = super().form_valid(form)
+        log_activity(
+            self.request.user,
+            "Soumission d'une demande",
+            f"Demande de {self.object.get_type_demande_display()} soumise pour {fiche.nom_complet}.",
+        )
         messages.success(self.request, "Votre demande a ete soumise et transmise au Responsable RH.")
-        return super().form_valid(form)
+        return response
 
 
 class DetailDemandeCongeView(LoginRequiredMixin, DetailView):
@@ -102,6 +134,11 @@ def transmettre_a_admin(request, pk):
     form = TraitementCommentaireForm(request.POST)
     commentaire = form.data.get("commentaire", "")
     demande.transmettre_a_admin(request.user, commentaire)
+    log_activity(
+        request.user,
+        "Transmission d'une demande RH",
+        f"Demande de {demande.get_type_demande_display()} transmise a l'Admin.",
+    )
     messages.success(request, "Demande transmise a l'Administrateur pour decision.")
     return redirect("demandes:rh_a_traiter")
 
@@ -114,6 +151,11 @@ def rejeter_par_rh(request, pk):
     demande = get_object_or_404(DemandeConge, pk=pk, statut=StatutDemande.EN_ATTENTE_RH, rh_assigne=request.user)
     commentaire = request.POST.get("commentaire", "")
     demande.rejeter_par_rh(request.user, commentaire)
+    log_activity(
+        request.user,
+        "Refus d'une demande RH",
+        f"Demande de {demande.get_type_demande_display()} rejetee par le RH.",
+    )
     messages.success(request, "Demande rejetee. L'employe sera informe du motif.")
     return redirect("demandes:rh_a_traiter")
 
@@ -127,6 +169,11 @@ def cloturer_demande(request, pk):
         DemandeConge, pk=pk, statut=StatutDemande.APPROUVEE_A_NOTIFIER, rh_assigne=request.user
     )
     demande.cloturer_par_rh()
+    log_activity(
+        request.user,
+        "Cloture d'une demande RH",
+        f"Demande de {demande.get_type_demande_display()} cloturee et notifiee a l'employe.",
+    )
     messages.success(request, "Demande cloturee : l'employe est notifie de l'approbation.")
     return redirect("demandes:rh_a_notifier")
 
@@ -154,6 +201,11 @@ def approuver_par_admin(request, pk):
     )
     commentaire = request.POST.get("commentaire", "")
     demande.approuver_par_admin(request.user, commentaire)
+    log_activity(
+        request.user,
+        "Approbation d'une demande admin",
+        f"Demande de {demande.get_type_demande_display()} approuvee par l'Admin.",
+    )
     messages.success(request, "Demande approuvee. Le Responsable RH va notifier l'employe.")
     return redirect("demandes:admin_a_decider")
 
@@ -168,6 +220,11 @@ def rejeter_par_admin(request, pk):
     )
     commentaire = request.POST.get("commentaire", "")
     demande.rejeter_par_admin(request.user, commentaire)
+    log_activity(
+        request.user,
+        "Refus d'une demande admin",
+        f"Demande de {demande.get_type_demande_display()} rejetee par l'Admin.",
+    )
     messages.success(request, "Demande rejetee.")
     return redirect("demandes:admin_a_decider")
 
@@ -175,6 +232,20 @@ def rejeter_par_admin(request, pk):
 # ---------------------------------------------------------------------------
 # Absences
 # ---------------------------------------------------------------------------
+class HistoriqueAbsencesView(AdminOuRHRequiredMixin, TemplateView):
+    template_name = "demandes/historique_absences.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["historique"] = _historique_par_mots_cles(
+            "absence",
+            "validation d'une absence",
+            "refus d'une absence",
+            "declaration d'une absence",
+        )
+        return ctx
+
+
 class MesAbsencesListView(LoginRequiredMixin, ListView):
     template_name = "demandes/mes_absences.html"
     context_object_name = "absences"
@@ -193,8 +264,14 @@ class CreerAbsenceView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         fiche = _fiche_employe_ou_403(self.request)
         form.instance.employe = fiche
+        response = super().form_valid(form)
+        log_activity(
+            self.request.user,
+            "Declaration d'une absence",
+            f"Absence declaree pour {fiche.nom_complet} du {form.instance.date_debut} au {form.instance.date_fin}.",
+        )
         messages.success(self.request, "Absence declaree, en attente de validation RH.")
-        return super().form_valid(form)
+        return response
 
 
 class AbsencesRHView(RoleRequiredMixin, ListView):
@@ -213,6 +290,11 @@ def valider_absence(request, pk):
         raise PermissionDenied
     absence = get_object_or_404(Absence, pk=pk)
     absence.valider(request.user, request.POST.get("commentaire", ""))
+    log_activity(
+        request.user,
+        "Validation d'une absence",
+        f"Absence de {absence.employe.nom_complet} validee.",
+    )
     messages.success(request, "Absence validee.")
     return redirect("demandes:rh_absences")
 
@@ -224,6 +306,11 @@ def rejeter_absence(request, pk):
         raise PermissionDenied
     absence = get_object_or_404(Absence, pk=pk)
     absence.rejeter(request.user, request.POST.get("commentaire", ""))
+    log_activity(
+        request.user,
+        "Refus d'une absence",
+        f"Absence de {absence.employe.nom_complet} rejetee.",
+    )
     messages.success(request, "Absence rejetee.")
     return redirect("demandes:rh_absences")
 
@@ -231,6 +318,21 @@ def rejeter_absence(request, pk):
 # ---------------------------------------------------------------------------
 # Demission
 # ---------------------------------------------------------------------------
+class HistoriqueDemissionsView(AdminOuRHRequiredMixin, TemplateView):
+    template_name = "demandes/historique_demissions.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["historique"] = _historique_par_mots_cles(
+            "demission",
+            "transmission d'une demission",
+            "definition du preavis",
+            "communication du preavis",
+            "declaration de demission",
+        )
+        return ctx
+
+
 class MaDemissionView(LoginRequiredMixin, TemplateView):
     """
     RG : la declaration de demission est irrevocable. Cette vue affiche la
@@ -255,6 +357,11 @@ class MaDemissionView(LoginRequiredMixin, TemplateView):
             demission = form.save(commit=False)
             demission.employe = fiche
             demission.save()
+            log_activity(
+                request.user,
+                "Declaration de demission",
+                f"Demission de {fiche.nom_complet} declaree.",
+            )
             messages.success(
                 request,
                 "Votre demission a ete enregistree. Elle est irrevocable. "
@@ -281,6 +388,11 @@ def transmettre_demission(request, pk):
         raise PermissionDenied
     demission = get_object_or_404(Demission, pk=pk, statut=StatutDemission.DECLAREE)
     demission.transmettre_a_admin(request.user)
+    log_activity(
+        request.user,
+        "Transmission d'une demission RH",
+        f"Demission de {demission.employe.nom_complet} transmise a l'Admin.",
+    )
     messages.success(request, "Demission transmise a l'Administrateur pour determination du preavis.")
     return redirect("demandes:rh_demissions_a_transmettre")
 
@@ -304,6 +416,11 @@ def definir_preavis(request, pk):
         if form.is_valid():
             demission.definir_preavis(
                 request.user, form.cleaned_data["preavis_jours"], form.cleaned_data["commentaire"]
+            )
+            log_activity(
+                request.user,
+                "Definition du preavis",
+                f"Preavis de {demission.employe.nom_complet} defini a {form.cleaned_data['preavis_jours']} jours.",
             )
             messages.success(request, "Preavis defini. Le Responsable RH va le communiquer a l'employe.")
             return redirect("demandes:admin_demissions")
@@ -329,5 +446,10 @@ def communiquer_demission(request, pk):
         raise PermissionDenied
     demission = get_object_or_404(Demission, pk=pk, statut=StatutDemission.PREAVIS_DEFINI)
     demission.communiquer_a_employe()
+    log_activity(
+        request.user,
+        "Communication du preavis",
+        f"Preavis de {demission.employe.nom_complet} communique a l'employe.",
+    )
     messages.success(request, "Decision communiquee a l'employe.")
     return redirect("demandes:rh_demissions_a_communiquer")
