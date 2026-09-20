@@ -17,6 +17,19 @@ from .forms import CandidatureForm, EvaluationForm, FormationForm, OffreForm
 from .models import Candidature, Evaluation, Formation, Offre, StatutOffre
 
 
+class AccueilView(TemplateView):
+    """
+    Page d'accueil publique (vitrine). Un utilisateur deja connecte est renvoye
+    directement vers son tableau de bord.
+    """
+    template_name = "core/accueil.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect("core:redirection_dashboard")
+        return super().dispatch(request, *args, **kwargs)
+
+
 class RedirectionDashboardView(LoginRequiredMixin, View):
     """
     Point d'entree unique apres connexion : redirige vers le tableau de bord
