@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load nova_extras %}
+{% block title %}Journaux d'activité{% endblock %}
+{% block page_titre %}Journaux d'activité{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-7xl">
+    <div>
+        <h1 class="text-3xl font-bold text-slate-900">Journaux d'activité</h1>
+        <p class="text-slate-500 mt-1">Suivez les actions effectuées sur la plateforme.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {% include "includes/kpi.html" with icone="bx-file" teinte="blue" valeur=nb_actions_aujourdhui libelle="actions aujourd'hui" %}
+        {% include "includes/kpi.html" with icone="bx-error" teinte="red" valeur=nb_alertes_aujourdhui libelle="alertes" sous_texte="Connexions refusées aujourd'hui" %}
+        {% include "includes/kpi.html" with icone="bx-group" teinte="teal" valeur=nb_utilisateurs_actifs libelle="utilisateurs actifs" %}
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <div class="{% if detail %}xl:col-span-2{% else %}xl:col-span-3{% endif %} space-y-4">
+            <form method="get" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-wrap items-end gap-3">
+                <div><label class="block text-xs text-slate-500 mb-1">Période</label><select name="periode" class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm">{% for valeur, libelle in periodes %}<option value="{{ valeur }}" {% if valeur == periode %}selected{% endif %}>{{ libelle }}</option>{% endfor %}</select></div>
+                <div><label class="block text-xs text-slate-500 mb-1">Utilisateur</label><select name="utilisateur" class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm"><option value="">Tous les utilisateurs</option>{% for u in utilisateurs %}<option value="{{ u.pk }}" {% if u.pk|stringformat:"s" == utilisateur_filtre %}selected{% endif %}>{{ u.get_full_name|default:u.username }}</option>{% endfor %}</select></div>
+                <div><label class="block text-xs text-slate-500 mb-1">Type d'action</label><select name="type" class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm"><option value="">Tous les types</option>{% for valeur, libelle in types %}<option value="{{ valeur }}" {% if valeur == type_filtre %}selected{% endif %}>{{ libelle }}</option>{% endfor %}</select></div>
+                <div class="flex-1 min-w-[12rem]"><label class="block text-xs text-slate-500 mb-1">Recherche</label><input type="search" name="q" value="{{ recherche }}" placeholder="Rechercher une action..." class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm"></div>
+                <button class="px-4 py-2.5 rounded-lg bg-primary-600 text-white text-sm">Filtrer</button>
+            </form>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead><tr class="text-left text-slate-700 border-b"><th class="px-4 py-3 font-semibold">Utilisateur</th><th class="px-4 py-3 font-semibold">Action</th><th class="px-4 py-3 font-semibold">Date et heure</th><th class="px-4 py-3 font-semibold">Description</th><th class="px-4 py-3 font-semibold">Adresse IP</th><th class="px-4 py-3 font-semibold">Résultat</th></tr></thead>
+                    <tbody>
+                    {% for e in evenements %}
+                        <tr class="border-b border-slate-100 hover:bg-slate-50/60 cursor-pointer" onclick="window.location='?{% qs evenement=e.pk %}'">
+                            <td class="px-4 py-3">{{ e.utilisateur.get_full_name|default:"Système" }}</td>
+                            <td class="px-4 py-3 font-medium text-slate-800">{{ e.action }}</td>
+                            <td class="px-4 py-3 text-slate-600 whitespace-nowrap">{{ e.date_creation|date:"d/m/Y H:i:s" }}</td>
+                            <td class="px-4 py-3 text-slate-600 max-w-xs truncate">{{ e.details }}</td>
+                            <td class="px-4 py-3 text-slate-500">{{ e.adresse_ip|default:"-" }}</td>
+                            <td class="px-4 py-3">{% if e.resultat == "ALERTE" %}{% include "includes/badge_couleur.html" with couleur="rouge" texte="Alerte" %}{% else %}{% include "includes/badge_couleur.html" with couleur="vert" texte="Succès" %}{% endif %}</td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="6" class="px-5 py-10 text-center text-slate-400">Aucune action pour ces critères.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex items-center justify-between text-sm text-slate-500">
+                <span>{{ total }} action(s) · page {{ page }} / {{ nb_pages }}</span>
+                <div class="flex gap-1">
+                    {% if page > 1 %}<a href="?{% qs page=page|add:'-1' evenement=None %}" class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50"><i class='bx bx-chevron-left text-lg'></i></a>{% endif %}
+                    {% if page < nb_pages %}<a href="?{% qs page=page|add:'1' evenement=None %}" class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50"><i class='bx bx-chevron-right text-lg'></i></a>{% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if detail %}
+        <aside class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 h-fit text-sm">
+            <div class="flex items-center justify-between mb-4"><h2 class="font-semibold text-slate-800">Détail de l'événement</h2><a href="?{% qs evenement=None %}" class="text-slate-400 hover:text-slate-700"><i class='bx bx-x text-2xl'></i></a></div>
+            <div class="flex items-center justify-between"><p class="text-lg font-bold text-slate-900">{{ detail.action }}</p>{% if detail.resultat == "ALERTE" %}{% include "includes/badge_couleur.html" with couleur="rouge" texte="Alerte" %}{% else %}{% include "includes/badge_couleur.html" with couleur="vert" texte="Succès" %}{% endif %}</div>
+            <p class="text-xs text-slate-500">{{ detail.date_creation|date:"d/m/Y à H:i:s" }}</p>
+            <h3 class="font-semibold text-slate-800 mt-5 mb-2">Informations générales</h3>
+            <dl class="divide-y divide-slate-100">
+                <div class="py-2 flex justify-between gap-3"><dt class="text-slate-500">Utilisateur</dt><dd class="font-medium text-right">{{ detail.utilisateur.get_full_name|default:"Système" }}<br><span class="text-xs text-slate-400 font-normal">{{ detail.utilisateur.get_role_display }}</span></dd></div>
+                <div class="py-2 flex justify-between gap-3"><dt class="text-slate-500">Type</dt><dd class="font-medium">{{ detail.get_type_action_display }}</dd></div>
+                <div class="py-2"><dt class="text-slate-500">Description</dt><dd class="font-medium mt-1">{{ detail.details|default:"-" }}</dd></div>
+            </dl>
+            <h3 class="font-semibold text-slate-800 mt-5 mb-2">Détails techniques</h3>
+            <dl class="divide-y divide-slate-100">
+                <div class="py-2 flex justify-between gap-3"><dt class="text-slate-500">Adresse IP</dt><dd class="font-medium">{{ detail.adresse_ip|default:"-" }}</dd></div>
+                <div class="py-2"><dt class="text-slate-500">Navigateur</dt><dd class="font-medium mt-1 break-words">{{ detail.navigateur|default:"-" }}</dd></div>
+                <div class="py-2 flex justify-between gap-3"><dt class="text-slate-500">ID de l'événement</dt><dd class="font-medium">#{{ detail.pk }}</dd></div>
+            </dl>
+        </aside>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

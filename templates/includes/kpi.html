@@ -1,0 +1,16 @@
+{% comment %}
+Carte indicateur. Usage : {% include "includes/kpi.html" with icone="bx-group" teinte="blue" valeur=12 libelle="Employés" sous_texte="+5 ce mois" %}
+teinte : blue | teal | orange | red | green | violet
+{% endcomment %}
+<div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex items-center gap-4">
+    <span class="shrink-0 w-14 h-14 rounded-full flex items-center justify-center text-2xl
+        {% if teinte == 'teal' %}bg-teal-50 text-teal-600{% elif teinte == 'orange' %}bg-orange-50 text-orange-500{% elif teinte == 'red' %}bg-red-50 text-red-500{% elif teinte == 'green' %}bg-green-50 text-green-600{% elif teinte == 'violet' %}bg-violet-50 text-violet-600{% else %}bg-primary-50 text-primary-600{% endif %}">
+        <i class='bx {{ icone }}'></i>
+    </span>
+    <div class="min-w-0">
+        <p class="text-3xl font-bold leading-none
+            {% if teinte == 'teal' %}text-teal-600{% elif teinte == 'orange' %}text-orange-500{% elif teinte == 'red' %}text-red-500{% elif teinte == 'green' %}text-green-600{% elif teinte == 'violet' %}text-violet-600{% else %}text-primary-600{% endif %}">{{ valeur }}</p>
+        <p class="mt-1 text-sm font-medium text-slate-700">{{ libelle }}</p>
+        {% if sous_texte %}<p class="text-xs text-slate-500 mt-0.5">{{ sous_texte }}</p>{% endif %}
+    </div>
+</div>

@@ -60,3 +60,40 @@ class Utilisateur(AbstractUser):
     def peut_gerer_employes(self):
         # RG-16 (v6) : Administrateur ET Responsable RH peuvent gerer les fiches employes.
         return self.role in (Role.ADMIN, Role.RH)
+
+    # --- Droits par module (BF-ADM04) ----------------------------------------
+    def droits(self):
+        """Droits effectifs {module: {action: bool}} (calcules une fois par instance)."""
+        if not hasattr(self, "_droits_cache"):
+            from .droits import droits_effectifs
+            self._droits_cache = droits_effectifs(self)
+        return self._droits_cache
+
+    def a_droit(self, module, action="lecture"):
+        return bool(self.is_active and self.droits().get(module, {}).get(action, False))
+
+    def invalider_droits(self):
+        if hasattr(self, "_droits_cache"):
+            del self._droits_cache
+
+
+class DroitUtilisateur(models.Model):
+    """
+    Droits personnalises d'un utilisateur sur un module : ils REMPLACENT les droits
+    par defaut de son role pour ce module (attribution ou revocation par l'Administrateur).
+    """
+    utilisateur = models.ForeignKey(Utilisateur, on_delete=models.CASCADE, related_name="droits_personnalises")
+    module = models.CharField(max_length=30)
+    lecture = models.BooleanField(default=False)
+    creation = models.BooleanField(default=False)
+    modification = models.BooleanField(default=False)
+    suppression = models.BooleanField(default=False)
+    date_maj = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = [("utilisateur", "module")]
+        verbose_name = "Droit personnalise"
+        verbose_name_plural = "Droits personnalises"
+
+    def __str__(self):
+        return f"{self.utilisateur} - {self.module}"

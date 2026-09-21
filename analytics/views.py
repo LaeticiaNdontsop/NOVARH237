@@ -2,10 +2,11 @@ from datetime import date
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, render
+from django.utils import timezone
 from django.views import View
 from django.views.generic import ListView, TemplateView
 
-from accounts.mixins import AdminOuRHRequiredMixin
+from accounts.mixins import droit_requis
 from employees.models import Employe
 from . import indicateurs
 from .assistant import AssistantIndisponible, repondre
@@ -58,7 +59,7 @@ def _valeurs_initiales_depuis_employe(employe: Employe) -> dict:
     return initial
 
 
-class PredictionAttritionView(AdminOuRHRequiredMixin, View):
+class PredictionAttritionView(droit_requis("analyse", "lecture", "lecture"), View):
     """
     BF-RH-19 : simulateur de prediction d'attrition. Accessible avec ou sans
     fiche employe associee (auto-remplissage partiel dans ce dernier cas).
@@ -89,7 +90,7 @@ class PredictionAttritionView(AdminOuRHRequiredMixin, View):
         return render(request, self.template_name, {"form": form, "employe": employe, "resultat": resultat})
 
 
-class HistoriquePredictionsView(AdminOuRHRequiredMixin, ListView):
+class HistoriquePredictionsView(droit_requis("analyse"), ListView):
     """Historique des simulations effectuees (tracabilite RG-13)."""
     model = PredictionAttrition
     template_name = "analytics/historique.html"
@@ -107,7 +108,7 @@ class HistoriquePredictionsView(AdminOuRHRequiredMixin, ListView):
 # ---------------------------------------------------------------------------
 # Tableaux de bord et indicateurs (BF-RH-17 / BF-RH-18, CDC §6.5.9)
 # ---------------------------------------------------------------------------
-class TableauxBordView(AdminOuRHRequiredMixin, TemplateView):
+class TableauxBordView(droit_requis("analyse"), TemplateView):
     """
     Vue dediee aux 4 indicateurs du CDC (effectif, absenteisme, turnover, taux
     d'acceptation des conges), separee des tableaux de bord operationnels
@@ -124,10 +125,42 @@ class TableauxBordView(AdminOuRHRequiredMixin, TemplateView):
         return ctx
 
 
+class AnalyseIntelligenteView(droit_requis("analyse"), TemplateView):
+    """
+    Analyse intelligente : indicateurs REELS par departement (turnover, absenteisme,
+    tendance des effectifs) lus avec des regles simples et transparentes. Elle ne
+    reprend pas les resultats du modele de prediction experimental, accessible a part.
+    """
+    template_name = "analytics/analyse.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        lignes = indicateurs.analyse_par_departement()
+        historique = indicateurs.historique_effectif(6)
+        ctx.update({
+            "lignes": lignes,
+            "courbe": indicateurs.courbe_svg(historique),
+            "variation_effectif": indicateurs.variation_effectif(6),
+            "turnover": indicateurs.turnover(),
+            "absenteisme": indicateurs.taux_absenteisme(),
+            "nb_a_surveiller": sum(1 for l in lignes if l["niveau"] in ("Élevé", "Modéré")),
+            "nb_eleves": sum(1 for l in lignes if l["niveau"] == "Élevé"),
+            "effectif": indicateurs.effectif_actif(),
+            "date_analyse": timezone.localtime(),
+            "seuils": {
+                "turnover_eleve": indicateurs.SEUIL_TURNOVER_ELEVE,
+                "turnover_modere": indicateurs.SEUIL_TURNOVER_MODERE,
+                "absenteisme_eleve": indicateurs.SEUIL_ABSENTEISME_ELEVE,
+                "absenteisme_modere": indicateurs.SEUIL_ABSENTEISME_MODERE,
+            },
+        })
+        return ctx
+
+
 # ---------------------------------------------------------------------------
 # Assistant conversationnel (BF-RH-20, RG-15, CDC §6.5.10)
 # ---------------------------------------------------------------------------
-class AssistantView(LoginRequiredMixin, View):
+class AssistantView(droit_requis("assistant", "lecture", "lecture"), View):
     """
     Accessible a tout utilisateur authentifie (Employe, Responsable RH,
     Administrateur) : RG-15 est appliquee en amont par contexte_assistant.py,

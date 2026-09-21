@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load nova_extras %}
+{% block title %}Droits d'accès{% endblock %}
+{% block page_titre %}Droits d'accès{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-7xl">
+    <div>
+        <h1 class="text-3xl font-bold text-slate-900 flex items-center gap-2">Gestion des droits d'accès <i class='bx bx-shield-quarter text-primary-600'></i></h1>
+        <p class="text-slate-500 mt-1">Attribuez ou révoquez des droits à un utilisateur pour contrôler l'accès aux fonctionnalités de la plateforme.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {% for valeur, libelle, nb in roles %}
+        <a href="?role={{ valeur }}{% if cible %}&utilisateur={{ cible.pk }}{% endif %}" class="bg-white rounded-2xl border {% if role_filtre == valeur %}border-primary-500 ring-1 ring-primary-500{% else %}border-slate-200{% endif %} shadow-sm p-5 flex items-center gap-4 hover:bg-slate-50">
+            <span class="w-12 h-12 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center text-2xl"><i class='bx {% if valeur == "ADMIN" %}bx-user-check{% elif valeur == "RH" %}bx-id-card{% else %}bx-user{% endif %}'></i></span>
+            <div class="flex-1"><p class="font-semibold text-slate-800">{{ libelle }}</p><p class="text-xs text-slate-500">{% if valeur == "ADMIN" %}Administration, comptes, droits{% elif valeur == "RH" %}Gestion RH quotidienne{% else %}Fonctionnalités personnelles{% endif %}</p></div>
+            <span class="text-sm text-slate-500 flex items-center gap-1"><i class='bx bx-user'></i> {{ nb }}</span>
+        </a>
+        {% endfor %}
+    </div>
+
+    <form method="get" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-wrap items-end gap-3">
+        <div><label class="block text-xs text-slate-500 mb-1">Utilisateur</label>
+            <select name="utilisateur" onchange="this.form.submit()" class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm min-w-[18rem]">
+                {% for u in utilisateurs %}<option value="{{ u.pk }}" {% if cible and u.pk == cible.pk %}selected{% endif %}>{{ u.get_full_name|default:u.username }} — {{ u.get_role_display }}</option>{% endfor %}
+            </select></div>
+        {% if role_filtre %}<input type="hidden" name="role" value="{{ role_filtre }}"><a href="{% url 'accounts:droits_acces' %}" class="text-sm text-primary-600 hover:underline pb-3">Retirer le filtre de rôle</a>{% endif %}
+        <noscript><button class="px-4 py-2.5 rounded-lg bg-primary-600 text-white text-sm">Afficher</button></noscript>
+    </form>
+
+    {% if cible %}
+    <form method="post" class="space-y-4">{% csrf_token %}
+        <input type="hidden" name="utilisateur" value="{{ cible.pk }}">
+        <div class="flex flex-wrap items-center gap-3 text-sm">
+            <span class="font-semibold text-slate-800">{{ cible.get_full_name|default:cible.username }}</span>
+            <span class="px-2.5 py-1 rounded-md bg-primary-50 text-primary-700 text-xs font-medium">{{ cible.get_role_display }}</span>
+            {% if nb_personnalises %}<span class="px-2.5 py-1 rounded-md bg-orange-50 text-orange-600 text-xs font-medium">{{ nb_personnalises }} module(s) personnalisé(s)</span>{% else %}<span class="text-xs text-slate-400">Droits par défaut du rôle</span>{% endif %}
+            {% if cible.role == "ADMIN" %}<span class="text-xs text-slate-500">Les droits d'un Administrateur ne sont pas modifiables.</span>{% endif %}
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead><tr class="text-left border-b bg-slate-50/60">
+                    <th class="px-5 py-3 font-semibold text-slate-700">Modules</th>
+                    {% for cle, libelle in actions %}<th class="px-5 py-3 font-semibold text-center {% if cle == 'lecture' %}text-primary-600{% elif cle == 'creation' %}text-teal-600{% elif cle == 'modification' %}text-orange-500{% else %}text-red-500{% endif %}">{{ libelle }}</th>{% endfor %}
+                </tr></thead>
+                <tbody>
+                {% for ligne in lignes %}
+                    <tr class="border-b border-slate-100 {% if ligne.personnalise %}bg-orange-50/40{% endif %}">
+                        <td class="px-5 py-3 font-medium text-slate-800">{{ ligne.libelle }}{% if ligne.personnalise %} <span class="ml-1 text-[11px] text-orange-600">personnalisé</span>{% endif %}</td>
+                        {% for case in ligne.cases %}
+                        <td class="px-5 py-3 text-center">
+                            <input type="checkbox" name="{{ ligne.cle }}__{{ case.action }}" {% if case.coche %}checked{% endif %} {% if cible.role == "ADMIN" %}disabled{% endif %}
+                                   class="w-5 h-5 rounded border-slate-300 text-primary-600 focus:ring-primary-500" title="Par défaut du rôle : {% if case.defaut %}oui{% else %}non{% endif %}">
+                        </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="flex gap-3">
+                {% if cible.role != "ADMIN" %}<button type="submit" class="px-5 py-3 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 inline-flex items-center gap-2"><i class='bx bx-save'></i> Enregistrer les modifications</button>{% endif %}
+                <button type="submit" name="reinitialiser" value="1" class="px-5 py-3 rounded-lg border border-slate-300 bg-white text-sm hover:bg-slate-50 inline-flex items-center gap-2" onclick="return confirm('Révoquer tous les droits personnalisés de cet utilisateur ?');"><i class='bx bx-refresh'></i> Réinitialiser (droits du rôle)</button>
+            </div>
+            <p class="text-xs text-slate-500 rounded-lg bg-white border border-slate-200 px-4 py-3 max-w-md"><i class='bx bx-shield'></i> Les modifications des droits d'accès sont enregistrées dans le journal d'activité. Attribuez uniquement les accès nécessaires.</p>
+        </div>
+    </form>
+    {% else %}
+    <div class="bg-white rounded-2xl border border-slate-200 p-10 text-center text-slate-400">Aucun utilisateur.</div>
+    {% endif %}
+</div>
+{% endblock %}

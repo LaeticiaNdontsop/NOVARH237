@@ -1,0 +1,14 @@
+{% load widget_tweaks %}
+{% comment %} Un champ de formulaire : {% include "includes/champ.html" with champ=form.nom %} {% endcomment %}
+<div>
+    <label for="{{ champ.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-1">{{ champ.label }}{% if champ.field.required %} <span class="text-red-500">*</span>{% endif %}</label>
+    {% if champ.field.widget.input_type == "checkbox" %}
+        <label class="inline-flex items-center gap-2 text-sm text-slate-700">{{ champ|add_class:"rounded border-slate-300 text-primary-600 focus:ring-primary-500" }} {{ champ.help_text }}</label>
+    {% elif champ.field.widget.input_type == "file" %}
+        {{ champ|add_class:"w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white file:mr-3 file:rounded-md file:border-0 file:bg-primary-50 file:px-3 file:py-1.5 file:text-primary-700" }}
+    {% else %}
+        {{ champ|add_class:"w-full rounded-lg border px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 "|add_error_class:"border-red-400"|add_class:"border-slate-300" }}
+    {% endif %}
+    {% if champ.help_text and champ.field.widget.input_type != "checkbox" %}<p class="text-xs text-slate-400 mt-1">{{ champ.help_text }}</p>{% endif %}
+    {% for erreur in champ.errors %}<p class="text-xs text-red-600 mt-1">{{ erreur }}</p>{% endfor %}
+</div>

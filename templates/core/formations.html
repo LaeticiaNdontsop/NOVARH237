@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Formations{% endblock %}
+{% block page_titre %}Formations{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-7xl">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-slate-900">Formations</h1>
+            <p class="text-slate-500 mt-1">Planifiez les formations, ciblez les employés concernés et suivez leur participation</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="{% url 'core:historique_formations' %}" class="px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-sm hover:bg-slate-50">Historique</a>
+            {% if peut_creer|default:True %}<a href="{% url 'core:creer_formation' %}" class="px-4 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 inline-flex items-center gap-2"><i class='bx bx-plus'></i> Ajouter une formation</a>{% endif %}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {% include "includes/kpi.html" with icone="bx-book-reader" teinte="teal" valeur=nb_planifiees libelle="formations planifiées" %}
+        {% include "includes/kpi.html" with icone="bx-group" teinte="blue" valeur=nb_participants libelle="employés ciblés" sous_texte="Au moins une formation" %}
+        {% include "includes/kpi.html" with icone="bx-check-circle" teinte="green" valeur=nb_terminees libelle="formations terminées" %}
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <div class="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm">
+            <form method="get" class="p-4 flex flex-wrap items-center gap-3 border-b border-slate-100">
+                <h2 class="font-semibold text-slate-800 mr-auto">Liste des formations</h2>
+                <input type="search" name="q" value="{{ recherche }}" placeholder="Rechercher..." class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                <select name="etat" class="rounded-lg border border-slate-300 px-3 py-2 text-sm"><option value="">Tous les états</option>{% for e in etats %}<option value="{{ e }}" {% if e == etat_filtre %}selected{% endif %}>{{ e }}</option>{% endfor %}</select>
+                <button class="px-3 py-2 rounded-lg bg-primary-600 text-white text-sm">Filtrer</button>
+            </form>
+            <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead><tr class="text-left text-slate-700 border-b"><th class="px-5 py-3 font-semibold">Nom de la formation</th><th class="px-5 py-3 font-semibold">Dates</th><th class="px-5 py-3 font-semibold">Employés concernés</th><th class="px-5 py-3 font-semibold">État</th><th class="px-5 py-3 font-semibold text-right">Actions</th></tr></thead>
+                <tbody>
+                {% for f in formations %}
+                    <tr class="border-b border-slate-100 hover:bg-slate-50/60 align-top">
+                        <td class="px-5 py-3"><p class="font-semibold text-slate-800">{{ f.titre }}</p><p class="text-xs text-slate-500">{{ f.description|truncatechars:70 }}</p></td>
+                        <td class="px-5 py-3 text-slate-600 whitespace-nowrap">{{ f.date_formation|date:"d M" }}{% if f.date_fin and f.date_fin != f.date_formation %} – {{ f.date_fin|date:"d M Y" }}{% else %} {{ f.date_formation|date:"Y" }}{% endif %}</td>
+                        <td class="px-5 py-3 text-slate-600">{{ f.nombre_cibles }} employé{{ f.nombre_cibles|pluralize }}</td>
+                        <td class="px-5 py-3">{% if f.etat == "Terminée" %}{% include "includes/badge_couleur.html" with couleur="vert" texte=f.etat %}{% elif f.etat == "Annulée" %}{% include "includes/badge_couleur.html" with couleur="gris" texte=f.etat %}{% else %}{% include "includes/badge_couleur.html" with couleur="bleu" texte=f.etat %}{% endif %}</td>
+                        <td class="px-5 py-3 text-right whitespace-nowrap"><a href="{% url 'core:suivi_formation' f.pk %}" class="text-primary-600 hover:underline text-sm">Suivi</a><a href="{% url 'core:modifier_formation' f.pk %}" class="ml-3 text-slate-500 hover:underline text-sm">Modifier</a></td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5" class="px-5 py-10 text-center text-slate-400">Aucune formation planifiée.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            </div>
+        </div>
+
+        <aside class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 h-fit">
+            <h2 class="font-semibold text-slate-800 mb-3">Prochaine session</h2>
+            {% if prochaine %}
+            <div class="rounded-xl bg-primary-50 p-4">
+                <p class="text-xs text-primary-700 font-medium">{{ prochaine.etat }}</p>
+                <p class="text-lg font-bold text-slate-900">{{ prochaine.titre }}</p>
+                <p class="text-sm text-slate-600">{{ prochaine.description|truncatechars:80 }}</p>
+            </div>
+            <ul class="mt-3 text-sm text-slate-600 space-y-1.5">
+                <li><i class='bx bx-calendar text-slate-400'></i> {{ prochaine.date_formation|date:"d M Y" }}{% if prochaine.date_fin and prochaine.date_fin != prochaine.date_formation %} – {{ prochaine.date_fin|date:"d M Y" }}{% endif %}</li>
+                {% if prochaine.heure_debut %}<li><i class='bx bx-time text-slate-400'></i> {{ prochaine.heure_debut|time:"H:i" }}{% if prochaine.heure_fin %} – {{ prochaine.heure_fin|time:"H:i" }}{% endif %}</li>{% endif %}
+                {% if prochaine.lieu %}<li><i class='bx bx-map text-slate-400'></i> {{ prochaine.lieu }}</li>{% endif %}
+                {% if prochaine.formateur %}<li><i class='bx bx-user text-slate-400'></i> Formateur : {{ prochaine.formateur }}</li>{% endif %}
+                <li><i class='bx bx-group text-slate-400'></i> {{ prochaine.nombre_cibles }} employé(s) concerné(s)</li>
+            </ul>
+            <p class="mt-4 text-sm font-medium text-slate-700">Employés concernés</p>
+            <ul class="mt-1 space-y-1 text-sm text-slate-600">{% for p in prochaine.participations.all|slice:":5" %}<li>{{ p.employe.nom_complet }} <span class="text-xs text-slate-400">· {{ p.employe.poste }}</span></li>{% empty %}<li class="text-slate-400">Aucun employé ciblé.</li>{% endfor %}</ul>
+            <a href="{% url 'core:suivi_formation' prochaine.pk %}" class="mt-4 block text-center px-4 py-2.5 rounded-lg border border-primary-200 text-primary-700 text-sm hover:bg-primary-50">Voir les détails</a>
+            {% else %}<p class="text-sm text-slate-400">Aucune session à venir.</p>{% endif %}
+        </aside>
+    </div>
+</div>
+{% endblock %}

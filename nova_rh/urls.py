@@ -14,5 +14,5 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    # Les medias ne sont PAS servis ici : ils passent par core.views.MediaProtegeView (RG-12).
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

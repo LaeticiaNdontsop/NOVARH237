@@ -1,11 +1,23 @@
+{% load nova_extras %}
 {% if is_paginated %}
-<div class="flex items-center justify-center gap-2 mt-6 text-sm">
-    {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50">Precedent</a>
-    {% endif %}
-    <span class="text-slate-500">Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
-    {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50">Suivant</a>
-    {% endif %}
+<div class="flex flex-wrap items-center justify-between gap-3 mt-4 text-sm text-slate-500">
+    <span>Affichage de {{ page_obj.start_index }} à {{ page_obj.end_index }} sur {{ page_obj.paginator.count }}</span>
+    <div class="flex items-center gap-1">
+        {% if page_obj.has_previous %}
+            <a href="?{% qs page=page_obj.previous_page_number %}" class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50" aria-label="Page précédente"><i class='bx bx-chevron-left text-lg'></i></a>
+        {% endif %}
+        {% for n in page_obj.paginator.page_range %}
+            {% if n == page_obj.number %}
+                <span class="w-9 h-9 flex items-center justify-center rounded-lg bg-primary-600 text-white font-medium">{{ n }}</span>
+            {% elif n >= page_obj.number|add:'-2' and n <= page_obj.number|add:'2' %}
+                <a href="?{% qs page=n %}" class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50">{{ n }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+            <a href="?{% qs page=page_obj.next_page_number %}" class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50" aria-label="Page suivante"><i class='bx bx-chevron-right text-lg'></i></a>
+        {% endif %}
+    </div>
 </div>
+{% elif page_obj %}
+<p class="mt-4 text-sm text-slate-500">Affichage de {{ page_obj.start_index }} à {{ page_obj.end_index }} sur {{ page_obj.paginator.count }}</p>
 {% endif %}

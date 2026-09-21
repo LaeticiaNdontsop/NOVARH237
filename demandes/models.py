@@ -26,6 +26,10 @@ from employees.models import Employe
 
 
 DELAI_REAFFECTATION = timedelta(hours=24)
+# Decision du client : au-dela de 5 h sans transmission (RH -> Admin) ou sans
+# communication de la decision (RH -> employe), le RH est alerte et l'employe
+# peut voir le statut reel de sa demande.
+DELAI_ALERTE = timedelta(hours=5)
 
 
 # ---------------------------------------------------------------------------
@@ -96,6 +100,13 @@ class DemandeConge(models.Model):
     # RG-20/RG-21 : tracabilite des reaffectations automatiques
     nombre_reaffectations = models.PositiveSmallIntegerField(default=0)
 
+    # Alertes a 5 h (une seule fois par etape)
+    alerte_rh_envoyee = models.BooleanField(default=False)
+    alerte_notification_envoyee = models.BooleanField(default=False)
+
+    commentaire = models.CharField("Commentaire complementaire", max_length=500, blank=True)
+    piece_jointe = models.FileField("Piece jointe", upload_to="demandes_pj/", null=True, blank=True)
+
     class Meta:
         verbose_name = "Demande de conge/permission"
         verbose_name_plural = "Demandes de conges/permissions"
@@ -116,6 +127,35 @@ class DemandeConge(models.Model):
     def duree_jours(self):
         return (self.date_fin - self.date_debut).days + 1
 
+    @property
+    def reference(self):
+        return f"DM-{self.date_soumission.year}-{self.pk:03d}"
+
+    @property
+    def demandeur_est_rh(self):
+        return self.employe.utilisateur.est_rh
+
+    @property
+    def decision_non_communiquee_a_temps(self):
+        """Decision Admin (approbation) non communiquee par le RH dans le delai de 5 h."""
+        return (
+            self.statut == StatutDemande.APPROUVEE_A_NOTIFIER
+            and self.date_decision_admin is not None
+            and timezone.now() > self.date_decision_admin + DELAI_ALERTE
+        )
+
+    # Ce que l'EMPLOYE voit : si le RH n'a pas communique l'approbation dans les 5 h,
+    # l'employe voit directement le statut reel (approuvee) au lieu d'un orange.
+    @property
+    def couleur_employe(self):
+        return "vert" if self.decision_non_communiquee_a_temps else self.couleur
+
+    @property
+    def statut_employe_display(self):
+        if self.decision_non_communiquee_a_temps:
+            return StatutDemande.APPROUVEE.label
+        return self.get_statut_display()
+
     # --- Transitions du circuit -------------------------------------------------
     def transmettre_a_admin(self, rh_utilisateur, commentaire=""):
         self.statut = StatutDemande.EN_ATTENTE_ADMIN
@@ -134,13 +174,19 @@ class DemandeConge(models.Model):
         self.save(update_fields=["statut", "commentaire_rh", "date_traitement_rh"])
 
     def approuver_par_admin(self, admin_utilisateur, commentaire=""):
-        self.statut = StatutDemande.APPROUVEE_A_NOTIFIER
         self.admin_traitant = admin_utilisateur
         self.commentaire_admin = commentaire
         self.date_decision_admin = timezone.now()
-        self.date_limite_notification = timezone.now() + DELAI_REAFFECTATION
+        if self.demandeur_est_rh:
+            # Demande d'un Responsable RH : aucun RH ne la relaie, la decision est finale.
+            self.statut = StatutDemande.APPROUVEE
+            self.date_cloture = timezone.now()
+        else:
+            self.statut = StatutDemande.APPROUVEE_A_NOTIFIER
+            self.date_limite_notification = timezone.now() + DELAI_REAFFECTATION
         self.save(update_fields=[
-            "statut", "admin_traitant", "commentaire_admin", "date_decision_admin", "date_limite_notification"
+            "statut", "admin_traitant", "commentaire_admin", "date_decision_admin",
+            "date_limite_notification", "date_cloture",
         ])
 
     def rejeter_par_admin(self, admin_utilisateur, commentaire=""):
@@ -161,12 +207,17 @@ def choisir_utilisateur_disponible(role, exclure=None):
     """
     RG-20 : choisit l'utilisateur (RH ou Admin) le moins charge parmi les comptes
     actifs de ce role, pour la premiere affectation ou une reaffectation.
+    `exclure` : un utilisateur ou une liste d'utilisateurs a ne pas retenir (ex. le
+    demandeur lui-meme : un RH ne traite jamais sa propre demande).
     """
-    from accounts.models import Utilisateur, Role as RoleChoices
+    from accounts.models import Utilisateur
 
     qs = Utilisateur.objects.filter(role=role, is_active=True)
     if exclure:
-        qs = qs.exclude(pk=exclure.pk)
+        if not isinstance(exclure, (list, tuple, set)):
+            exclure = [exclure]
+        ids = [u.pk for u in exclure if u is not None]
+        qs = qs.exclude(pk__in=ids)
     candidats = list(qs)
     if not candidats:
         return None
@@ -205,6 +256,52 @@ class AlerteSysteme(models.Model):
         return self.message
 
 
+def envoyer_alertes_delai():
+    """
+    Alertes a 5 h (une seule fois par etape) :
+      1. le RH n'a pas transmis la demande a l'Administrateur ;
+      2. le RH n'a pas communique la decision de l'Administrateur : le RH est alerte
+         et l'employe est informe directement de la decision.
+    """
+    from accounts.models import Utilisateur
+    from notifications.models import notifier
+
+    maintenant = timezone.now()
+
+    en_retard = DemandeConge.objects.filter(
+        statut=StatutDemande.EN_ATTENTE_RH, alerte_rh_envoyee=False,
+        date_soumission__lt=maintenant - DELAI_ALERTE,
+    ).select_related("employe__utilisateur", "rh_assigne")
+    for demande in en_retard:
+        if demande.rh_assigne:
+            destinataires = [demande.rh_assigne]
+        else:
+            destinataires = list(Utilisateur.objects.filter(role="RH", is_active=True).exclude(
+                pk=demande.employe.utilisateur_id))
+        for rh in destinataires:
+            notifier(None, rh,
+                     f"ALERTE : la demande {demande.reference} de {demande.employe.nom_complet} "
+                     f"attend depuis plus de 5 h d'etre transmise a l'Administrateur.")
+        demande.alerte_rh_envoyee = True
+        demande.save(update_fields=["alerte_rh_envoyee"])
+
+    a_communiquer = DemandeConge.objects.filter(
+        statut=StatutDemande.APPROUVEE_A_NOTIFIER, alerte_notification_envoyee=False,
+        date_decision_admin__lt=maintenant - DELAI_ALERTE,
+    ).select_related("employe__utilisateur", "rh_assigne")
+    for demande in a_communiquer:
+        destinataires = [demande.rh_assigne] if demande.rh_assigne else list(
+            Utilisateur.objects.filter(role="RH", is_active=True).exclude(pk=demande.employe.utilisateur_id))
+        for rh in destinataires:
+            notifier(None, rh,
+                     f"ALERTE : la decision de l'Administrateur sur la demande {demande.reference} de "
+                     f"{demande.employe.nom_complet} n'a pas ete communiquee depuis plus de 5 h.")
+        notifier(None, demande.employe.utilisateur,
+                 f"Votre demande {demande.reference} a ete approuvee par l'Administrateur.")
+        demande.alerte_notification_envoyee = True
+        demande.save(update_fields=["alerte_notification_envoyee"])
+
+
 def reaffecter_demandes_expirees():
     """
     A appeler depuis les vues de liste RH/Admin (ou une tache planifiee/cron en
@@ -215,11 +312,12 @@ def reaffecter_demandes_expirees():
     RG-21 : si aucune reaffectation n'est possible, la demande reste EN ATTENTE
     (orange) et une alerte est enregistree.
     """
+    envoyer_alertes_delai()
     maintenant = timezone.now()
 
     # --- Etape 1 : traitement RH ---
     for demande in DemandeConge.objects.filter(statut=StatutDemande.EN_ATTENTE_RH, date_limite_rh__lt=maintenant):
-        nouveau = choisir_utilisateur_disponible("RH", exclure=demande.rh_assigne)
+        nouveau = choisir_utilisateur_disponible("RH", exclure=[demande.rh_assigne, demande.employe.utilisateur])
         if nouveau and nouveau != demande.rh_assigne:
             demande.rh_assigne = nouveau
             demande.date_limite_rh = maintenant + DELAI_REAFFECTATION
@@ -251,7 +349,7 @@ def reaffecter_demandes_expirees():
     for demande in DemandeConge.objects.filter(
         statut=StatutDemande.APPROUVEE_A_NOTIFIER, date_limite_notification__lt=maintenant
     ):
-        nouveau = choisir_utilisateur_disponible("RH", exclure=demande.rh_assigne)
+        nouveau = choisir_utilisateur_disponible("RH", exclure=[demande.rh_assigne, demande.employe.utilisateur])
         if nouveau and nouveau != demande.rh_assigne:
             demande.rh_assigne = nouveau
             demande.date_limite_notification = maintenant + DELAI_REAFFECTATION
@@ -274,6 +372,13 @@ class StatutAbsence(models.TextChoices):
     REJETEE = "REJETEE", "Rejetee"
 
 
+class TypeAbsence(models.TextChoices):
+    MALADIE = "MALADIE", "Maladie"
+    DECES = "DECES", "Deces d'un proche"
+    PERSONNEL = "PERSONNEL", "Motif personnel"
+    AUTRE = "AUTRE", "Autre"
+
+
 class Absence(models.Model):
     """
     Declaration d'absence par l'employe, validee directement par le Responsable RH
@@ -282,7 +387,9 @@ class Absence(models.Model):
     employe = models.ForeignKey(Employe, on_delete=models.CASCADE, related_name="absences")
     date_debut = models.DateField()
     date_fin = models.DateField()
-    motif = models.CharField(max_length=255)
+    type_absence = models.CharField("Motif de l'absence", max_length=10, choices=TypeAbsence.choices,
+                                    default=TypeAbsence.AUTRE)
+    motif = models.CharField("Commentaire", max_length=255, blank=True)
     justificatif = models.FileField(upload_to="justificatifs_absence/", null=True, blank=True)
 
     statut = models.CharField(max_length=10, choices=StatutAbsence.choices, default=StatutAbsence.EN_ATTENTE)

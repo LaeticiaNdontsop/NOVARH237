@@ -1,9 +1,0 @@
-{% extends "base.html" %}
-{% block title %}Nouvelle evaluation{% endblock %}
-{% block page_titre %}Nouvelle evaluation{% endblock %}
-{% block content %}
-<div class="bg-white rounded-xl border border-slate-200 p-6 max-w-2xl">
-    <h1 class="text-2xl font-semibold text-slate-800 mb-6">Enregistrer une evaluation</h1>
-    <form method="post" class="space-y-4">{% csrf_token %}{% include "includes/form_champs.html" %}<button class="px-4 py-2 rounded-lg bg-primary-600 text-white text-sm">Enregistrer</button></form>
-</div>
-{% endblock %}

@@ -1,9 +1,37 @@
 {% extends "base.html" %}
-{% block title %}Planifier une formation{% endblock %}
-{% block page_titre %}Planifier une formation{% endblock %}
+{% block title %}{% if object %}Modifier la formation{% else %}Planifier une formation{% endif %}{% endblock %}
+{% block page_titre %}Formations &rsaquo; {% if object %}Modifier{% else %}Planifier{% endif %}{% endblock %}
 {% block content %}
-<div class="bg-white rounded-xl border border-slate-200 p-6 max-w-2xl">
-    <h1 class="text-2xl font-semibold text-slate-800 mb-6">Planifier une formation</h1>
-    <form method="post" class="space-y-4">{% csrf_token %}{% include "includes/form_champs.html" %}<button class="px-4 py-2 rounded-lg bg-primary-600 text-white text-sm">Enregistrer</button></form>
+<div class="max-w-5xl space-y-6">
+    <div>
+        <h1 class="text-3xl font-bold text-slate-900">{% if object %}Modifier la formation{% else %}Planifier une formation{% endif %}</h1>
+        <p class="text-slate-500 mt-1">Définissez la formation et ciblez les employés concernés (pas d'inscription libre).</p>
+    </div>
+    <form method="post" class="space-y-6">{% csrf_token %}
+        {% if form.non_field_errors %}<div class="rounded-lg bg-red-50 text-red-700 border border-red-200 px-4 py-3 text-sm">{{ form.non_field_errors }}</div>{% endif %}
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+            <h2 class="font-semibold text-slate-800">Informations</h2>
+            {% include "includes/champ.html" with champ=form.titre %}
+            {% include "includes/champ.html" with champ=form.description %}
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                {% include "includes/champ.html" with champ=form.date_formation %}
+                {% include "includes/champ.html" with champ=form.date_fin %}
+                {% include "includes/champ.html" with champ=form.heure_debut %}
+                {% include "includes/champ.html" with champ=form.heure_fin %}
+                {% include "includes/champ.html" with champ=form.duree_heures %}
+                {% include "includes/champ.html" with champ=form.lieu %}
+                {% include "includes/champ.html" with champ=form.formateur %}
+                {% if form.annulee %}{% include "includes/champ.html" with champ=form.annulee %}{% endif %}
+            </div>
+        </section>
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h2 class="font-semibold text-slate-800 mb-3">Employés ciblés</h2>
+            {% include "includes/champ.html" with champ=form.employes_cibles %}
+        </section>
+        <div class="flex justify-end gap-3">
+            <a href="{% url 'core:formations' %}" class="px-5 py-2.5 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Annuler</a>
+            <button type="submit" class="px-5 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700">Enregistrer</button>
+        </div>
+    </form>
 </div>
 {% endblock %}

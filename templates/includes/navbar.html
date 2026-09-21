@@ -1,19 +1,49 @@
-<header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6">
-    <div class="md:hidden font-semibold text-primary-700">NOVA RH</div>
-    <div class="hidden md:block text-slate-500 text-sm">{% block page_titre %}{% endblock %}</div>
+{% load nova_extras %}
+<header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between gap-4 px-6 sticky top-0 z-20">
+    <div class="flex items-center gap-2 text-sm min-w-0">
+        <div class="md:hidden font-semibold text-primary-700 mr-2">NOVA RH</div>
+        <a href="{% url 'core:redirection_dashboard' %}" class="text-primary-600 hover:underline hidden sm:inline">Tableau de bord</a>
+        <span class="text-slate-300 hidden sm:inline">&rsaquo;</span>
+        <span class="text-slate-500 truncate">{% block page_titre %}{% endblock %}</span>
+    </div>
 
     <div class="flex items-center gap-4">
-        <span class="hidden sm:inline text-sm text-slate-600">
-            {{ user.get_full_name|default:user.username }}
-            <span class="ml-1 inline-block px-2 py-0.5 rounded-full text-xs bg-primary-50 text-primary-700 font-medium">
-                {{ user.get_role_display }}
-            </span>
-        </span>
-        <form method="post" action="{% url 'accounts:logout' %}">
-            {% csrf_token %}
-            <button type="submit" class="flex items-center gap-1.5 text-sm text-slate-500 hover:text-red-600">
-                <i class='bx bx-log-out'></i> Deconnexion
-            </button>
+        <form method="get" action="{% url 'core:recherche' %}" class="hidden lg:block">
+            <div class="relative">
+                <i class='bx bx-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg'></i>
+                <input type="search" name="q" placeholder="Rechercher un employé, une demande..." aria-label="Recherche"
+                       class="w-80 rounded-lg border border-slate-200 bg-white pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+            </div>
         </form>
+
+        <a href="{% url 'notifications:mes_notifications' %}" class="relative text-slate-500 hover:text-primary-600" title="Notifications">
+            <i class='bx bx-bell text-2xl'></i>
+            {% if nb_notifications_non_lues %}
+            <span class="absolute -top-1.5 -right-2 min-w-[1.2rem] h-5 px-1 rounded-full bg-primary-600 text-white text-[11px] font-semibold flex items-center justify-center">{{ nb_notifications_non_lues }}</span>
+            {% endif %}
+        </a>
+
+        <details class="relative">
+            <summary class="list-none cursor-pointer flex items-center gap-3">
+                {% if user.photo %}
+                <img src="{{ user.photo.url }}" alt="" class="w-9 h-9 rounded-full object-cover">
+                {% else %}
+                <span class="w-9 h-9 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-sm font-semibold">{{ user|initiales }}</span>
+                {% endif %}
+                <span class="hidden sm:block text-left leading-tight">
+                    <span class="block text-sm font-medium text-slate-800">{{ user.get_full_name|default:user.username }}</span>
+                    <span class="block text-xs text-slate-500">{{ user.get_role_display }}</span>
+                </span>
+                <i class='bx bx-chevron-down text-slate-400'></i>
+            </summary>
+            <div class="absolute right-0 mt-2 w-52 rounded-xl border border-slate-200 bg-white shadow-lg py-1 text-sm">
+                <a href="{% url 'accounts:profil' %}" class="flex items-center gap-2 px-4 py-2 hover:bg-slate-50"><i class='bx bx-user-circle text-lg'></i> Mon profil</a>
+                <a href="{% url 'accounts:changer_mot_de_passe' %}" class="flex items-center gap-2 px-4 py-2 hover:bg-slate-50"><i class='bx bx-lock-alt text-lg'></i> Mot de passe</a>
+                <form method="post" action="{% url 'accounts:logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full flex items-center gap-2 px-4 py-2 text-left text-red-600 hover:bg-red-50"><i class='bx bx-log-out text-lg'></i> Déconnexion</button>
+                </form>
+            </div>
+        </details>
     </div>
 </header>

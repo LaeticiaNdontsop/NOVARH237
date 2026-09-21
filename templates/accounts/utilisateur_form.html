@@ -1,17 +1,62 @@
 {% extends "base.html" %}
-{% block title %}Nouveau compte utilisateur{% endblock %}
-{% block page_titre %}Nouveau compte utilisateur{% endblock %}
+{% block title %}{% if mode_modification %}Modifier l'utilisateur{% else %}Ajouter un utilisateur{% endif %}{% endblock %}
+{% block page_titre %}Utilisateurs &rsaquo; {% if mode_modification %}Modifier{% else %}Ajouter un utilisateur{% endif %}{% endblock %}
 
 {% block content %}
-<h1 class="text-2xl font-semibold text-slate-800 mb-6">Creer un compte utilisateur</h1>
+<div class="max-w-5xl space-y-6">
+    <div>
+        <h1 class="text-3xl font-bold text-slate-900">{% if mode_modification %}Modifier {{ object.get_full_name|default:object.username }}{% else %}Ajouter un utilisateur{% endif %}</h1>
+        <p class="text-slate-500 mt-1">{% if mode_modification %}Mettez à jour les informations, le rôle et l'activation du compte.{% else %}Créez un nouveau compte utilisateur et définissez son accès à la plateforme.{% endif %}</p>
+    </div>
 
-<div class="bg-white rounded-xl border border-slate-200 p-6 max-w-lg">
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {% include "includes/form_champs.html" %}
-        <button type="submit" class="mt-2 px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">
-            Creer le compte
-        </button>
-    </form>
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <form method="post" class="xl:col-span-2 space-y-4">{% csrf_token %}
+            {% if form.non_field_errors %}<div class="rounded-lg bg-red-50 text-red-700 border border-red-200 px-4 py-3 text-sm">{{ form.non_field_errors }}</div>{% endif %}
+            <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <h2 class="font-semibold text-slate-800 flex items-center gap-2 mb-4"><i class='bx bx-user-circle text-xl text-primary-600'></i> Informations personnelles</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% include "includes/champ.html" with champ=form.last_name %}
+                    {% include "includes/champ.html" with champ=form.first_name %}
+                    {% include "includes/champ.html" with champ=form.email %}
+                    {% include "includes/champ.html" with champ=form.telephone %}
+                    {% if not mode_modification %}{% include "includes/champ.html" with champ=form.username %}{% endif %}
+                </div>
+            </section>
+            <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <h2 class="font-semibold text-slate-800 flex items-center gap-2 mb-4"><i class='bx bx-shield-quarter text-xl text-primary-600'></i> Accès et rôle</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% include "includes/champ.html" with champ=form.role %}
+                    <div class="flex items-end pb-2">{% include "includes/champ.html" with champ=form.is_active %}</div>
+                </div>
+            </section>
+            {% if not mode_modification %}
+            <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <h2 class="font-semibold text-slate-800 flex items-center gap-2 mb-4"><i class='bx bx-lock-alt text-xl text-primary-600'></i> Sécurité</h2>
+                {% include "includes/champ.html" with champ=form.mot_de_passe_temporaire %}
+                <p class="text-xs text-slate-500 mt-2">Le changement du mot de passe sera exigé à la première connexion.</p>
+            </section>
+            {% endif %}
+            <div class="flex justify-between">
+                <a href="{% url 'accounts:liste_utilisateurs' %}" class="px-5 py-2.5 rounded-lg border border-slate-300 bg-white text-sm hover:bg-slate-50">Annuler</a>
+                <button type="submit" class="px-5 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 inline-flex items-center gap-2"><i class='bx bx-user-plus'></i> {% if mode_modification %}Enregistrer{% else %}Créer le compte{% endif %}</button>
+            </div>
+        </form>
+
+        <aside class="space-y-4">
+            <div class="bg-primary-50 border border-primary-100 rounded-2xl p-5 text-sm text-slate-600">
+                <p class="font-semibold text-primary-700 flex items-center gap-2"><i class='bx bx-info-circle text-xl'></i> À propos des comptes</p>
+                <p class="mt-2">{% if mode_modification %}Désactiver un compte empêche la connexion sans supprimer l'historique. C'est la méthode à privilégier pour un employé qui quitte l'entreprise.{% else %}Communiquez à l'utilisateur son identifiant et son mot de passe temporaire. Le rôle détermine les droits par défaut ; vous pourrez ensuite les ajuster depuis « Droits d'accès ».{% endif %}</p>
+            </div>
+            {% if mode_modification %}
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                <p class="font-semibold text-slate-800 mb-3">Mot de passe temporaire</p>
+                <form method="post" action="{% url 'accounts:reinitialiser_mot_de_passe' object.pk %}" class="space-y-3">{% csrf_token %}
+                    {% include "includes/champ.html" with champ=form_mot_de_passe.mot_de_passe_temporaire %}
+                    <button class="w-full px-4 py-2.5 rounded-lg border border-primary-600 text-primary-600 text-sm font-medium hover:bg-primary-50">Attribuer ce mot de passe</button>
+                </form>
+            </div>
+            {% endif %}
+        </aside>
+    </div>
 </div>
 {% endblock %}

@@ -12,19 +12,24 @@ class EmployeForm(forms.ModelForm):
 
     class Meta:
         model = Employe
-        fields = ["utilisateur", "matricule", "poste", "service", "date_embauche", "date_naissance", "sexe", "statut"]
+        fields = [
+            "utilisateur", "matricule", "poste", "service", "date_embauche", "date_naissance", "sexe", "statut",
+            "manager", "lieu_travail", "nationalite", "situation_familiale",
+            "contact_urgence_nom", "contact_urgence_telephone",
+            "niveau_etudes", "etablissement", "specialite", "langues",
+        ]
         widgets = {
             "date_embauche": forms.DateInput(attrs={"type": "date"}),
             "date_naissance": forms.DateInput(attrs={"type": "date"}),
         }
         labels = {
-            "utilisateur": "Compte utilisateur associe",
-            "matricule": "Matricule",
+            "utilisateur": "Compte utilisateur associé",
+            "matricule": "Identifiant (matricule)",
             "poste": "Poste",
-            "service": "Service",
+            "service": "Département",
             "date_embauche": "Date d'embauche",
             "date_naissance": "Date de naissance",
-            "sexe": "Sexe",
+            "sexe": "Genre",
             "statut": "Statut",
         }
 
@@ -39,6 +44,11 @@ class EmployeForm(forms.ModelForm):
         else:
             queryset = queryset.filter(fiche_employe__isnull=True)
         self.fields["utilisateur"].queryset = queryset.distinct()
+        self.fields["matricule"].required = False
+        managers = Employe.objects.filter(statut="ACTIF").select_related("utilisateur")
+        if self.instance.pk:
+            managers = managers.exclude(pk=self.instance.pk)
+        self.fields["manager"].queryset = managers
 
 
 class ContratForm(forms.ModelForm):

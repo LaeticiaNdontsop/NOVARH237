@@ -48,6 +48,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "notifications.middleware.RequeteCouranteMiddleware",
+    "demandes.middleware.VerificationDelaisMiddleware",
 ]
 
 ROOT_URLCONF = "nova_rh.urls"
@@ -63,6 +65,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "core.context_processors.coquille",
             ],
         },
     },
@@ -133,3 +136,9 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 # d'erreur "model not found". gemini-3.5-flash-lite est un choix economique
 # adapte a un assistant de questions/reponses simple.
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite")
+
+# ---------------------------------------------------------------------------
+# Bloc "entreprise" du menu (une seule entreprise : pas de multi-entreprise, cf. CDC v5)
+# ---------------------------------------------------------------------------
+NOM_ENTREPRISE = os.environ.get("NOM_ENTREPRISE", "Votre entreprise")
+VILLE_ENTREPRISE = os.environ.get("VILLE_ENTREPRISE", "Douala, Cameroun")

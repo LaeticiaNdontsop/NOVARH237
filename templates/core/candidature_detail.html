@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}{{ candidature.nom_candidat }}{% endblock %}
+{% block page_titre %}Recrutements &rsaquo; Candidatures &rsaquo; Détail{% endblock %}
+
+{% block content %}
+<div class="space-y-4 max-w-7xl">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-wrap items-start justify-between gap-6">
+        <div class="flex gap-5">
+            <span class="w-20 h-20 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-2xl font-bold shrink-0">{{ candidature.nom_candidat|slice:":1"|upper }}</span>
+            <div>
+                <h1 class="text-3xl font-bold text-slate-900">{{ candidature.nom_candidat }}</h1>
+                <p class="text-slate-500">{{ candidature.offre.poste }}</p>
+                <div class="mt-2">{% if candidature.recrute %}{% include "includes/badge_couleur.html" with couleur="vert" texte="Recruté(e)" %}{% elif candidature.statut == "RETENUE" %}{% include "includes/badge_couleur.html" with couleur="vert" texte="Retenue" %}{% elif candidature.statut == "REJETEE" %}{% include "includes/badge_couleur.html" with couleur="rouge" texte="Refusée" %}{% elif candidature.statut == "ENTRETIEN" %}{% include "includes/badge_couleur.html" with couleur="orange" texte="Entretien" %}{% else %}{% include "includes/badge_couleur.html" with couleur="orange" texte="À analyser" %}{% endif %}</div>
+                <p class="text-xs text-slate-400 mt-2">Candidature reçue le {{ candidature.date_candidature|date:"d F Y à H:i" }}{% if candidature.saisie_par %} · importée par {{ candidature.saisie_par.get_full_name }}{% endif %}</p>
+            </div>
+        </div>
+        <ul class="text-sm text-slate-700 space-y-1.5">
+            <li><i class='bx bx-envelope text-primary-600'></i> {{ candidature.email }}</li>
+            {% if candidature.telephone %}<li><i class='bx bx-phone text-primary-600'></i> {{ candidature.telephone }}</li>{% endif %}
+            {% if candidature.localisation %}<li><i class='bx bx-map text-primary-600'></i> {{ candidature.localisation }}</li>{% endif %}
+            {% if candidature.linkedin %}<li><i class='bx bxl-linkedin text-primary-600'></i> <a href="{{ candidature.linkedin }}" class="text-primary-600 hover:underline" target="_blank" rel="noopener noreferrer">{{ candidature.linkedin }}</a></li>{% endif %}
+        </ul>
+        <div class="space-y-3 min-w-[16rem]">
+            <div class="flex flex-wrap gap-2 justify-end">
+                <a href="{% url 'core:candidatures_offre' candidature.offre.pk %}" class="px-3 py-2 rounded-lg border border-slate-300 text-sm hover:bg-slate-50 inline-flex items-center gap-1"><i class='bx bx-arrow-back'></i> Retour aux candidatures</a>
+            </div>
+            <dl class="text-sm grid grid-cols-2 gap-x-4 gap-y-1">
+                <dt class="text-slate-500">Poste</dt><dd class="font-medium text-right">{{ candidature.offre.poste }}</dd>
+                <dt class="text-slate-500">Offre d'emploi</dt><dd class="font-medium text-right">{{ candidature.offre.reference }}</dd>
+                <dt class="text-slate-500">Département</dt><dd class="font-medium text-right">{{ candidature.offre.departement|default:"-" }}</dd>
+                <dt class="text-slate-500">Recruteur</dt><dd class="font-medium text-right">{{ candidature.offre.responsable.get_full_name|default:"-" }}</dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+        <h2 class="font-semibold text-slate-800 mb-3">Décision et entretiens</h2>
+        <div class="flex flex-wrap gap-4">
+            <form method="post" action="{% url 'core:modifier_statut_candidature' candidature.pk %}" class="flex flex-wrap items-end gap-2">{% csrf_token %}
+                <input type="hidden" name="retour" value="detail"><input type="hidden" name="statut" value="ENTRETIEN">
+                <div><label class="block text-xs text-slate-500 mb-1">Entretien RH</label><input type="datetime-local" name="date_entretien" class="rounded-lg border border-slate-300 px-3 py-2 text-sm"></div>
+                <div><label class="block text-xs text-slate-500 mb-1">Entretien technique</label><input type="datetime-local" name="date_entretien_technique" class="rounded-lg border border-slate-300 px-3 py-2 text-sm"></div>
+                <button class="px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700">Passer à l'entretien</button>
+            </form>
+            <form method="post" action="{% url 'core:modifier_statut_candidature' candidature.pk %}">{% csrf_token %}<input type="hidden" name="retour" value="detail"><input type="hidden" name="statut" value="RETENUE">
+                <button class="px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 inline-flex items-center gap-1"><i class='bx bx-check'></i> Retenir</button></form>
+            <form method="post" action="{% url 'core:modifier_statut_candidature' candidature.pk %}" onsubmit="return confirm('Refuser cette candidature ?');">{% csrf_token %}<input type="hidden" name="retour" value="detail"><input type="hidden" name="statut" value="REJETEE">
+                <button class="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 inline-flex items-center gap-1"><i class='bx bx-x'></i> Refuser</button></form>
+            {% if not candidature.recrute and candidature.statut != "REJETEE" %}
+            <form method="post" action="{% url 'core:recruter_candidat' candidature.pk %}">{% csrf_token %}<input type="hidden" name="retour" value="detail">
+                <button class="px-4 py-2 rounded-lg border border-green-600 text-green-700 text-sm font-medium hover:bg-green-50 inline-flex items-center gap-1"><i class='bx bx-user-check'></i> Marquer comme recruté</button></form>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <div class="space-y-4">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <h2 class="font-semibold text-slate-800 mb-3">Informations complémentaires</h2>
+                <dl class="text-sm divide-y divide-slate-100">
+                    <div class="py-2 flex justify-between gap-3"><dt class="text-slate-500">Expérience</dt><dd class="font-medium">{% if candidature.experience_annees is not None %}{{ candidature.experience_annees }} an(s){% else %}-{% endif %}</dd></div>
+                    <div class="py-2 flex justify-between gap-3"><dt class="text-slate-500">Disponibilité</dt><dd class="font-medium">{{ candidature.disponibilite|default:"-" }}</dd></div>
+                    <div class="py-2 flex justify-between gap-3"><dt class="text-slate-500">Salaire souhaité</dt><dd class="font-medium">{% if candidature.salaire_souhaite %}{{ candidature.salaire_souhaite }} FCFA / mois{% else %}-{% endif %}</dd></div>
+                </dl>
+            </div>
+            {% if candidature.commentaire %}<div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6"><h2 class="font-semibold text-slate-800 mb-2">Commentaire</h2><p class="text-sm text-slate-600 whitespace-pre-line">{{ candidature.commentaire }}</p></div>{% endif %}
+        </div>
+
+        <div class="space-y-4">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <h2 class="font-semibold text-slate-800 mb-3">Compétences clés</h2>
+                <div class="flex flex-wrap gap-2">{% for c in candidature.liste_competences %}<span class="px-3 py-1 rounded-md bg-primary-50 text-primary-700 text-sm">{{ c }}</span>{% empty %}<p class="text-sm text-slate-400">Non renseignées.</p>{% endfor %}</div>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <h2 class="font-semibold text-slate-800 mb-3">Documents</h2>
+                <div class="space-y-3 text-sm">
+                    <div class="flex items-center justify-between rounded-lg border border-slate-200 p-3"><span><i class='bx bxs-file-pdf text-xl text-red-500 align-middle'></i> CV</span>{% if candidature.cv %}<a href="{{ candidature.cv.url }}" class="px-3 py-1.5 rounded-lg border border-primary-200 text-primary-700 text-xs hover:bg-primary-50">Télécharger</a>{% else %}<span class="text-slate-400">Non fourni</span>{% endif %}</div>
+                    <div class="flex items-center justify-between rounded-lg border border-slate-200 p-3"><span><i class='bx bxs-file text-xl text-primary-500 align-middle'></i> Lettre de motivation</span>{% if candidature.lettre_motivation %}<a href="{{ candidature.lettre_motivation.url }}" class="px-3 py-1.5 rounded-lg border border-primary-200 text-primary-700 text-xs hover:bg-primary-50">Télécharger</a>{% else %}<span class="text-slate-400">Non fournie</span>{% endif %}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 h-fit">
+            <h2 class="font-semibold text-slate-800 mb-4">Timeline du recrutement</h2>
+            <ol class="space-y-4">
+                {% for e in etapes %}
+                <li class="flex gap-3 items-start">
+                    <span class="mt-0.5 w-6 h-6 rounded-full flex items-center justify-center text-xs shrink-0 {% if e.courante %}bg-primary-600 text-white{% elif e.fait %}bg-green-500 text-white{% else %}border border-slate-300 text-slate-400{% endif %}">{% if e.fait or e.courante %}<i class='bx bx-check'></i>{% else %}<i class='bx bx-x'></i>{% endif %}</span>
+                    <div class="flex-1"><p class="text-sm font-medium text-slate-800">{{ e.libelle }}{% if e.courante %} <span class="ml-1 text-xs px-2 py-0.5 rounded-md bg-primary-50 text-primary-700">Étape actuelle</span>{% endif %}</p>
+                    <p class="text-xs text-slate-400">{% if e.date %}{{ e.date|date:"d M Y à H:i" }}{% if e.detail %} · {{ e.detail }}{% endif %}{% elif e.detail %}{{ e.detail }}{% else %}À venir{% endif %}</p></div>
+                </li>
+                {% endfor %}
+            </ol>
+        </div>
+    </div>
+</div>
+{% endblock %}

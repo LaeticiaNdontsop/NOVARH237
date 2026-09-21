@@ -1,22 +1,40 @@
 {% extends "base.html" %}
-{% block title %}Nouvelle demande{% endblock %}
-{% block page_titre %}Nouvelle demande{% endblock %}
+{% block title %}Créer une demande{% endblock %}
+{% block page_titre %}Mes demandes &rsaquo; Créer une demande{% endblock %}
 
 {% block content %}
-<h1 class="text-2xl font-semibold text-slate-800 mb-6">Nouvelle demande de conge ou de permission</h1>
+<div class="max-w-6xl space-y-6">
+    <div>
+        <h1 class="text-3xl font-bold text-slate-900">Créer une demande</h1>
+        <p class="text-slate-500 mt-1">Remplissez le formulaire ci-dessous pour soumettre votre demande.</p>
+    </div>
 
-<div class="bg-white rounded-xl border border-slate-200 p-6 max-w-lg">
-    <form method="post">
-        {% csrf_token %}
-        {% include "includes/form_champs.html" %}
-        <button type="submit" class="mt-2 px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">
-            Soumettre la demande
-        </button>
-    </form>
-    <p class="text-xs text-slate-400 mt-4">
-        Votre demande sera transmise a votre Responsable RH, qui la soumettra a l'Administrateur pour decision.
-        Vous pourrez suivre son statut par code couleur : <span class="text-orange-500 font-medium">en attente</span>,
-        <span class="text-green-600 font-medium">acceptee</span>, <span class="text-red-600 font-medium">refusee</span>.
-    </p>
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <form method="post" enctype="multipart/form-data" class="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5">{% csrf_token %}
+            {% if form.non_field_errors %}<div class="rounded-lg bg-red-50 text-red-700 border border-red-200 px-4 py-3 text-sm">{{ form.non_field_errors }}</div>{% endif %}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {% include "includes/champ.html" with champ=form.type_demande %}
+                {% include "includes/champ.html" with champ=form.date_debut %}
+                {% include "includes/champ.html" with champ=form.date_fin %}
+            </div>
+            {% include "includes/champ.html" with champ=form.motif %}
+            {% include "includes/champ.html" with champ=form.commentaire %}
+            {% include "includes/champ.html" with champ=form.piece_jointe %}
+            <div class="flex justify-end gap-3 pt-2 border-t border-slate-100">
+                <a href="{% url 'demandes:mes_demandes' %}" class="px-5 py-2.5 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Annuler</a>
+                <button type="submit" class="px-5 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 inline-flex items-center gap-2"><i class='bx bx-send'></i> Envoyer la demande</button>
+            </div>
+        </form>
+
+        <aside class="bg-primary-50 border border-primary-100 rounded-2xl p-6 h-fit text-sm text-slate-600 space-y-4">
+            <div class="flex items-start gap-3"><i class='bx bx-info-circle text-2xl text-primary-600'></i>
+                <div><p class="font-bold text-slate-900">{% if user.est_rh %}Votre demande sera transmise directement à l'Administrateur{% else %}Votre demande sera transmise au Responsable RH{% endif %}</p>
+                <p class="mt-1">Une fois envoyée, votre demande sera examinée et vous recevrez une notification dès qu'une décision sera prise.</p></div></div>
+            <div class="border-t border-primary-100 pt-3 space-y-2">
+                <p class="flex items-center gap-2"><i class='bx bx-bell text-primary-600 text-lg'></i> Vous serez notifié à chaque mise à jour</p>
+                <p class="flex items-center gap-2"><i class='bx bx-time text-primary-600 text-lg'></i> Suivi depuis « Mes demandes »</p>
+            </div>
+        </aside>
+    </div>
 </div>
 {% endblock %}

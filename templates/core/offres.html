@@ -1,35 +1,57 @@
 {% extends "base.html" %}
-{% block title %}Offres{% endblock %}
-{% block page_titre %}Offres{% endblock %}
+{% block title %}Offres d'emploi{% endblock %}
+{% block page_titre %}Offres d'emploi{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
-    <div class="flex items-center justify-between">
-        <h1 class="text-2xl font-semibold text-slate-800">Offres d'emploi</h1>
-        {% if offre_form %}<a href="{% url 'core:creer_offre' %}" class="px-3 py-2 rounded-lg bg-primary-600 text-white text-sm hover:bg-primary-700">Nouvelle offre</a>{% endif %}
+<div class="space-y-6 max-w-7xl">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-slate-900">Offres d'emploi</h1>
+            <p class="text-slate-500 mt-1">Gérez et suivez toutes les offres d'emploi de votre entreprise.</p>
+        </div>
+        <a href="{% url 'core:creer_offre' %}" class="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700"><i class='bx bx-plus'></i> Créer une offre</a>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {% for offre in offres %}
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <span class="inline-block px-2 py-1 text-xs rounded-full bg-primary-50 text-primary-700 mb-3">{{ offre.get_statut_display }}</span>
-            <h2 class="font-medium text-slate-700 mb-2">{{ offre.poste }}</h2>
-            <p class="text-sm text-slate-500">{{ offre.type_contrat }} · {{ offre.lieu }}</p>
-            <p class="text-sm text-slate-600 mt-3">{{ offre.description }}</p>
-            {% if user.est_employe and offre.statut == 'PUBLIEE' %}
-            <details class="mt-4">
-                <summary class="cursor-pointer text-sm font-medium text-primary-700">Postuler</summary>
-                <form method="post" enctype="multipart/form-data" action="{% url 'core:postuler_offre' offre.pk %}" class="mt-3 space-y-3">
-                    {% csrf_token %}
-                    {{ candidature_form.as_p }}
-                    <button type="submit" class="px-3 py-2 rounded-lg bg-primary-600 text-white text-sm hover:bg-primary-700">Envoyer ma candidature</button>
-                </form>
-            </details>
-            {% endif %}
-        </div>
-        {% empty %}
-        <p class="text-sm text-slate-400">Aucune offre pour le moment.</p>
-        {% endfor %}
+    <div class="grid grid-cols-1 xl:grid-cols-4 gap-4">
+        {% include "includes/kpi.html" with icone="bx-briefcase-alt-2" teinte="blue" valeur=nb_actives libelle="offres actives" sous_texte=texte_total %}
+        <form method="get" class="xl:col-span-3 bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-wrap items-end gap-3">
+            <div class="flex-1 min-w-[14rem]"><div class="relative"><i class='bx bx-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg'></i>
+                <input type="search" name="q" value="{{ recherche }}" placeholder="Rechercher une offre par titre, mot-clé..." class="w-full rounded-lg border border-slate-300 pl-10 pr-3 py-2.5 text-sm"></div></div>
+            <div><label class="block text-xs text-slate-500 mb-1">Statut</label><select name="statut" class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm"><option value="">Tous les statuts</option>{% for valeur, libelle in statuts %}<option value="{{ valeur }}" {% if valeur == filtre_statut %}selected{% endif %}>{{ libelle }}</option>{% endfor %}</select></div>
+            <div><label class="block text-xs text-slate-500 mb-1">Département</label><select name="departement" class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm"><option value="">Tous les départements</option>{% for d in departements %}<option value="{{ d }}" {% if d == filtre_departement %}selected{% endif %}>{{ d }}</option>{% endfor %}</select></div>
+            <button class="px-4 py-2.5 rounded-lg bg-primary-600 text-white text-sm">Filtrer</button>
+            <a href="{% url 'core:offres' %}" class="px-4 py-2.5 rounded-lg border border-slate-300 text-sm inline-flex items-center gap-2 hover:bg-slate-50"><i class='bx bx-refresh'></i> Réinitialiser</a>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead><tr class="text-left text-slate-700 border-b"><th class="px-5 py-4 font-semibold">Titre</th><th class="px-5 py-4 font-semibold">Département</th><th class="px-5 py-4 font-semibold">Date de publication</th><th class="px-5 py-4 font-semibold">Date d'expiration</th><th class="px-5 py-4 font-semibold">Candidatures</th><th class="px-5 py-4 font-semibold">Statut</th><th class="px-5 py-4 font-semibold text-right">Actions</th></tr></thead>
+            <tbody>
+            {% for offre in offres %}
+                <tr class="border-b border-slate-100 hover:bg-slate-50/60">
+                    <td class="px-5 py-4"><a href="{% url 'core:candidatures_offre' offre.pk %}" class="font-semibold text-primary-600 hover:underline">{{ offre.poste }}</a><p class="text-xs text-slate-400">Réf. {{ offre.reference }}</p></td>
+                    <td class="px-5 py-4 text-slate-600">{{ offre.departement|default:"-" }}</td>
+                    <td class="px-5 py-4 text-slate-600">{{ offre.date_publication|date:"d M Y"|default:"-" }}</td>
+                    <td class="px-5 py-4 text-slate-600">{{ offre.date_limite|date:"d M Y"|default:"-" }}</td>
+                    <td class="px-5 py-4"><span class="font-medium">{{ offre.nombre_candidatures }}</span><p class="text-xs text-slate-400">{{ offre.nombre_nouvelles }} nouvelle{{ offre.nombre_nouvelles|pluralize }}</p></td>
+                    <td class="px-5 py-4">{% if offre.est_expiree %}{% include "includes/badge_couleur.html" with couleur="rouge" texte="Expirée" %}{% elif offre.statut == "PUBLIEE" %}{% include "includes/badge_couleur.html" with couleur="vert" texte="Publiée" %}{% elif offre.statut == "BROUILLON" %}{% include "includes/badge_couleur.html" with couleur="orange" texte="Brouillon" %}{% else %}{% include "includes/badge_couleur.html" with couleur="gris" texte=offre.get_statut_display %}{% endif %}</td>
+                    <td class="px-5 py-4 text-right">
+                        <details class="relative inline-block text-left">
+                            <summary class="list-none cursor-pointer w-9 h-9 rounded-lg border border-slate-200 hover:bg-slate-50 flex items-center justify-center"><i class='bx bx-dots-vertical-rounded text-xl text-slate-600'></i></summary>
+                            <div class="absolute right-0 mt-1 w-48 rounded-xl border border-slate-200 bg-white shadow-lg py-1 z-10 text-sm">
+                                <a href="{% url 'core:candidatures_offre' offre.pk %}" class="block px-4 py-2 hover:bg-slate-50">Voir les candidatures</a>
+                                <a href="{% url 'core:modifier_offre' offre.pk %}" class="block px-4 py-2 hover:bg-slate-50">Modifier</a>
+                                <a href="{% url 'core:supprimer_offre' offre.pk %}" class="block px-4 py-2 text-red-600 hover:bg-red-50">Supprimer</a>
+                            </div>
+                        </details>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="7" class="px-5 py-10 text-center text-slate-400">Aucune offre pour le moment.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock %}

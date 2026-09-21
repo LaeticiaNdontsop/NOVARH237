@@ -10,22 +10,17 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Palette NOVA RH (bleu des maquettes)
         primary: {
-          50: "#eef2ff",
-          100: "#e0e7ff",
-          500: "#4f46e5",
-          600: "#4338ca",
-          700: "#3730a3",
-          900: "#1e1b4b",
-        },
-        // Palette de la page d'accueil publique (maquette KUMBA RH)
-        kumba: {
           50: "#eff6ff",
           100: "#dbeafe",
+          200: "#bfdbfe",
           500: "#1a5fe6",
           600: "#0b52d9",
           700: "#0a44b3",
+          800: "#0a3585",
           900: "#0a1f4d",
+          950: "#071740",
         },
       },
     },
