@@ -115,7 +115,7 @@ USE_TZ = True
 # ---------------------------------------------------------------------------
 # Fichiers statiques et medias (documents RH uploades)
 # ---------------------------------------------------------------------------
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
@@ -141,5 +141,5 @@ GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite")
 # ---------------------------------------------------------------------------
 # Bloc "entreprise" du menu (une seule entreprise : pas de multi-entreprise, cf. CDC v5)
 # ---------------------------------------------------------------------------
-NOM_ENTREPRISE = os.environ.get("NOM_ENTREPRISE", "Votre entreprise")
-VILLE_ENTREPRISE = os.environ.get("VILLE_ENTREPRISE", "Douala, Cameroun")
+#NOM_ENTREPRISE = os.environ.get("NOM_ENTREPRISE", "Votre entreprise")
+#VILLE_ENTREPRISE = os.environ.get("VILLE_ENTREPRISE", "Douala, Cameroun")
