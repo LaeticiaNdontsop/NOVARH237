@@ -1,156 +1,64 @@
-<aside class="hidden md:flex md:flex-col w-64 bg-primary-900 text-white shrink-0">
-    <div class="h-16 flex items-center gap-2 px-5 border-b border-white/10">
+{% load nova_extras %}
+<aside class="hidden md:flex md:flex-col w-64 bg-primary-900 text-white shrink-0 fixed left-0 top-0 h-screen overflow-y-auto z-30 border-r border-white/10 shadow-xl">
+    <div class="h-16 shrink-0 flex items-center gap-2 px-5 border-b border-white/10 bg-primary-950/30">
         <!-- Logo NOVA RH (placeholder texte, remplacable par un logo image) -->
-        <div class="w-9 h-9 rounded-lg bg-primary-500 flex items-center justify-center font-bold">N</div>
-        <span class="text-lg font-semibold tracking-wide">NOVA RH</span>
+        <div class="w-9 h-9 rounded-lg bg-primary-500 flex items-center justify-center font-bold shadow-md">N</div>
+        <span class="text-lg font-semibold tracking-wide">NOVA <span class="font-normal">RH</span></span>
     </div>
 
-    <nav class="flex-1 overflow-y-auto py-4 space-y-1 text-sm">
-        <a href="{% url 'core:redirection_dashboard' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bxs-dashboard text-lg'></i>
-            Tableau de bord
-        </a>
-
-        {% if user.est_rh %}
-        <p class="px-5 pt-4 pb-1 text-xs uppercase tracking-wider text-white/40">Ressources humaines</p>
-        <a href="{% url 'employees:liste_employes' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-group text-lg'></i>
-            Employes
-        </a>
-        <a href="{% url 'demandes:rh_a_traiter' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-calendar-check text-lg'></i>
-            Conges &amp; permissions
-        </a>
-        <a href="{% url 'demandes:rh_absences' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-calendar-x text-lg'></i>
-            Absences
-        </a>
-        <a href="{% url 'demandes:rh_demissions_a_transmettre' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-log-out-circle text-lg'></i>
-            Departs &amp; demissions
-        </a>
-        <a href="{% url 'analytics:prediction_libre' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-line-chart text-lg'></i>
-            Prediction attrition
-        </a>
-        <a href="{% url 'analytics:tableaux_bord' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bxs-bar-chart-alt-2 text-lg'></i>
-            Tableaux de bord
-        </a>
-        <a href="{% url 'core:evaluations_formations' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-line-chart text-lg'></i>
-            Evaluations &amp; formations
-        </a>
-        <a href="{% url 'core:recrutements' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-briefcase-alt-2 text-lg'></i>
-            Recrutements
-        </a>
-        <a href="{% url 'core:offres' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-file-find text-lg'></i>
-            Offres
-        </a>
-        <a href="{% url 'notifications:mes_notifications' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-bell text-lg'></i>
-            Notifications
-        </a>
-        <a href="{% url 'analytics:assistant' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-bot text-lg'></i>
-            Assistant RH
-        </a>
-
-        <p class="px-5 pt-4 pb-1 text-xs uppercase tracking-wider text-white/40">Mon espace employe</p>
-        <a href="{% url 'demandes:mes_demandes' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-calendar-check text-lg'></i>
-            Conges &amp; permissions
-        </a>
-        <a href="{% url 'demandes:mes_absences' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-calendar-x text-lg'></i>
-            Mes absences
-        </a>
-        <a href="{% url 'demandes:ma_demission' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-log-out-circle text-lg'></i>
-            Ma demission
-        </a>
-        <a href="{% url 'employees:mes_documents' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-folder text-lg'></i>
-            Mes documents
-        </a>
-        <a href="{% url 'employees:mes_remunerations' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-wallet text-lg'></i>
-            Mes remunerations
-        </a>
-        <a href="{% url 'employees:mes_evaluations_formations' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-book-reader text-lg'></i>
-            Mes evaluations &amp; formations
-        </a>
-        {% elif user.est_employe %}
-        <p class="px-5 pt-4 pb-1 text-xs uppercase tracking-wider text-white/40">Mes demandes</p>
-        <a href="{% url 'demandes:mes_demandes' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-calendar-check text-lg'></i>
-            Conges &amp; permissions
-        </a>
-        <a href="{% url 'demandes:mes_absences' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-calendar-x text-lg'></i>
-            Mes absences
-        </a>
-        <a href="{% url 'demandes:ma_demission' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-log-out-circle text-lg'></i>
-            Ma demission
-        </a>
-        <a href="{% url 'employees:mes_documents' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-folder text-lg'></i>
-            Mes documents
-        </a>
-        <a href="{% url 'employees:mes_remunerations' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-wallet text-lg'></i>
-            Mes remunerations
-        </a>
-        <a href="{% url 'employees:mes_evaluations_formations' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-book-reader text-lg'></i>
-            Mes evaluations &amp; formations
-        </a>
-        <a href="{% url 'notifications:mes_notifications' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-bell text-lg'></i>
-            Notifications
-        </a>
-        {% endif %}
+    <nav class="flex-1 py-4 space-y-1">
+        {% menu_item 'core:redirection_dashboard' 'Tableau de bord' 'bx-home-alt' 'core:dashboard_admin,core:dashboard_rh,core:dashboard_employe' %}
 
         {% if user.est_admin %}
-        <p class="px-5 pt-4 pb-1 text-xs uppercase tracking-wider text-white/40">Administration</p>
-        <a href="{% url 'accounts:liste_utilisateurs' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bxs-user-badge text-lg'></i>
-            Comptes utilisateurs
-        </a>
-        <a href="{% url 'core:roles_droits' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-shield-quarter text-lg'></i>
-            Roles et droits d'acces
-        </a>
-        <a href="{% url 'core:journal_activite' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-history text-lg'></i>
-            Journal d'activite
-        </a>
-        <a href="{% url 'demandes:admin_a_decider' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-calendar-check text-lg'></i>
-            Conges/permissions a decider
-        </a>
-        <a href="{% url 'demandes:admin_demissions' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-log-out-circle text-lg'></i>
-            Demissions - preavis
-        </a>
-        <a href="{% url 'notifications:mes_notifications' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-bell text-lg'></i>
-            Notifications
-        </a>
+            {% if peut.utilisateurs %}{% menu_item 'accounts:liste_utilisateurs' 'Utilisateurs' 'bx-group' 'accounts:creer_utilisateur,accounts:modifier_utilisateur,accounts:supprimer_utilisateur' %}{% endif %}
+            {% menu_item 'accounts:droits_acces' "Droits d'accès" 'bx-shield-quarter' %}
+            {% if peut.journaux %}{% menu_item 'notifications:journal_activite' "Journaux d'activité" 'bx-file' %}{% endif %}
+
+            <p class="px-7 pt-5 pb-1 text-xs uppercase tracking-wider text-white/40">À traiter</p>
+            {% if peut.employes %}{% menu_item 'employees:liste_employes' 'Employés' 'bx-id-card' 'employees:detail_employe,employees:creer_employe,employees:modifier_employe' %}{% endif %}
+            {% if peut.demandes %}{% menu_item 'demandes:admin_a_decider' 'Congés & permissions' 'bx-calendar-check' 'demandes:detail_demande' %}{% endif %}
+            {% if peut.demissions %}{% menu_item 'demandes:admin_demissions' 'Démissions - préavis' 'bx-log-out-circle' 'demandes:definir_preavis' %}{% endif %}
+            {% if peut.absences %}{% menu_item 'demandes:rh_absences' 'Absences des RH' 'bx-calendar-x' %}{% endif %}
+            {% if peut.remunerations %}{% menu_item 'employees:liste_remunerations' 'Rémunérations' 'bx-wallet' %}{% endif %}
+            {% if peut.analyse %}{% menu_item 'analytics:analyse' 'Analyse intelligente' 'bx-line-chart' 'analytics:tableaux_bord,analytics:prediction_libre,analytics:prediction_employe,analytics:historique,analytics:historique_employe' %}{% endif %}
+            {% if peut.assistant %}{% menu_item 'analytics:assistant' 'Assistant IA' 'bx-bot' %}{% endif %}
+        {% else %}
+            {% if peut.employes %}{% menu_item 'employees:liste_employes' 'Employés' 'bx-group' 'employees:detail_employe,employees:creer_employe,employees:modifier_employe' %}{% endif %}
+            {% if peut.recrutements %}
+                {% menu_item 'core:recrutements' 'Recrutements' 'bx-user-plus' 'core:candidatures_offre,core:ajouter_candidature,core:detail_candidature,core:historique_recrutements' %}
+                {% menu_item 'core:offres' "Offres d'emploi" 'bx-briefcase-alt-2' 'core:creer_offre,core:modifier_offre,core:supprimer_offre' %}
+            {% endif %}
+            {% if peut.demandes %}{% menu_item 'demandes:rh_demandes' 'Demandes' 'bx-file' 'demandes:rh_a_traiter,demandes:rh_a_notifier,demandes:historique_conges' %}{% endif %}
+            {% if peut.formations %}{% menu_item 'core:formations' 'Formations' 'bx-book-reader' 'core:creer_formation,core:modifier_formation,core:suivi_formation,core:historique_formations' %}{% endif %}
+            {% if peut.remunerations %}{% menu_item 'employees:liste_remunerations' 'Rémunérations' 'bx-wallet' %}{% endif %}
+            {% if peut.absences %}{% menu_item 'demandes:rh_absences' 'Absences' 'bx-calendar-x' 'demandes:historique_absences' %}{% endif %}
+            {% if peut.demissions %}{% menu_item 'demandes:rh_demissions_a_transmettre' 'Démissions' 'bx-log-out-circle' 'demandes:rh_demissions_a_communiquer,demandes:historique_demissions' %}{% endif %}
+            {% if peut.analyse %}{% menu_item 'analytics:analyse' 'Analyse intelligente' 'bx-line-chart' 'analytics:tableaux_bord,analytics:prediction_libre,analytics:prediction_employe,analytics:historique,analytics:historique_employe' %}{% endif %}
+            {% if peut.assistant %}{% menu_item 'analytics:assistant' 'Assistant IA' 'bx-bot' %}{% endif %}
+            {% if peut.utilisateurs %}{% menu_item 'accounts:liste_utilisateurs' 'Utilisateurs' 'bx-user-check' 'accounts:creer_utilisateur,accounts:modifier_utilisateur' %}{% endif %}
+            {% if peut.journaux %}{% menu_item 'notifications:journal_activite' "Journaux d'activité" 'bx-file' %}{% endif %}
+
+            <p class="px-7 pt-5 pb-1 text-xs uppercase tracking-wider text-white/40">Mon espace</p>
+            {% menu_item 'demandes:mes_demandes' 'Mes demandes' 'bx-calendar-check' 'demandes:creer_demande' %}
+            {% menu_item 'demandes:mes_absences' 'Mes absences' 'bx-calendar-x' 'demandes:creer_absence' %}
+            {% menu_item 'demandes:ma_demission' 'Ma démission' 'bx-log-out-circle' %}
+            {% menu_item 'employees:mes_documents' 'Mes documents' 'bx-folder' %}
+            {% menu_item 'employees:mes_remunerations' 'Ma rémunération' 'bx-money' %}
+            {% menu_item 'employees:mes_formations' 'Mes formations' 'bx-book-reader' %}
         {% endif %}
 
-        <p class="px-5 pt-4 pb-1 text-xs uppercase tracking-wider text-white/40">Mon espace</p>
-        <a href="{% url 'accounts:profil' %}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-white/10 rounded-md mx-2">
-            <i class='bx bx-user-circle text-lg'></i>
-            Mon profil
-        </a>
+        <div class="pt-3 mt-3 border-t border-white/10"></div>
+        {% menu_item 'notifications:mes_notifications' 'Notifications' 'bx-bell' '' nb_notifications_non_lues %}
+        {% menu_item 'accounts:profil' 'Mon profil' 'bx-user-circle' %}
     </nav>
 
-    <div class="p-4 border-t border-white/10 text-xs text-white/50">
-        NOVA RH &middot; PME camerounaises
+    <div class="p-4 shrink-0">
+        <div class="flex items-center gap-3 rounded-xl bg-white/10 px-3 py-3">
+            <div class="w-10 h-10 rounded-lg bg-white/15 flex items-center justify-center"><i class='bx bx-buildings text-2xl'></i></div>
+            <div class="min-w-0 leading-tight">
+                <p class="text-sm font-semibold truncate">{{ NOM_ENTREPRISE }}</p>
+                <p class="text-xs text-white/60 truncate">{{ VILLE_ENTREPRISE }}</p>
+            </div>
+        </div>
     </div>
 </aside>

@@ -1,49 +1,96 @@
 {% extends "base.html" %}
-{% block title %}Mes notifications{% endblock %}
-{% block page_titre %}Mes notifications{% endblock %}
+{% load nova_extras %}
+{% block title %}Notifications{% endblock %}
+{% block page_titre %}Notifications{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
-    <div class="flex items-center justify-between">
-        <h1 class="text-2xl font-semibold text-slate-800">Mes notifications</h1>
-        <div class="flex gap-2 items-center">
-            <a href="{% url 'notifications:historique_notifications' %}" class="px-3 py-2 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Historique</a>
-            {% if peut_envoyer %}
-            <form method="post" action="{% url 'notifications:envoyer' %}" class="flex gap-2 items-center">
-            {% csrf_token %}
-            <input type="text" name="message" placeholder="Publier une notification" class="border border-slate-300 rounded-lg px-3 py-2 text-sm">
-            <select name="role_cible" class="border border-slate-300 rounded-lg px-3 py-2 text-sm">
-                <option value="TOUS">Tous</option>
-                <option value="EMPLOYE">Employés</option>
-                <option value="RH">RH</option>
-                <option value="ADMIN">Admin</option>
-            </select>
-                <button type="submit" class="px-3 py-2 rounded-lg bg-primary-600 text-white text-sm hover:bg-primary-700">Envoyer</button>
-            </form>
-            {% endif %}
+<div class="space-y-6 max-w-7xl">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-slate-900">Notifications</h1>
+            <p class="text-slate-500 mt-1">{% if peut_envoyer %}Gérez et suivez les notifications reçues ou envoyées.{% else %}Restez informé des activités et mises à jour vous concernant.{% endif %}</p>
+        </div>
+        <div class="flex gap-2">
+            {% if onglet == "recues" and non_lues %}<form method="post" action="{% url 'notifications:tout_marquer_lu' %}">{% csrf_token %}<button class="px-5 py-3 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 inline-flex items-center gap-2"><i class='bx bx-check-double text-lg'></i> Tout marquer comme lu</button></form>{% endif %}
+            {% if peut_envoyer %}<a href="?nouvelle=1" class="px-5 py-3 rounded-lg {% if non_lues and onglet == 'recues' %}border border-primary-600 text-primary-600 bg-white{% else %}bg-primary-600 text-white{% endif %} text-sm font-semibold inline-flex items-center gap-2"><i class='bx bx-plus-circle text-lg'></i> Créer une notification</a>{% endif %}
         </div>
     </div>
 
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
-        {% if notifications %}
-        <div class="space-y-3">
-            {% for notification in notifications %}
-            <div class="flex items-start justify-between gap-4 border border-slate-200 rounded-lg p-3">
-                <div>
-                    <p class="font-medium text-slate-700 {% if not notification.lu %}text-primary-700{% endif %}">{{ notification.message }}</p>
-                    <p class="text-xs text-slate-500 mt-1">{{ notification.date_creation|date:'d/m/Y H:i' }} • {{ notification.role_cible }}</p>
-                </div>
-                {% if not notification.lu %}
-                <form method="post" action="{% url 'notifications:marquer_lue' notification.pk %}">
-                    {% csrf_token %}
-                    <button type="submit" class="text-xs text-primary-600 hover:underline">Marquer lue</button>
-                </form>
-                {% endif %}
+    {% if peut_envoyer %}
+    <div class="border-b border-slate-200 flex gap-6 text-sm">
+        <a href="?onglet=recues" class="pb-3 -mb-px border-b-2 {% if onglet == 'recues' %}border-primary-600 text-primary-600 font-medium{% else %}border-transparent text-slate-500{% endif %}">Reçues</a>
+        <a href="?onglet=envoyees" class="pb-3 -mb-px border-b-2 {% if onglet == 'envoyees' %}border-primary-600 text-primary-600 font-medium{% else %}border-transparent text-slate-500{% endif %}">Envoyées</a>
+    </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <div class="{% if ouvrir_formulaire or detail %}xl:col-span-2{% else %}xl:col-span-3{% endif %} space-y-4">
+            {% if onglet == "recues" %}
+            <div class="flex flex-wrap gap-2 text-sm">
+                <a href="?{% qs filtre=None page=None voir=None nouvelle=None %}" class="px-4 py-2 rounded-full {% if not filtre %}bg-primary-600 text-white{% else %}border border-slate-200 bg-white text-slate-600{% endif %}">Toutes <span class="ml-1 text-xs">{{ nb_total }}</span></a>
+                <a href="?{% qs filtre='non_lues' page=None voir=None nouvelle=None %}" class="px-4 py-2 rounded-full {% if filtre == 'non_lues' %}bg-primary-600 text-white{% else %}border border-slate-200 bg-white text-slate-600{% endif %}">Non lues <span class="ml-1 text-xs">{{ non_lues }}</span></a>
+                {% for valeur, libelle, n in compteurs_categories %}
+                <a href="?{% qs filtre=valeur page=None voir=None nouvelle=None %}" class="px-4 py-2 rounded-full {% if filtre == valeur %}bg-primary-600 text-white{% else %}border border-slate-200 bg-white text-slate-600{% endif %}">{{ libelle }} <span class="ml-1 text-xs">{{ n }}</span></a>
+                {% endfor %}
             </div>
-            {% endfor %}
+            {% endif %}
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm divide-y divide-slate-100">
+                {% for n in notifications %}
+                <div class="p-4 flex gap-4 items-start {% if detail and detail.pk == n.pk %}bg-primary-50/60{% endif %}">
+                    {% if onglet == "recues" %}<span class="w-2.5 h-2.5 mt-2 rounded-full shrink-0 {% if n.lu %}bg-slate-300{% else %}bg-primary-600{% endif %}"></span>{% endif %}
+                    <span class="w-11 h-11 rounded-full flex items-center justify-center text-xl shrink-0 {% if n.categorie == 'SECURITE' %}bg-red-50 text-red-500{% elif n.categorie == 'DEMANDE' %}bg-green-50 text-green-600{% elif n.categorie == 'ABSENCE' %}bg-orange-50 text-orange-500{% elif n.categorie == 'DOCUMENT' %}bg-primary-50 text-primary-600{% else %}bg-slate-100 text-slate-500{% endif %}"><i class='bx {% if n.categorie == "DEMANDE" %}bx-check-circle{% elif n.categorie == "ABSENCE" %}bx-calendar{% elif n.categorie == "DOCUMENT" %}bx-file{% elif n.categorie == "RECRUTEMENT" %}bx-user-plus{% elif n.categorie == "FORMATION" %}bx-book-reader{% elif n.categorie == "SECURITE" %}bx-shield{% else %}bx-bell{% endif %}'></i></span>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-slate-800 {% if onglet == 'recues' and not n.lu %}{% else %}font-medium{% endif %}">{{ n.titre_affiche }}</p>
+                        <p class="text-sm text-slate-600">{{ n.message|truncatechars:160 }}</p>
+                        <p class="mt-1 text-xs"><span class="px-2 py-0.5 rounded bg-slate-100 text-slate-600">{{ n.get_categorie_display }}</span>{% if onglet == "envoyees" %} <span class="text-slate-400">→ {{ n.destinataire.get_full_name|default:"Diffusion" }}</span>{% elif n.expediteur %} <span class="text-slate-400">de {{ n.expediteur.get_full_name }}</span>{% endif %}</p>
+                    </div>
+                    <div class="text-right text-xs text-slate-400 shrink-0">{{ n.date_creation|date:"d M Y" }}<br>{{ n.date_creation|date:"H:i" }}</div>
+                    {% if onglet == "recues" %}
+                    <div class="flex gap-1 shrink-0">
+                        <a href="?{% qs voir=n.pk nouvelle=None %}" class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 text-primary-600 hover:bg-primary-50" title="Voir"><i class='bx bx-show'></i></a>
+                        {% if n.destinataire_id == request.user.id %}<form method="post" action="{% url 'notifications:supprimer' n.pk %}" onsubmit="return confirm('Supprimer cette notification ?');">{% csrf_token %}<button class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 text-red-500 hover:bg-red-50" title="Supprimer"><i class='bx bx-trash'></i></button></form>{% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="p-10 text-center">
+                    <i class='bx bx-bell text-4xl text-slate-300'></i>
+                    <p class="font-semibold text-slate-700 mt-2">{% if onglet == "recues" %}Vous êtes à jour !{% else %}Aucune notification envoyée{% endif %}</p>
+                    <p class="text-sm text-slate-400">{% if onglet == "recues" %}Aucune nouvelle notification pour le moment.{% else %}Utilisez « Créer une notification ».{% endif %}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% include "includes/pagination.html" %}
         </div>
-        {% else %}
-        <p class="text-sm text-slate-400">Aucune notification pour le moment.</p>
+
+        {% if detail %}
+        <aside class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 h-fit">
+            <div class="flex items-center justify-between mb-4"><h2 class="font-semibold text-slate-800">Détail de la notification</h2><a href="?{% qs voir=None %}" class="text-slate-400 hover:text-slate-700"><i class='bx bx-x text-2xl'></i></a></div>
+            <span class="px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 text-xs">{{ detail.get_categorie_display }}</span>
+            <h3 class="text-xl font-bold text-slate-900 mt-3">{{ detail.titre_affiche }}</h3>
+            <p class="text-xs text-slate-500 mt-1">{% if detail.lu %}Lue{% else %}<span class="text-primary-600">● Non lue</span>{% endif %} · {{ detail.date_creation|date:"d/m/Y à H:i" }}</p>
+            <p class="text-sm text-slate-700 mt-4 whitespace-pre-line">{{ detail.message }}</p>
+            {% if detail.expediteur %}<p class="text-xs text-slate-500 mt-4">Envoyée par {{ detail.expediteur.get_full_name }}</p>{% endif %}
+            {% if not detail.lu %}
+            <form method="post" action="{% url 'notifications:marquer_lue' detail.pk %}" class="mt-4">{% csrf_token %}<button class="w-full px-4 py-2.5 rounded-lg border border-primary-600 text-primary-600 text-sm font-medium hover:bg-primary-50 inline-flex items-center justify-center gap-2"><i class='bx bx-envelope-open'></i> Marquer comme lue</button></form>
+            {% endif %}
+        </aside>
+        {% elif ouvrir_formulaire and peut_envoyer %}
+        <aside class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 h-fit">
+            <div class="flex items-center justify-between mb-4"><h2 class="font-semibold text-slate-800">Créer une notification</h2><a href="{% url 'notifications:mes_notifications' %}" class="text-slate-400 hover:text-slate-700"><i class='bx bx-x text-2xl'></i></a></div>
+            <form method="post" action="{% url 'notifications:envoyer' %}" class="space-y-4">{% csrf_token %}
+                {% if form.non_field_errors %}<div class="rounded-lg bg-red-50 text-red-700 border border-red-200 px-3 py-2 text-sm">{{ form.non_field_errors }}</div>{% endif %}
+                {% include "includes/champ.html" with champ=form.titre %}
+                {% include "includes/champ.html" with champ=form.message %}
+                {% include "includes/champ.html" with champ=form.cible %}
+                {% include "includes/champ.html" with champ=form.departement %}
+                {% include "includes/champ.html" with champ=form.destinataire %}
+                {% include "includes/champ.html" with champ=form.categorie %}
+                <div class="flex justify-end gap-2"><a href="{% url 'notifications:mes_notifications' %}" class="px-4 py-2.5 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Annuler</a><button class="px-4 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 inline-flex items-center gap-2"><i class='bx bx-send'></i> Envoyer</button></div>
+                <p class="text-xs text-slate-400">La notification est envoyée immédiatement, dans l'application.</p>
+            </form>
+        </aside>
         {% endif %}
     </div>
 </div>

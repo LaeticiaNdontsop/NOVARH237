@@ -1,9 +1,84 @@
 {% extends "base.html" %}
-{% block title %}Nouvelle offre{% endblock %}
-{% block page_titre %}Nouvelle offre{% endblock %}
+{% block title %}{% if object %}Modifier l'offre{% else %}Créer une offre d'emploi{% endif %}{% endblock %}
+{% block page_titre %}Offres d'emploi &rsaquo; {% if object %}Modifier{% else %}Créer{% endif %}{% endblock %}
+
 {% block content %}
-<div class="bg-white rounded-xl border border-slate-200 p-6 max-w-2xl">
-    <h1 class="text-2xl font-semibold text-slate-800 mb-6">Créer une offre d'emploi</h1>
-    <form method="post" class="space-y-4">{% csrf_token %}{% include "includes/form_champs.html" %}<button class="px-4 py-2 rounded-lg bg-primary-600 text-white text-sm">Enregistrer</button></form>
+<div class="max-w-7xl space-y-6">
+    <div>
+        <h1 class="text-3xl font-bold text-slate-900">{% if object %}Modifier l'offre d'emploi{% else %}Créer une offre d'emploi{% endif %}</h1>
+        <p class="text-slate-500 mt-1">Renseignez les informations de l'offre. Les champs marqués d'un <span class="text-red-500">*</span> sont obligatoires.</p>
+    </div>
+
+    <form method="post" class="grid grid-cols-1 xl:grid-cols-2 gap-4">{% csrf_token %}
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+            <h2 class="font-semibold text-slate-800">Informations générales</h2>
+            {% if form.non_field_errors %}<div class="rounded-lg bg-red-50 text-red-700 border border-red-200 px-4 py-3 text-sm">{{ form.non_field_errors }}</div>{% endif %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {% include "includes/champ.html" with champ=form.poste %}
+                {% include "includes/champ.html" with champ=form.departement %}
+                {% include "includes/champ.html" with champ=form.type_contrat %}
+                {% include "includes/champ.html" with champ=form.lieu %}
+                {% include "includes/champ.html" with champ=form.mode_travail %}
+                {% include "includes/champ.html" with champ=form.responsable %}
+                {% include "includes/champ.html" with champ=form.date_publication %}
+                {% include "includes/champ.html" with champ=form.date_limite %}
+            </div>
+            {% include "includes/champ.html" with champ=form.description %}
+            {% include "includes/champ.html" with champ=form.missions %}
+            {% include "includes/champ.html" with champ=form.competences %}
+            {% if object %}{% include "includes/champ.html" with champ=form.statut %}{% endif %}
+        </div>
+
+        <div class="space-y-4">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <div class="flex items-center gap-2 mb-3"><h2 class="font-semibold text-slate-800">Aperçu de l'offre</h2><span class="text-xs px-2 py-0.5 rounded-md bg-orange-50 text-orange-600">Aperçu</span></div>
+                <div class="rounded-xl border border-slate-200 p-5">
+                    <h3 id="apercu-poste" class="text-xl font-bold text-slate-900">{{ form.poste.value|default:"Titre du poste" }}</h3>
+                    <p class="mt-2 text-sm text-slate-500 flex flex-wrap gap-x-4"><span id="apercu-departement">{{ form.departement.value|default:"Département" }}</span><span id="apercu-lieu">{{ form.lieu.value|default:"Localisation" }}</span></p>
+                    <h4 class="mt-4 text-sm font-semibold text-slate-800">Description du poste</h4>
+                    <p id="apercu-description" class="text-sm text-slate-600 whitespace-pre-line">{{ form.description.value|default:"..." }}</p>
+                    <h4 class="mt-4 text-sm font-semibold text-slate-800">Compétences recherchées</h4>
+                    <div id="apercu-competences" class="mt-1 flex flex-wrap gap-2"></div>
+                </div>
+                <p class="text-xs text-slate-400 mt-2">L'aperçu se met à jour pendant la saisie.</p>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-3">
+                {% if object %}
+                <button type="submit" class="w-full px-4 py-3 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700">Enregistrer les modifications</button>
+                {% else %}
+                <button type="submit" name="action" value="publier" class="w-full px-4 py-3 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 inline-flex items-center justify-center gap-2"><i class='bx bx-send'></i> Publier l'offre</button>
+                <button type="submit" name="action" value="brouillon" class="w-full px-4 py-3 rounded-lg border border-primary-600 text-primary-600 text-sm font-semibold hover:bg-primary-50">Enregistrer comme brouillon</button>
+                {% endif %}
+                <a href="{% url 'core:offres' %}" class="block w-full px-4 py-3 rounded-lg border border-slate-300 text-center text-sm hover:bg-slate-50">Annuler</a>
+            </div>
+        </div>
+    </form>
 </div>
+
+<script>
+(function () {
+    function lier(idChamp, idApercu, defaut) {
+        var champ = document.getElementById(idChamp), cible = document.getElementById(idApercu);
+        if (!champ || !cible) return;
+        function maj() { cible.textContent = champ.value.trim() || defaut; }
+        champ.addEventListener('input', maj); maj();
+    }
+    lier('id_poste', 'apercu-poste', 'Titre du poste');
+    lier('id_departement', 'apercu-departement', 'Département');
+    lier('id_lieu', 'apercu-lieu', 'Localisation');
+    lier('id_description', 'apercu-description', '...');
+    var comp = document.getElementById('id_competences'), zone = document.getElementById('apercu-competences');
+    function majCompetences() {
+        if (!comp || !zone) return;
+        zone.innerHTML = '';
+        comp.value.split(',').map(function (c) { return c.trim(); }).filter(Boolean).forEach(function (c) {
+            var s = document.createElement('span');
+            s.className = 'px-2.5 py-1 rounded-md bg-primary-50 text-primary-700 text-xs';
+            s.textContent = c; zone.appendChild(s);
+        });
+    }
+    if (comp) { comp.addEventListener('input', majCompetences); majCompetences(); }
+})();
+</script>
 {% endblock %}

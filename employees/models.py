@@ -12,6 +12,13 @@ class Sexe(models.TextChoices):
     FEMME = "F", "Femme"
 
 
+class SituationFamiliale(models.TextChoices):
+    CELIBATAIRE = "CELIBATAIRE", "Célibataire"
+    MARIE = "MARIE", "Marié(e)"
+    DIVORCE = "DIVORCE", "Divorcé(e)"
+    VEUF = "VEUF", "Veuf / veuve"
+
+
 class Employe(models.Model):
     """
     Entite Employe (CDC §9.1). Un Employe est toujours rattache a un compte
@@ -25,13 +32,33 @@ class Employe(models.Model):
     utilisateur = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="fiche_employe"
     )
-    matricule = models.CharField(max_length=20, unique=True)
+    matricule = models.CharField(
+        max_length=20, unique=True, blank=True,
+        help_text="Laisser vide pour générer automatiquement (EMP-001, EMP-002...).",
+    )
     poste = models.CharField(max_length=100)
-    service = models.CharField(max_length=100)
+    service = models.CharField("Département", max_length=100)
     date_embauche = models.DateField()
     date_naissance = models.DateField(null=True, blank=True)
     sexe = models.CharField(max_length=1, choices=Sexe.choices, blank=True)
     statut = models.CharField(max_length=10, choices=StatutEmploye.choices, default=StatutEmploye.ACTIF)
+
+    # Informations complementaires (fiche employe)
+    nationalite = models.CharField("Nationalité", max_length=60, blank=True)
+    situation_familiale = models.CharField(
+        max_length=12, choices=SituationFamiliale.choices, blank=True
+    )
+    contact_urgence_nom = models.CharField("Contact d'urgence (nom)", max_length=100, blank=True)
+    contact_urgence_telephone = models.CharField("Contact d'urgence (téléphone)", max_length=30, blank=True)
+    manager = models.ForeignKey(
+        "self", on_delete=models.SET_NULL, null=True, blank=True, related_name="equipe",
+        verbose_name="Manager",
+    )
+    lieu_travail = models.CharField("Lieu de travail", max_length=100, blank=True)
+    niveau_etudes = models.CharField("Niveau d'études", max_length=60, blank=True)
+    etablissement = models.CharField("Établissement", max_length=120, blank=True)
+    specialite = models.CharField("Spécialité", max_length=120, blank=True)
+    langues = models.CharField(max_length=150, blank=True)
 
     cree_par = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
@@ -49,9 +76,41 @@ class Employe(models.Model):
     def __str__(self):
         return f"{self.matricule} - {self.utilisateur.get_full_name()}"
 
+    def save(self, *args, **kwargs):
+        if not self.matricule:
+            dernier = Employe.objects.order_by("-pk").values_list("pk", flat=True).first() or 0
+            numero = dernier + 1
+            while Employe.objects.filter(matricule=f"EMP-{numero:03d}").exists():
+                numero += 1
+            self.matricule = f"EMP-{numero:03d}"
+        super().save(*args, **kwargs)
+
     @property
     def nom_complet(self):
         return self.utilisateur.get_full_name()
+
+    @property
+    def contrat_actuel(self):
+        # Utilise le prefetch_related("contrats") des vues de liste quand il est present.
+        contrats = sorted(self.contrats.all(), key=lambda c: c.date_debut, reverse=True)
+        return contrats[0] if contrats else None
+
+    @property
+    def anciennete(self):
+        from django.utils import timezone
+
+        aujourdhui = timezone.localdate()
+        mois = (aujourdhui.year - self.date_embauche.year) * 12 + aujourdhui.month - self.date_embauche.month
+        if aujourdhui.day < self.date_embauche.day:
+            mois -= 1
+        mois = max(mois, 0)
+        ans, reste = divmod(mois, 12)
+        morceaux = []
+        if ans:
+            morceaux.append(f"{ans} an{'s' if ans > 1 else ''}")
+        if reste or not ans:
+            morceaux.append(f"{reste} mois")
+        return " et ".join(morceaux)
 
 
 class TypeContrat(models.TextChoices):

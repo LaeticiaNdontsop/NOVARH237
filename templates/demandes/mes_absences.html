@@ -3,33 +3,48 @@
 {% block page_titre %}Mes absences{% endblock %}
 
 {% block content %}
-<div class="flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-semibold text-slate-800">Mes absences</h1>
-    <a href="{% url 'demandes:creer_absence' %}" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">
-        <i class='bx bx-plus'></i> Declarer une absence
-    </a>
-</div>
+<div class="space-y-6 max-w-7xl">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-slate-900">Mes absences</h1>
+            <p class="text-slate-500 mt-1">Consultez vos absences et l'historique de vos déclarations.</p>
+        </div>
+        <a href="{% url 'demandes:creer_absence' %}" class="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700"><i class='bx bx-plus'></i> Déclarer une absence</a>
+    </div>
 
-<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-    <table class="w-full text-sm">
-        <thead class="bg-slate-50 text-slate-500 text-left">
-            <tr>
-                <th class="px-4 py-3">Periode</th>
-                <th class="px-4 py-3">Motif</th>
-                <th class="px-4 py-3">Statut</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100">
-            {% for absence in absences %}
-            <tr class="hover:bg-slate-50">
-                <td class="px-4 py-3 font-medium">{{ absence.date_debut }} → {{ absence.date_fin }}</td>
-                <td class="px-4 py-3 text-slate-500">{{ absence.motif }}</td>
-                <td class="px-4 py-3">{% include "includes/badge_couleur.html" with couleur=absence.couleur texte=absence.get_statut_display %}</td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="3" class="px-4 py-6 text-center text-slate-400">Aucune absence declaree.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {% include "includes/kpi.html" with icone="bx-briefcase-alt" teinte="blue" valeur=nb_validees_annee libelle="absences cette année" sous_texte="Total validé" %}
+        {% include "includes/kpi.html" with icone="bx-time-five" teinte="orange" valeur=nb_en_attente libelle="en attente" sous_texte="Déclaration en cours de traitement" %}
+        {% include "includes/kpi.html" with icone="bx-calendar" teinte="green" valeur=nb_total libelle="absences déclarées" sous_texte="Depuis le début" %}
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <div class="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+            <h2 class="font-semibold text-slate-800 p-5 pb-0">Historique des absences</h2>
+            <table class="w-full text-sm mt-3">
+                <thead><tr class="text-left text-slate-700 border-y bg-slate-50/60"><th class="px-5 py-3 font-semibold">Date de début</th><th class="px-5 py-3 font-semibold">Date de fin</th><th class="px-5 py-3 font-semibold">Motif</th><th class="px-5 py-3 font-semibold">Justificatif</th><th class="px-5 py-3 font-semibold">Statut</th></tr></thead>
+                <tbody>
+                {% for absence in absences %}
+                    <tr class="border-b border-slate-100 hover:bg-slate-50/60">
+                        <td class="px-5 py-3">{{ absence.date_debut|date:"d M Y" }}</td>
+                        <td class="px-5 py-3">{{ absence.date_fin|date:"d M Y" }}</td>
+                        <td class="px-5 py-3"><span class="font-medium">{{ absence.get_type_absence_display }}</span>{% if absence.motif %}<br><span class="text-xs text-slate-500">{{ absence.motif|truncatechars:40 }}</span>{% endif %}</td>
+                        <td class="px-5 py-3">{% if absence.justificatif %}<a href="{{ absence.justificatif.url }}" class="text-primary-600 hover:underline inline-flex items-center gap-1"><i class='bx bx-file'></i> Voir</a>{% else %}<span class="text-slate-400">–</span>{% endif %}</td>
+                        <td class="px-5 py-3">{% include "includes/badge_couleur.html" with couleur=absence.couleur texte=absence.get_statut_display %}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5" class="px-5 py-10 text-center text-slate-400">Aucune absence déclarée.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <div class="px-5 pb-4">{% include "includes/pagination.html" %}</div>
+        </div>
+
+        <aside class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 h-fit text-sm text-slate-600 space-y-3">
+            <h2 class="font-semibold text-slate-800 flex items-center gap-2"><i class='bx bx-info-circle text-primary-600 text-xl'></i> Comment déclarer ?</h2>
+            <p>Choisissez le motif de l'absence, les dates concernées, puis ajoutez si possible un justificatif (certificat médical, attestation...). Formats acceptés : PDF, JPG, PNG (max. 5 Mo).</p>
+            <p>Votre déclaration est validée par le Responsable RH{% if user.est_rh %} (pour un RH : par l'Administrateur){% endif %}. Vous êtes notifié de la décision.</p>
+        </aside>
+    </div>
 </div>
 {% endblock %}

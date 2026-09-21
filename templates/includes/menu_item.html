@@ -1,0 +1,5 @@
+<a href="{{ url }}" class="flex items-center gap-3 px-4 py-2.5 mx-3 rounded-lg text-sm transition {% if actif %}bg-primary-600 text-white font-medium shadow-sm{% else %}text-white/80 hover:bg-white/10 hover:text-white{% endif %}">
+    <i class='bx {{ icone }} text-xl'></i>
+    <span class="flex-1">{{ libelle }}</span>
+    {% if badge %}<span class="min-w-[1.4rem] h-6 px-1.5 rounded-full bg-emerald-500 text-white text-xs font-semibold flex items-center justify-center">{{ badge }}</span>{% endif %}
+</a>

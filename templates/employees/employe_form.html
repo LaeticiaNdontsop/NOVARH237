@@ -1,19 +1,58 @@
 {% extends "base.html" %}
-{% block title %}Fiche employe{% endblock %}
-{% block page_titre %}Fiche employe{% endblock %}
+{% block title %}{% if object %}Modifier l'employé{% else %}Ajouter un employé{% endif %}{% endblock %}
+{% block page_titre %}{% if object %}Modifier l'employé{% else %}Ajouter un employé{% endif %}{% endblock %}
 
 {% block content %}
-<h1 class="text-2xl font-semibold text-slate-800 mb-6">
-    {% if object %}Modifier la fiche employe{% else %}Nouvelle fiche employe{% endif %}
-</h1>
+<div class="max-w-6xl space-y-6">
+    <div>
+        <h1 class="text-3xl font-bold text-slate-900">{% if object %}Modifier la fiche de {{ object.nom_complet }}{% else %}Ajouter un employé{% endif %}</h1>
+        <p class="text-slate-500 mt-1">Renseignez les informations pour {% if object %}mettre à jour la fiche{% else %}enregistrer un nouvel employé dans le système{% endif %}.</p>
+    </div>
 
-<div class="bg-white rounded-xl border border-slate-200 p-6 max-w-2xl">
-    <form method="post">
-        {% csrf_token %}
-        {% include "includes/form_champs.html" %}
-        <button type="submit" class="mt-2 px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">
-            Enregistrer
-        </button>
+    <form method="post" class="space-y-6">{% csrf_token %}
+        {% if form.non_field_errors %}<div class="rounded-lg bg-red-50 text-red-700 border border-red-200 px-4 py-3 text-sm">{{ form.non_field_errors }}</div>{% endif %}
+
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h2 class="font-semibold text-slate-800 flex items-center gap-2 mb-4"><i class='bx bx-user text-xl text-primary-600'></i> Informations personnelles</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                {% include "includes/champ.html" with champ=form.utilisateur %}
+                {% include "includes/champ.html" with champ=form.date_naissance %}
+                {% include "includes/champ.html" with champ=form.sexe %}
+                {% include "includes/champ.html" with champ=form.nationalite %}
+                {% include "includes/champ.html" with champ=form.situation_familiale %}
+                {% include "includes/champ.html" with champ=form.contact_urgence_nom %}
+                {% include "includes/champ.html" with champ=form.contact_urgence_telephone %}
+            </div>
+            <p class="text-xs text-slate-400 mt-3">Le compte de connexion (nom, e-mail, téléphone) est créé et géré par l'Administrateur ; la fiche s'y rattache.</p>
+        </section>
+
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h2 class="font-semibold text-slate-800 flex items-center gap-2 mb-4"><i class='bx bx-briefcase text-xl text-primary-600'></i> Informations professionnelles</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                {% include "includes/champ.html" with champ=form.matricule %}
+                {% include "includes/champ.html" with champ=form.poste %}
+                {% include "includes/champ.html" with champ=form.service %}
+                {% include "includes/champ.html" with champ=form.date_embauche %}
+                {% include "includes/champ.html" with champ=form.manager %}
+                {% include "includes/champ.html" with champ=form.lieu_travail %}
+                {% include "includes/champ.html" with champ=form.statut %}
+            </div>
+        </section>
+
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h2 class="font-semibold text-slate-800 flex items-center gap-2 mb-4"><i class='bx bx-book-open text-xl text-primary-600'></i> Formation et langues</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                {% include "includes/champ.html" with champ=form.niveau_etudes %}
+                {% include "includes/champ.html" with champ=form.etablissement %}
+                {% include "includes/champ.html" with champ=form.specialite %}
+                {% include "includes/champ.html" with champ=form.langues %}
+            </div>
+        </section>
+
+        <div class="flex justify-end gap-3">
+            <a href="{% url 'employees:liste_employes' %}" class="px-5 py-2.5 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Annuler</a>
+            <button type="submit" class="px-5 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700">Enregistrer l'employé</button>
+        </div>
     </form>
 </div>
 {% endblock %}

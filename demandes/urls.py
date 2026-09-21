@@ -11,6 +11,7 @@ urlpatterns = [
     path("mes-demandes/<int:pk>/", views.DetailDemandeCongeView.as_view(), name="detail_demande"),
 
     # Espace RH - conges/permissions
+    path("rh/demandes/", views.DemandesRHView.as_view(), name="rh_demandes"),
     path("rh/a-traiter/", views.DemandesATraiterRHView.as_view(), name="rh_a_traiter"),
     path("rh/a-notifier/", views.DemandesANotifierRHView.as_view(), name="rh_a_notifier"),
     path("rh/<int:pk>/transmettre/", views.transmettre_a_admin, name="transmettre_a_admin"),

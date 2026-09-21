@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Supprimer le compte{% endblock %}
+{% block page_titre %}Utilisateurs &rsaquo; Supprimer{% endblock %}
+{% block content %}
+<div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 max-w-xl">
+    <h1 class="text-xl font-bold text-slate-900 mb-2">Supprimer le compte de {{ utilisateur.get_full_name|default:utilisateur.username }} ?</h1>
+    {% if motif_refus %}
+        <div class="rounded-lg bg-orange-50 border border-orange-200 text-orange-700 text-sm px-4 py-3 mb-4">{{ motif_refus }}</div>
+        <div class="flex gap-2">
+            <a href="{% url 'accounts:modifier_utilisateur' utilisateur.pk %}" class="px-4 py-2 rounded-lg bg-primary-600 text-white text-sm">Modifier le compte</a>
+            <a href="{% url 'accounts:liste_utilisateurs' %}" class="px-4 py-2 rounded-lg border border-slate-300 text-sm">Retour</a>
+        </div>
+    {% else %}
+        <p class="text-sm text-slate-500 mb-4">Cette action est définitive. Pour conserver l'historique, préférez désactiver le compte.</p>
+        <form method="post" class="flex gap-2">{% csrf_token %}
+            <button class="px-4 py-2 rounded-lg bg-red-600 text-white text-sm">Supprimer définitivement</button>
+            <a href="{% url 'accounts:liste_utilisateurs' %}" class="px-4 py-2 rounded-lg border border-slate-300 text-sm">Annuler</a>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}

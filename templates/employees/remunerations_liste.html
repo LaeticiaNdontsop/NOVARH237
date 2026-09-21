@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load nova_extras %}
+{% block title %}Rémunérations{% endblock %}
+{% block page_titre %}Rémunérations{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-7xl">
+    <div class="rounded-2xl border border-orange-200 bg-orange-50 px-5 py-4 flex items-center gap-4">
+        <span class="w-12 h-12 rounded-full bg-white text-orange-500 flex items-center justify-center text-2xl"><i class='bx bx-lock-alt'></i></span>
+        <div><p class="font-semibold text-orange-800">Les données de rémunération sont strictement confidentielles</p>
+        <p class="text-sm text-orange-700">Seules les personnes autorisées peuvent consulter les informations sensibles. Chaque affichage est enregistré dans le journal d'activité.</p></div>
+    </div>
+
+    <div>
+        <h1 class="text-3xl font-bold text-slate-900">Rémunérations</h1>
+        <p class="text-slate-500 mt-1">Consultez et gérez les informations de rémunération des employés</p>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <div class="xl:col-span-2 space-y-4">
+            <form method="get" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-wrap items-center gap-3">
+                <div class="relative flex-1 min-w-[12rem]"><i class='bx bx-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg'></i>
+                    <input type="search" name="q" value="{{ recherche }}" placeholder="Rechercher un employé..." class="w-full rounded-lg border border-slate-300 pl-10 pr-3 py-2.5 text-sm"></div>
+                <select name="departement" class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm"><option value="">Tous les départements</option>{% for d in departements %}<option value="{{ d }}" {% if d == departement_filtre %}selected{% endif %}>{{ d }}</option>{% endfor %}</select>
+                <select name="contrat" class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm"><option value="">Tous les contrats</option>{% for valeur, libelle in types_contrat %}<option value="{{ valeur }}" {% if valeur == contrat_filtre %}selected{% endif %}>{{ valeur }}</option>{% endfor %}</select>
+                <button class="px-4 py-2.5 rounded-lg bg-primary-600 text-white text-sm">Filtrer</button>
+            </form>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead><tr class="text-left text-slate-700 border-b"><th class="px-5 py-4 font-semibold">Employé</th><th class="px-5 py-4 font-semibold">Poste</th><th class="px-5 py-4 font-semibold">Département</th><th class="px-5 py-4 font-semibold">Contrat</th><th class="px-5 py-4 font-semibold">Salaire de base</th><th class="px-5 py-4 font-semibold">Primes</th><th class="px-5 py-4 font-semibold">Total</th><th class="px-5 py-4 font-semibold text-right">Actions</th></tr></thead>
+                    <tbody>
+                    {% for e in employes %}
+                        <tr class="border-b border-slate-100 {% if selection and selection.pk == e.pk %}bg-primary-50/60{% endif %}">
+                            <td class="px-5 py-3"><p class="font-medium text-slate-800">{{ e.nom_complet }}</p><p class="text-xs text-slate-400">{{ e.matricule }}</p></td>
+                            <td class="px-5 py-3 text-slate-600">{{ e.poste }}</td>
+                            <td class="px-5 py-3 text-slate-600">{{ e.service }}</td>
+                            <td class="px-5 py-3">{% with c=e.contrat_actuel %}{% if c %}<span class="px-2 py-0.5 rounded-md text-xs font-semibold {% if c.type_contrat == 'CDI' %}bg-green-50 text-green-700{% else %}bg-primary-50 text-primary-700{% endif %}">{{ c.type_contrat }}</span>{% else %}-{% endif %}{% endwith %}</td>
+                            <td class="px-5 py-3 text-slate-500">•••••••• FCFA</td><td class="px-5 py-3 text-slate-500">•••••••• FCFA</td><td class="px-5 py-3 text-slate-500">•••••••• FCFA</td>
+                            <td class="px-5 py-3 text-right"><a href="?{% qs employe=e.pk %}" class="inline-flex w-9 h-9 items-center justify-center rounded-lg border border-slate-200 text-primary-600 hover:bg-primary-50" title="Ouvrir la fiche"><i class='bx bx-show'></i></a></td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="8" class="px-5 py-10 text-center text-slate-400">Aucun employé.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% include "includes/pagination.html" %}
+        </div>
+
+        <aside class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 h-fit">
+            <h2 class="font-semibold text-slate-800 mb-4">Fiche employé</h2>
+            {% if selection %}
+                <div class="flex items-center gap-4">
+                    <span class="w-16 h-16 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xl font-bold">{{ selection.utilisateur|initiales }}</span>
+                    <div><p class="text-lg font-bold text-slate-900">{{ selection.nom_complet }}</p><p class="text-sm text-slate-500">{{ selection.poste }}</p><p class="text-xs text-slate-400">{{ selection.matricule }}</p></div>
+                </div>
+                <dl class="mt-4 text-sm space-y-2">
+                    <div class="flex justify-between"><dt class="text-slate-500">Département</dt><dd class="font-medium">{{ selection.service }}</dd></div>
+                    <div class="flex justify-between"><dt class="text-slate-500">Date d'embauche</dt><dd class="font-medium">{{ selection.date_embauche|date:"d F Y" }}</dd></div>
+                </dl>
+                <div class="mt-5 border-t pt-4">
+                    <p class="font-semibold text-slate-800 flex items-center gap-2"><i class='bx bx-lock-alt text-orange-500'></i> Informations de rémunération</p>
+                    {% if donnees_visibles %}
+                        {% if remuneration %}
+                        <dl class="mt-3 text-sm space-y-2">
+                            <div class="flex justify-between"><dt class="text-slate-500">Salaire de base</dt><dd class="font-medium">{{ remuneration.salaire_base }} FCFA</dd></div>
+                            <div class="flex justify-between"><dt class="text-slate-500">Primes</dt><dd class="font-medium">{{ remuneration.primes }} FCFA</dd></div>
+                            <div class="flex justify-between border-t pt-2"><dt class="font-medium">Total</dt><dd class="font-bold text-primary-600">{{ remuneration.total }} FCFA</dd></div>
+                            <p class="text-xs text-slate-400">Effective au {{ remuneration.date_effective|date:"d/m/Y" }}</p>
+                        </dl>
+                        {% else %}<p class="mt-3 text-sm text-slate-400">Aucune rémunération enregistrée.</p>{% endif %}
+                        {% if peut_ajouter %}<a href="{% url 'employees:ajouter_remuneration' selection.pk %}" class="mt-3 inline-block text-sm text-primary-600 hover:underline font-medium">+ Ajouter / modifier la rémunération</a>{% endif %}
+                    {% else %}
+                        <p class="mt-2 text-sm text-slate-500">Données sensibles masquées.</p>
+                        <form method="post">{% csrf_token %}<input type="hidden" name="employe" value="{{ selection.pk }}">
+                            <button class="mt-3 w-full px-4 py-3 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 inline-flex items-center justify-center gap-2"><i class='bx bx-lock-open-alt'></i> Afficher les données sensibles</button></form>
+                        <p class="mt-3 text-xs text-slate-500 rounded-lg bg-primary-50 p-3">En cliquant sur ce bouton, vous confirmez avoir l'autorisation nécessaire pour accéder à ces informations confidentielles. L'accès est enregistré.</p>
+                    {% endif %}
+                </div>
+            {% else %}
+                <p class="text-sm text-slate-400">Sélectionnez un employé (icône « œil ») pour ouvrir sa fiche.</p>
+            {% endif %}
+        </aside>
+    </div>
+</div>
+{% endblock %}

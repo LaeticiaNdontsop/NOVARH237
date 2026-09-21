@@ -1,21 +1,25 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib import messages
-from django.core.exceptions import PermissionDenied
-from django.db.models import Q
-from django.shortcuts import get_object_or_404, redirect
-from django.views import View
-from django.views.decorators.http import require_POST
-from django.views.generic import CreateView, TemplateView
-from django.utils.decorators import method_decorator
-from django.urls import reverse_lazy
+import os
 
-from accounts.mixins import AdminOuRHRequiredMixin, AdminRequiredMixin
-from employees.models import Employe, StatutEmploye
-from demandes.models import DemandeConge, StatutDemande, Absence, StatutAbsence, Demission, StatutDemission
-from notifications.models import ActivityLog, Notification, log_activity
+from django.conf import settings
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied, SuspiciousFileOperation
+from django.db.models import Q
+from django.http import FileResponse, Http404
+from django.shortcuts import redirect
+from django.utils import timezone
+from django.utils._os import safe_join
+from django.views import View
+from django.views.generic import TemplateView
+
+from accounts.models import Utilisateur
 from analytics import indicateurs
-from .forms import CandidatureForm, EvaluationForm, FormationForm, OffreForm
-from .models import Candidature, Evaluation, Formation, Offre, StatutOffre
+from demandes.models import (
+    Absence, DemandeConge, Demission, StatutAbsence, StatutDemande, StatutDemission,
+)
+from employees.models import Document, Employe, StatutEmploye
+from notifications.models import ActivityLog
+from notifications.views import notifications_recues
+from .models import Formation, Offre, ParticipationFormation
 
 
 class AccueilView(TemplateView):
@@ -29,6 +33,51 @@ class AccueilView(TemplateView):
         if request.user.is_authenticated:
             return redirect("core:redirection_dashboard")
         return super().dispatch(request, *args, **kwargs)
+
+
+class MediaProtegeView(LoginRequiredMixin, View):
+    """
+    RG-12 : les fichiers uploades (contrats, documents, justificatifs, CV) ne sont
+    plus servis publiquement ; chaque acces est controle selon le type de fichier.
+    """
+
+    def get(self, request, chemin):
+        try:
+            chemin_absolu = safe_join(settings.MEDIA_ROOT, chemin)
+        except SuspiciousFileOperation:
+            raise Http404
+        if not os.path.isfile(chemin_absolu):
+            raise Http404
+        if not self._autorise(request.user, chemin.replace("\\", "/")):
+            raise PermissionDenied("Vous ne pouvez pas acceder a ce fichier.")
+        return FileResponse(open(chemin_absolu, "rb"))
+
+    @staticmethod
+    def _autorise(user, chemin):
+        from employees.models import Contrat
+
+        if user.est_admin:
+            return True
+        if chemin.startswith("photos_profil/"):
+            return Utilisateur.objects.filter(photo=chemin).exists()
+        if chemin.startswith("documents/"):
+            # RG-05 : seul le proprietaire (ou l'Administrateur) consulte un document.
+            return Document.objects.filter(fichier=chemin, employe__utilisateur=user).exists()
+        if chemin.startswith("contrats/"):
+            if user.est_rh:
+                return Contrat.objects.filter(fichier_contrat=chemin).exists()
+            return Contrat.objects.filter(fichier_contrat=chemin, employe__utilisateur=user).exists()
+        if chemin.startswith("justificatifs_absence/"):
+            if user.est_rh:
+                return Absence.objects.filter(justificatif=chemin).exists()
+            return Absence.objects.filter(justificatif=chemin, employe__utilisateur=user).exists()
+        if chemin.startswith("demandes_pj/"):
+            if user.est_rh:
+                return DemandeConge.objects.filter(piece_jointe=chemin).exists()
+            return DemandeConge.objects.filter(piece_jointe=chemin, employe__utilisateur=user).exists()
+        if chemin.startswith("candidatures/"):
+            return user.a_droit("recrutements", "lecture")
+        return False
 
 
 class RedirectionDashboardView(LoginRequiredMixin, View):
@@ -47,19 +96,60 @@ class RedirectionDashboardView(LoginRequiredMixin, View):
         return redirect("core:dashboard_employe")
 
 
+def _exiger_role(user, *roles):
+    if user.role not in roles:
+        raise PermissionDenied("Ce tableau de bord est reserve a un autre role.")
+
+
 class DashboardAdminView(LoginRequiredMixin, TemplateView):
     template_name = "core/dashboard_admin.html"
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        # BF-RH-17 : indicateurs (effectif, absenteisme, turnover, conges acceptes).
-        # Version simplifiee au Jour 2 ; enrichie au Jour 4 (app analytics).
-        ctx["effectif_total"] = Employe.objects.filter(statut=StatutEmploye.ACTIF).count()
-        ctx["demandes_a_decider"] = DemandeConge.objects.filter(
-            statut=StatutDemande.EN_ATTENTE_ADMIN, admin_assigne=self.request.user
-        ).count()
-        ctx["demissions_a_traiter"] = Demission.objects.filter(statut=StatutDemission.TRANSMISE_ADMIN).count()
-        ctx["turnover_12_mois"] = indicateurs.turnover()
+        user = self.request.user
+        _exiger_role(user, "ADMIN")
+        aujourdhui = timezone.localdate()
+        debut_jour = timezone.localtime().replace(hour=0, minute=0, second=0, microsecond=0)
+
+        utilisateurs = Utilisateur.objects.all()
+        total = utilisateurs.count()
+        actifs = utilisateurs.filter(is_active=True, last_login__isnull=False).count()
+        desactives = utilisateurs.filter(is_active=False).count()
+        en_attente = utilisateurs.filter(is_active=True, last_login__isnull=True).count()
+
+        def part(n):
+            return round(n / total * 100, 1) if total else 0
+
+        segments, cumul = [], 0.0
+        for couleur, n in (("#0b52d9", actifs), ("#f97316", desactives), ("#cbd5e1", en_attente)):
+            p = n / total * 100 if total else 0
+            segments.append(f"{couleur} {cumul:.2f}% {cumul + p:.2f}%")
+            cumul += p
+
+        actions_jour = ActivityLog.objects.filter(date_creation__gte=debut_jour)
+        alertes_jour = actions_jour.filter(resultat="ALERTE").count()
+        ctx.update({
+            "nb_utilisateurs": total,
+            "nouveaux_ce_mois": utilisateurs.filter(date_creation__year=aujourdhui.year,
+                                                    date_creation__month=aujourdhui.month).count(),
+            "nb_roles_actifs": utilisateurs.values("role").distinct().count(),
+            "nb_actions_jour": actions_jour.count(),
+            "nb_alertes_jour": alertes_jour,
+            "comptes": [
+                {"libelle": "Actifs", "n": actifs, "pct": part(actifs), "couleur": "#0b52d9"},
+                {"libelle": "Désactivés", "n": desactives, "pct": part(desactives), "couleur": "#f97316"},
+                {"libelle": "En attente", "n": en_attente, "pct": part(en_attente), "couleur": "#cbd5e1"},
+            ],
+            "gradient_comptes": "conic-gradient(" + ", ".join(segments) + ")" if total else "none",
+            "activite_recente": ActivityLog.objects.select_related("utilisateur")[:5],
+            "demandes_a_decider": DemandeConge.objects.filter(statut=StatutDemande.EN_ATTENTE_ADMIN).filter(
+                Q(admin_assigne=user) | Q(admin_assigne__isnull=True)).count(),
+            "demissions_a_traiter": Demission.objects.filter(statut=StatutDemission.TRANSMISE_ADMIN).count(),
+            "absences_rh_a_valider": Absence.objects.filter(
+                statut=StatutAbsence.EN_ATTENTE, employe__utilisateur__role="RH").count(),
+            "effectif_total": Employe.objects.filter(statut=StatutEmploye.ACTIF).count(),
+            "turnover_12_mois": indicateurs.turnover(),
+        })
         return ctx
 
 
@@ -68,12 +158,43 @@ class DashboardRHView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["effectif_total"] = Employe.objects.filter(statut=StatutEmploye.ACTIF).count()
-        ctx["demandes_a_traiter"] = DemandeConge.objects.filter(
-            statut=StatutDemande.EN_ATTENTE_RH, rh_assigne=self.request.user
-        ).count()
-        ctx["absences_a_valider"] = Absence.objects.filter(statut=StatutAbsence.EN_ATTENTE).count()
-        ctx["demissions_en_cours"] = Demission.objects.exclude(statut=StatutDemission.COMMUNIQUEE).count()
+        user = self.request.user
+        _exiger_role(user, "RH")
+        autres_demandes = DemandeConge.objects.exclude(employe__utilisateur=user)
+        en_attente = autres_demandes.filter(statut__in=[
+            StatutDemande.EN_ATTENTE_RH, StatutDemande.EN_ATTENTE_ADMIN, StatutDemande.APPROUVEE_A_NOTIFIER])
+        historique = indicateurs.historique_effectif(6)
+        variation = indicateurs.variation_effectif(6)
+        absences_courant, absences_precedent = indicateurs.absences_mois_et_precedent()
+        variation_absences = None
+        if absences_precedent:
+            variation_absences = round((absences_courant - absences_precedent) / absences_precedent * 100)
+        absences = Absence.objects.exclude(employe__utilisateur=user)
+        aujourdhui = timezone.localdate()
+        ctx.update({
+            "effectif_total": Employe.objects.filter(statut=StatutEmploye.ACTIF).count(),
+            "embauches_du_mois": indicateurs.embauches_du_mois(),
+            "nb_recrutements": sum(1 for o in Offre.objects.all() if o.est_active),
+            "nb_demandes_attente": en_attente.count(),
+            "demandes_a_traiter": autres_demandes.filter(
+                statut=StatutDemande.EN_ATTENTE_RH, rh_assigne=user).count(),
+            "demandes_a_communiquer": autres_demandes.filter(
+                statut=StatutDemande.APPROUVEE_A_NOTIFIER, rh_assigne=user).count(),
+            "nb_absences": absences.filter(statut=StatutAbsence.APPROUVEE, date_debut__lte=aujourdhui,
+                                           date_fin__gte=aujourdhui).count(),
+            "absences_a_valider": absences.filter(statut=StatutAbsence.EN_ATTENTE).count(),
+            "demissions_en_cours": Demission.objects.exclude(statut=StatutDemission.COMMUNIQUEE).count(),
+            "courbe": indicateurs.courbe_svg(historique),
+            "repartition": indicateurs.repartition_departements(),
+            "demandes_recentes": autres_demandes.select_related("employe__utilisateur")[:5],
+            "variation_effectif": variation,
+            "delai_moyen": indicateurs.delai_moyen_traitement_jours(),
+            "absences_ce_mois": absences_courant,
+            "variation_absences": variation_absences,
+        })
+        ctx["texte_demandes"] = (
+            f"{ctx['demandes_a_traiter']} à transmettre · {ctx['demandes_a_communiquer']} à communiquer"
+        )
         return ctx
 
 
@@ -82,190 +203,60 @@ class DashboardEmployeView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        fiche = getattr(self.request.user, "fiche_employe", None)
+        user = self.request.user
+        fiche = getattr(user, "fiche_employe", None)
         ctx["fiche"] = fiche
+        ctx["notifications_recentes"] = notifications_recues(user).order_by("-date_creation")[:5]
         if fiche is not None:
-            ctx["mes_demandes_en_cours"] = DemandeConge.objects.filter(employe=fiche).exclude(
-                statut__in=["APPROUVEE", "REJETEE_RH", "REJETEE_ADMIN"]
-            ).count()
+            demandes = DemandeConge.objects.filter(employe=fiche)
+            ctx["demandes_en_cours"] = demandes.exclude(
+                statut__in=["APPROUVEE", "REJETEE_RH", "REJETEE_ADMIN"]).count()
+            ctx["mes_demandes_recentes"] = demandes[:5]
+            ctx["nb_documents"] = Document.objects.filter(employe=fiche).count()
+            ctx["nb_absences_attente"] = Absence.objects.filter(
+                employe=fiche, statut=StatutAbsence.EN_ATTENTE).count()
+            ctx["nb_formations"] = ParticipationFormation.objects.filter(
+                employe=fiche, formation__annulee=False, formation__date_formation__gte=timezone.localdate()).count()
+            contrat = fiche.contrats.order_by("-date_debut").first()
+            ctx["contrat"] = contrat
         return ctx
 
 
-class HistoriqueEvaluationsFormationsView(AdminOuRHRequiredMixin, TemplateView):
-    template_name = "core/historique_evaluations_formations.html"
+class RechercheView(LoginRequiredMixin, TemplateView):
+    """
+    Recherche globale de la barre du haut. RG-06 : chaque role ne trouve que ce
+    qu'il a le droit de consulter (un employe ne voit que ses propres demandes).
+    """
+    template_name = "core/recherche.html"
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        filtre = Q(action__icontains="evaluation") | Q(details__icontains="evaluation")
-        filtre |= Q(action__icontains="formation") | Q(details__icontains="formation")
-        ctx["historique"] = ActivityLog.objects.filter(filtre).order_by("-date_creation")[:200]
-        return ctx
-
-
-class EvaluationsFormationsView(AdminOuRHRequiredMixin, TemplateView):
-    template_name = "core/evaluations_formations.html"
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx["evaluations"] = Evaluation.objects.select_related("employe__utilisateur").all()
-        ctx["formations"] = Formation.objects.prefetch_related("participants").all()
-        ctx["evaluation_form"] = EvaluationForm()
-        ctx["formation_form"] = FormationForm()
-        return ctx
-
-
-class CreerEvaluationView(AdminOuRHRequiredMixin, CreateView):
-    model = Evaluation
-    form_class = EvaluationForm
-    template_name = "core/evaluation_form.html"
-    success_url = reverse_lazy("core:evaluations_formations")
-
-    def form_valid(self, form):
-        form.instance.creee_par = self.request.user
-        response = super().form_valid(form)
-        log_activity(
-            self.request.user,
-            "Creation d'une evaluation",
-            f"Evaluation pour {form.instance.employe.nom_complet} enregistree.",
-        )
-        messages.success(self.request, "Evaluation enregistree.")
-        return response
-
-
-class CreerFormationView(AdminOuRHRequiredMixin, CreateView):
-    model = Formation
-    form_class = FormationForm
-    template_name = "core/formation_form.html"
-    success_url = reverse_lazy("core:evaluations_formations")
-
-    def form_valid(self, form):
-        form.instance.creee_par = self.request.user
-        response = super().form_valid(form)
-        log_activity(
-            self.request.user,
-            "Planification d'une formation",
-            f"Formation {form.instance.titre} planifiee.",
-        )
-        messages.success(self.request, "Formation planifiee.")
-        return response
-
-
-class HistoriqueRecrutementsView(AdminOuRHRequiredMixin, TemplateView):
-    template_name = "core/historique_recrutements.html"
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        filtre = Q(action__icontains="candidature") | Q(details__icontains="candidature")
-        filtre |= Q(action__icontains="offre") | Q(details__icontains="offre")
-        filtre |= Q(action__icontains="recrutement") | Q(details__icontains="recrutement")
-        ctx["historique"] = ActivityLog.objects.filter(filtre).order_by("-date_creation")[:200]
-        return ctx
-
-
-class RecrutementsView(AdminOuRHRequiredMixin, TemplateView):
-    template_name = "core/recrutements.html"
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx["candidatures"] = Candidature.objects.select_related("offre").all()
-        return ctx
-
-
-class OffresView(LoginRequiredMixin, TemplateView):
-    template_name = "core/offres.html"
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        if self.request.user.est_admin or self.request.user.est_rh:
-            offres = Offre.objects.all()
-            ctx["offre_form"] = OffreForm()
-        else:
-            offres = Offre.objects.filter(statut=StatutOffre.PUBLIEE)
-        ctx["offres"] = offres
-        ctx["candidature_form"] = CandidatureForm()
-        return ctx
-
-
-class CreerOffreView(AdminOuRHRequiredMixin, CreateView):
-    model = Offre
-    form_class = OffreForm
-    template_name = "core/offre_form.html"
-    success_url = reverse_lazy("core:offres")
-
-    def form_valid(self, form):
-        form.instance.creee_par = self.request.user
-        response = super().form_valid(form)
-        log_activity(
-            self.request.user,
-            "Creation d'une offre",
-            f"Offre {form.instance.poste} enregistree.",
-        )
-        messages.success(self.request, "Offre enregistree.")
-        return response
-
-
-@method_decorator(require_POST, name="dispatch")
-class PostulerOffreView(LoginRequiredMixin, View):
-    def post(self, request, pk):
-        offre = get_object_or_404(Offre, pk=pk, statut=StatutOffre.PUBLIEE)
-        if not request.user.est_employe:
-            raise PermissionDenied("Seul un employe peut postuler a une offre.")
-        form = CandidatureForm(request.POST, request.FILES)
-        if form.is_valid():
-            candidature = form.save(commit=False)
-            candidature.offre = offre
-            candidature.save()
-            log_activity(
-                request.user,
-                "Candidature soumise",
-                f"Candidature soumise pour l'offre {offre.poste}.",
-            )
-            messages.success(request, "Votre candidature a ete enregistree.")
-        else:
-            messages.error(request, "Verifiez les informations de votre candidature.")
-        return redirect("core:offres")
-
-
-@require_POST
-def modifier_statut_candidature(request, pk):
-    if not request.user.is_authenticated:
-        raise PermissionDenied
-    if not (request.user.est_admin or request.user.est_rh):
-        raise PermissionDenied
-    candidature = get_object_or_404(Candidature, pk=pk)
-    statut = request.POST.get("statut")
-    if statut not in dict(candidature._meta.get_field("statut").choices):
-        messages.error(request, "Statut de candidature invalide.")
-    else:
-        candidature.statut = statut
-        candidature.save(update_fields=["statut"])
-        log_activity(
-            request.user,
-            "Mise a jour du statut d'une candidature",
-            f"Candidature {candidature.email} : {statut}.",
-        )
-        messages.success(request, "Statut de candidature mis a jour.")
-    return redirect("core:recrutements")
-
-
-class RolesDroitsView(AdminRequiredMixin, TemplateView):
-    template_name = "core/roles_droits.html"
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx["roles"] = [
-            {"nom": "Administrateur", "droits": ["Créer les comptes", "Valider les demandes", "Accéder au journal d’activité", "Gérer les rôles"]},
-            {"nom": "Responsable RH", "droits": ["Gérer les fiches employe", "Traiter les congés et absences", "Consulter les évaluations", "Envoyer notifications"]},
-            {"nom": "Employé", "droits": ["Consulter son profil", "Déclarer une demande", "Voir ses documents et rémunérations", "Recevoir des notifications"]},
-        ]
-        return ctx
-
-
-class JournalActiviteView(AdminRequiredMixin, TemplateView):
-    template_name = "core/journal_activite.html"
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx["activites"] = list(ActivityLog.objects.select_related("utilisateur").order_by("-date_creation")[:200])
-        ctx["notifications_recentes"] = list(Notification.objects.select_related("expediteur", "destinataire").order_by("-date_creation")[:10])
+        user = self.request.user
+        q = self.request.GET.get("q", "").strip()
+        ctx["q"] = q
+        resultats = {}
+        if len(q) >= 2:
+            if user.a_droit("employes", "lecture"):
+                resultats["employes"] = Employe.objects.select_related("utilisateur").filter(
+                    Q(utilisateur__last_name__icontains=q) | Q(utilisateur__first_name__icontains=q)
+                    | Q(matricule__icontains=q) | Q(poste__icontains=q) | Q(service__icontains=q))[:10]
+            if user.a_droit("recrutements", "lecture"):
+                resultats["offres"] = Offre.objects.filter(
+                    Q(poste__icontains=q) | Q(departement__icontains=q) | Q(competences__icontains=q))[:10]
+            demandes = DemandeConge.objects.select_related("employe__utilisateur")
+            if not user.a_droit("demandes", "lecture"):
+                demandes = demandes.filter(employe__utilisateur=user)
+            resultats["demandes"] = demandes.filter(
+                Q(motif__icontains=q) | Q(employe__utilisateur__last_name__icontains=q)
+                | Q(employe__utilisateur__first_name__icontains=q))[:10]
+            formations = Formation.objects.filter(Q(titre__icontains=q) | Q(description__icontains=q))
+            if not user.a_droit("formations", "lecture"):
+                formations = formations.filter(participations__employe__utilisateur=user)
+            resultats["formations"] = formations.distinct()[:10]
+            if user.a_droit("utilisateurs", "lecture"):
+                resultats["utilisateurs"] = Utilisateur.objects.filter(
+                    Q(last_name__icontains=q) | Q(first_name__icontains=q) | Q(email__icontains=q)
+                    | Q(username__icontains=q))[:10]
+        ctx["resultats"] = resultats
+        ctx["nb_resultats"] = sum(len(v) for v in resultats.values())
         return ctx

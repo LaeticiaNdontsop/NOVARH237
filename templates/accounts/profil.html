@@ -1,20 +1,86 @@
 {% extends "base.html" %}
+{% load nova_extras %}
 {% block title %}Mon profil{% endblock %}
-{% block page_titre %}Mon profil{% endblock %}
+{% block page_titre %}Profil{% endblock %}
 
 {% block content %}
-<h1 class="text-2xl font-semibold text-slate-800 mb-6">Mon profil</h1>
+<div class="space-y-6 max-w-6xl">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-slate-900">Mon profil</h1>
+            <p class="text-slate-500 mt-1">Gérez vos informations personnelles et les paramètres de votre compte.</p>
+        </div>
+        {% if not edition %}<a href="?modifier=1" class="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700"><i class='bx bx-edit'></i> Modifier mon profil</a>{% endif %}
+    </div>
 
-<div class="bg-white rounded-xl border border-slate-200 p-6 max-w-lg">
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {% include "includes/form_champs.html" %}
-        <button type="submit" class="mt-2 px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">
-            Enregistrer
-        </button>
+    {% if edition %}
+    <form method="post" enctype="multipart/form-data" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">{% csrf_token %}
+        {% if form.non_field_errors %}<div class="rounded-lg bg-red-50 text-red-700 border border-red-200 px-4 py-3 text-sm">{{ form.non_field_errors }}</div>{% endif %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% include "includes/champ.html" with champ=form.first_name %}
+            {% include "includes/champ.html" with champ=form.last_name %}
+            {% include "includes/champ.html" with champ=form.email %}
+            {% include "includes/champ.html" with champ=form.telephone %}
+            {% include "includes/champ.html" with champ=form.adresse %}
+            {% include "includes/champ.html" with champ=form.photo %}
+        </div>
+        <p class="text-xs text-slate-400">Les informations professionnelles (poste, département, contrat) sont en lecture seule : elles sont gérées par le service RH.</p>
+        <div class="flex gap-3"><button type="submit" class="px-5 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700">Enregistrer</button><a href="{% url 'accounts:profil' %}" class="px-5 py-2.5 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Annuler</a></div>
     </form>
-    <a href="{% url 'accounts:changer_mot_de_passe' %}" class="inline-block mt-4 text-sm text-primary-600 hover:underline">
-        Changer mon mot de passe →
-    </a>
+    {% endif %}
+
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-wrap items-center gap-6">
+        {% if user.photo %}<img src="{{ user.photo.url }}" alt="" class="w-28 h-28 rounded-full object-cover">
+        {% else %}<span class="w-28 h-28 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-4xl font-bold">{{ user|initiales }}</span>{% endif %}
+        <div>
+            <h2 class="text-3xl font-bold text-slate-900">{{ user.get_full_name|default:user.username }}</h2>
+            <div class="mt-2 flex flex-wrap gap-2">
+                <span class="px-2.5 py-1 rounded-md bg-primary-50 text-primary-700 text-sm font-medium inline-flex items-center gap-1"><i class='bx bx-shield-quarter'></i> {{ user.get_role_display }}</span>
+                {% if fiche %}<span class="px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 text-sm">{{ fiche.matricule }}</span>{% include "includes/badge_couleur.html" with couleur="vert" texte=fiche.get_statut_display %}{% endif %}
+            </div>
+            {% if fiche %}<p class="text-slate-500 mt-2">{{ fiche.poste }} · Département {{ fiche.service }}</p>{% endif %}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h2 class="font-semibold text-slate-800 mb-3 flex items-center gap-2"><i class='bx bx-user text-primary-600 text-xl'></i> Informations personnelles</h2>
+            <dl class="text-sm divide-y divide-slate-100">
+                <div class="py-2.5 flex justify-between"><dt class="text-slate-500">Identifiant</dt><dd class="font-medium">{{ user.username }}</dd></div>
+                <div class="py-2.5 flex justify-between"><dt class="text-slate-500">Nom</dt><dd class="font-medium">{{ user.last_name|default:"-" }}</dd></div>
+                <div class="py-2.5 flex justify-between"><dt class="text-slate-500">Prénom</dt><dd class="font-medium">{{ user.first_name|default:"-" }}</dd></div>
+                <div class="py-2.5 flex justify-between"><dt class="text-slate-500">E-mail</dt><dd class="font-medium text-primary-600">{{ user.email|default:"-" }}</dd></div>
+                <div class="py-2.5 flex justify-between"><dt class="text-slate-500">Téléphone</dt><dd class="font-medium">{{ user.telephone|default:"-" }}</dd></div>
+                <div class="py-2.5 flex justify-between"><dt class="text-slate-500">Adresse</dt><dd class="font-medium text-right">{{ user.adresse|default:"-" }}</dd></div>
+                {% if fiche %}
+                <div class="py-2.5 flex justify-between"><dt class="text-slate-500">Date de naissance</dt><dd class="font-medium">{{ fiche.date_naissance|date:"d/m/Y"|default:"-" }}</dd></div>
+                <div class="py-2.5 flex justify-between"><dt class="text-slate-500">Situation familiale</dt><dd class="font-medium">{{ fiche.get_situation_familiale_display|default:"-" }}</dd></div>
+                {% endif %}
+            </dl>
+        </div>
+
+        <div class="space-y-4">
+            {% if fiche %}
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <h2 class="font-semibold text-slate-800 mb-3 flex items-center gap-2"><i class='bx bx-briefcase text-primary-600 text-xl'></i> Informations professionnelles</h2>
+                <dl class="text-sm divide-y divide-slate-100">
+                    <div class="py-2.5 flex justify-between"><dt class="text-slate-500">Département</dt><dd class="font-medium">{{ fiche.service }}</dd></div>
+                    <div class="py-2.5 flex justify-between"><dt class="text-slate-500">Poste</dt><dd class="font-medium">{{ fiche.poste }}</dd></div>
+                    <div class="py-2.5 flex justify-between"><dt class="text-slate-500">Type de contrat</dt><dd class="font-medium">{{ fiche.contrat_actuel.get_type_contrat_display|default:"-" }}</dd></div>
+                    <div class="py-2.5 flex justify-between"><dt class="text-slate-500">Date d'embauche</dt><dd class="font-medium">{{ fiche.date_embauche|date:"d/m/Y" }}</dd></div>
+                    <div class="py-2.5 flex justify-between"><dt class="text-slate-500">Manager</dt><dd class="font-medium">{{ fiche.manager.nom_complet|default:"-" }}</dd></div>
+                </dl>
+            </div>
+            {% endif %}
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <h2 class="font-semibold text-slate-800 mb-3 flex items-center gap-2"><i class='bx bx-shield text-primary-600 text-xl'></i> Sécurité du compte</h2>
+                <dl class="text-sm divide-y divide-slate-100">
+                    <div class="py-2.5 flex justify-between"><dt class="text-slate-500">Dernière connexion</dt><dd class="font-medium">{{ user.last_login|date:"d/m/Y à H:i"|default:"Première connexion" }}</dd></div>
+                    <div class="py-2.5 flex justify-between"><dt class="text-slate-500">Compte créé le</dt><dd class="font-medium">{{ user.date_creation|date:"d/m/Y" }}</dd></div>
+                </dl>
+                <a href="{% url 'accounts:changer_mot_de_passe' %}" class="mt-4 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-primary-600 text-primary-600 text-sm font-medium hover:bg-primary-50"><i class='bx bx-lock-alt'></i> Changer le mot de passe</a>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

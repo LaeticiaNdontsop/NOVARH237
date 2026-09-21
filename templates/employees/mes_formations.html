@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Mes formations{% endblock %}
+{% block page_titre %}Mes formations{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-5xl">
+    <div>
+        <h1 class="text-3xl font-bold text-slate-900">Mes formations</h1>
+        <p class="text-slate-500 mt-1">Les formations pour lesquelles vous avez été désigné(e) par le Responsable RH</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {% for participation in participations %}
+        {% with f=participation.formation %}
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+            <div class="flex items-start justify-between gap-3">
+                <h2 class="font-semibold text-slate-800">{{ f.titre }}</h2>
+                {% if participation.statut == "PARTICIPE" %}{% include "includes/badge_couleur.html" with couleur="vert" texte=participation.get_statut_display %}{% elif participation.statut == "ABSENT" %}{% include "includes/badge_couleur.html" with couleur="rouge" texte=participation.get_statut_display %}{% else %}{% include "includes/badge_couleur.html" with couleur="bleu" texte=participation.get_statut_display %}{% endif %}
+            </div>
+            <p class="text-sm text-slate-500 mt-1">{{ f.date_formation|date:"d/m/Y" }}{% if f.date_fin and f.date_fin != f.date_formation %} → {{ f.date_fin|date:"d/m/Y" }}{% endif %} · {{ f.duree_heures }} h · {{ f.etat }}</p>
+            {% if f.heure_debut %}<p class="text-sm text-slate-500"><i class='bx bx-time'></i> {{ f.heure_debut|time:"H:i" }}{% if f.heure_fin %} – {{ f.heure_fin|time:"H:i" }}{% endif %}</p>{% endif %}
+            {% if f.lieu %}<p class="text-sm text-slate-500"><i class='bx bx-map'></i> {{ f.lieu }}</p>{% endif %}
+            {% if f.formateur %}<p class="text-sm text-slate-500"><i class='bx bx-user'></i> Formateur : {{ f.formateur }}</p>{% endif %}
+            {% if f.description %}<p class="text-sm text-slate-600 mt-2">{{ f.description }}</p>{% endif %}
+        </div>
+        {% endwith %}
+        {% empty %}
+        <div class="md:col-span-2 bg-white rounded-2xl border border-slate-200 p-10 text-center text-slate-400">Aucune formation ne vous est assignée pour le moment.</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
