@@ -35,8 +35,17 @@
             <tbody>
             {% for offre in offres %}
                 <tr class="border-b border-slate-100 hover:bg-slate-50/60">
-                    <td class="px-5 py-4"><p class="font-semibold text-slate-800">{{ offre.poste }}</p><p class="text-xs text-slate-400">{{ offre.departement|default:"-" }} · {{ offre.lieu }} · {{ offre.statut_affiche }}</p></td>
-                    <td class="px-5 py-4"><span class="text-lg font-semibold text-slate-800">{{ offre.nombre_candidatures }}</span>{% if offre.nombre_nouvelles %}<span class="ml-1 text-xs text-green-600">dont {{ offre.nombre_nouvelles }} nouvelle{{ offre.nombre_nouvelles|pluralize }}</span>{% elif offre.nombre_candidatures %}<span class="ml-1 text-xs text-slate-400">aucune nouvelle</span>{% endif %}</td>
+                    <td class="px-5 py-4"><p class="font-semibold text-slate-800">{{ offre.poste }}</p>
+                        <p class="text-xs text-slate-400">{{ offre.departement|default:"-" }} · {{ offre.lieu }} · {{ offre.statut_affiche }}</p>
+                    </td>
+                    <td class="px-5 py-4"><span class="text-lg font-semibold text-slate-800">{{ offre.nombre_candidatures }}</span>
+                        {% if offre.nombre_nouvelles %}
+                        <span class="ml-1 text-xs text-green-600">dont {{ offre.nombre_nouvelles }} nouvelle{{ offre.nombre_nouvelles|pluralize }}
+                        </span>
+                        {% elif offre.nombre_candidatures %}
+                        <span class="ml-1 text-xs text-slate-400">aucune nouvelle</span>
+                        {% endif %}
+                    </td>
                     <td class="px-5 py-4 text-slate-600">{% if offre.derniere_candidature %}{{ offre.derniere_candidature|date:"d M Y" }}<br><span class="text-xs text-slate-400">il y a {{ offre.derniere_candidature|timesince }}</span>{% else %}–{% endif %}</td>
                     <td class="px-5 py-4">{% include "includes/badge_couleur.html" with couleur="bleu" texte=offre.etape %}{% if offre.etape == "Entretien" %}<p class="text-xs text-slate-400 mt-1">{{ offre.entretiens_planifies }} entretien(s) prévu(s)</p>{% endif %}</td>
                     <td class="px-5 py-4 text-slate-600">{{ offre.responsable.get_full_name|default:"-" }}</td>
