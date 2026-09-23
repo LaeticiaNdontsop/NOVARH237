@@ -7,22 +7,23 @@
     </div>
 
     <nav class="flex-1 py-4 space-y-1">
-        {% menu_item 'core:redirection_dashboard' 'Tableau de bord' 'bx-home-alt' 'core:dashboard_admin,core:dashboard_rh,core:dashboard_employe' %}
-
+    
         {% if user.est_admin %}
-            {% if peut.utilisateurs %}{% menu_item 'accounts:liste_utilisateurs' 'Utilisateurs' 'bx-group' 'accounts:creer_utilisateur,accounts:modifier_utilisateur,accounts:supprimer_utilisateur' %}{% endif %}
+            {% if peut.utilisateurs %}{% menu_item 'accounts:liste_utilisateurs' 'Utilisateurs' 'bx-group' 'accounts:creer_utilisateur,accounts:modifier_utilisateur,accounts:supprimer_utilisateur' %}
+        {% endif %}
             {% menu_item 'accounts:droits_acces' "Droits d'accès" 'bx-shield-quarter' %}
             {% if peut.journaux %}{% menu_item 'notifications:journal_activite' "Journaux d'activité" 'bx-file' %}{% endif %}
 
-            <p class="px-7 pt-5 pb-1 text-xs uppercase tracking-wider text-white/40">À traiter</p>
-            {% if peut.employes %}{% menu_item 'employees:liste_employes' 'Employés' 'bx-id-card' 'employees:detail_employe,employees:creer_employe,employees:modifier_employe' %}{% endif %}
-            {% if peut.demandes %}{% menu_item 'demandes:admin_a_decider' 'Congés & permissions' 'bx-calendar-check' 'demandes:detail_demande' %}{% endif %}
-            {% if peut.demissions %}{% menu_item 'demandes:admin_demissions' 'Démissions - préavis' 'bx-log-out-circle' 'demandes:definir_preavis' %}{% endif %}
-            {% if peut.absences %}{% menu_item 'demandes:rh_absences' 'Absences des RH' 'bx-calendar-x' %}{% endif %}
-            {% if peut.remunerations %}{% menu_item 'employees:liste_remunerations' 'Rémunérations' 'bx-wallet' %}{% endif %}
-            {% if peut.analyse %}{% menu_item 'analytics:analyse' 'Analyse intelligente' 'bx-line-chart' 'analytics:tableaux_bord,analytics:prediction_libre,analytics:prediction_employe,analytics:historique,analytics:historique_employe' %}{% endif %}
-            {% if peut.assistant %}{% menu_item 'analytics:assistant' 'Assistant IA' 'bx-bot' %}{% endif %}
+            {% if peut.demandes or peut.demissions or peut.absences %}
+                <div class="space-y-1">
+                    <p class="px-7 pt-4 pb-1 text-xs uppercase tracking-wider text-white/40">Situations administratives</p>
+                    {% if peut.demandes %}{% menu_item 'demandes:admin_a_decider' 'Congés & permissions' 'bx-calendar-check' 'demandes:admin_a_decider' %}{% endif %}
+                    {% if peut.demissions %}{% menu_item 'demandes:admin_demissions' 'Démissions - préavis' 'bx-log-out-circle' 'demandes:admin_demissions,demandes:definir_preavis' %}{% endif %}
+                    {% if peut.absences %}{% menu_item 'demandes:rh_absences' 'Absences des RH' 'bx-calendar-x' 'demandes:rh_absences' %}{% endif %}
+                </div>
+            {% endif %}
         {% else %}
+
             {% if peut.employes %}{% menu_item 'employees:liste_employes' 'Employés' 'bx-group' 'employees:detail_employe,employees:creer_employe,employees:modifier_employe' %}{% endif %}
             {% if peut.recrutements %}
                 {% menu_item 'core:recrutements' 'Recrutements' 'bx-user-plus' 'core:candidatures_offre,core:ajouter_candidature,core:detail_candidature,core:historique_recrutements' %}
@@ -34,7 +35,7 @@
             {% if peut.absences %}{% menu_item 'demandes:rh_absences' 'Absences' 'bx-calendar-x' 'demandes:historique_absences' %}{% endif %}
             {% if peut.demissions %}{% menu_item 'demandes:rh_demissions_a_transmettre' 'Démissions' 'bx-log-out-circle' 'demandes:rh_demissions_a_communiquer,demandes:historique_demissions' %}{% endif %}
             {% if peut.analyse %}{% menu_item 'analytics:analyse' 'Analyse intelligente' 'bx-line-chart' 'analytics:tableaux_bord,analytics:prediction_libre,analytics:prediction_employe,analytics:historique,analytics:historique_employe' %}{% endif %}
-            {% if peut.assistant %}{% menu_item 'analytics:assistant' 'Assistant IA' 'bx-bot' %}{% endif %}
+            {% if user.est_rh and peut.assistant %}{% menu_item 'analytics:assistant' 'Assistant IA' 'bx-bot' %}{% endif %}
             {% if peut.utilisateurs %}{% menu_item 'accounts:liste_utilisateurs' 'Utilisateurs' 'bx-user-check' 'accounts:creer_utilisateur,accounts:modifier_utilisateur' %}{% endif %}
             {% if peut.journaux %}{% menu_item 'notifications:journal_activite' "Journaux d'activité" 'bx-file' %}{% endif %}
 
