@@ -14,7 +14,7 @@
         <a href="{% url 'employees:liste_employes' %}" class="block">{% include "includes/kpi.html" with icone="bx-group" teinte="blue" valeur=effectif_total libelle="Employés" sous_texte=embauches_du_mois|stringformat:"d"|add:" embauche(s) ce mois" %}</a>
         <a href="{% url 'core:recrutements' %}" class="block">{% include "includes/kpi.html" with icone="bx-search-alt" teinte="teal" valeur=nb_recrutements libelle="Recrutements en cours" sous_texte="Offres actives" %}</a>
         <a href="{% url 'demandes:rh_demandes' %}" class="block">{% include "includes/kpi.html" with icone="bx-file" teinte="orange" valeur=nb_demandes_attente libelle="Demandes en attente" sous_texte=texte_demandes %}</a>
-        <a href="{% url 'demandes:rh_absences' %}" class="block">{% include "includes/kpi.html" with icone="bx-calendar-x" teinte="red" valeur=nb_absences libelle="Absences en cours" sous_texte=absences_a_valider|stringformat:"d"|add:" à valider" %}</a>
+        <a href="{% url 'demandes:rh_absences' %}" class="block">{% include "includes/kpi.html" with icone="bx-calendar-x" teinte="red" valeur=nb_absences libelle="Déclarations d'absence" sous_texte="Suivi informatif" %}</a>
     </div>
 
     <div class="grid grid-cols-1 xl:grid-cols-5 gap-4">

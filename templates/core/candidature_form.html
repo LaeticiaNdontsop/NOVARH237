@@ -4,15 +4,20 @@
 {% block content %}
 <div class="max-w-5xl space-y-6">
     <div>
-        <h1 class="text-3xl font-bold text-slate-900">Importer une candidature</h1>
-        <p class="text-slate-500 mt-1">Offre : <span class="font-medium text-slate-700">{{ offre.poste }}</span>. Renseignez manuellement les informations reçues ; le candidat est externe et n'a pas de compte sur NOVA RH.</p>
+            <h1 class="text-3xl font-bold text-slate-900">Nouvelle candidature</h1>
+        <p class="text-slate-500 mt-1">Renseignez l'offre concernée et les informations reçues du candidat externe.</p>
     </div>
     <form method="post" enctype="multipart/form-data" class="space-y-6">{% csrf_token %}
         {% if form.non_field_errors %}<div class="rounded-lg bg-red-50 text-red-700 border border-red-200 px-4 py-3 text-sm">{{ form.non_field_errors }}</div>{% endif %}
         <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h2 class="font-semibold text-slate-800 mb-4">Offre concernée</h2>
+            {% include "includes/champ.html" with champ=form.offre %}
+        </section>
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
             <h2 class="font-semibold text-slate-800 mb-4">Coordonnées du candidat</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {% include "includes/champ.html" with champ=form.nom_candidat %}
+                {% include "includes/champ.html" with champ=form.prenom %}
                 {% include "includes/champ.html" with champ=form.email %}
                 {% include "includes/champ.html" with champ=form.telephone %}
                 {% include "includes/champ.html" with champ=form.localisation %}
@@ -34,8 +39,13 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {% include "includes/champ.html" with champ=form.cv %}
                 {% include "includes/champ.html" with champ=form.lettre_motivation %}
+                {% include "includes/champ.html" with champ=form.document_fourni %}
             </div>
-            <p class="text-xs text-slate-400 mt-2">Formats acceptés : PDF, JPG, PNG (max. 5 Mo).</p>
+            <p class="text-xs text-slate-400 mt-2">Formats acceptés : PDF, JPG, PNG et autres fichiers courants (max. 5 Mo).</p>
+        </section>
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h2 class="font-semibold text-slate-800 mb-4">Statut de la candidature</h2>
+            {% include "includes/champ.html" with champ=form.statut %}
         </section>
         <div class="flex justify-end gap-3">
             <a href="{% url 'core:candidatures_offre' offre.pk %}" class="px-5 py-2.5 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Annuler</a>

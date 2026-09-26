@@ -3,7 +3,7 @@ from django import forms
 from accounts.models import Utilisateur
 from demandes.validators import valider_fichier_justificatif
 from employees.models import Employe, StatutEmploye, TypeContrat
-from .models import Candidature, Formation, ModeTravail, Offre, ParticipationFormation, StatutOffre
+from .models import Candidature, Formation, ModeTravail, Offre, ParticipationFormation, StatutCandidature, StatutOffre
 
 
 class FormationForm(forms.ModelForm):
@@ -103,17 +103,29 @@ class OffreForm(forms.ModelForm):
 
 class CandidatureForm(forms.ModelForm):
     """Saisie manuelle, par le Responsable RH, d'une candidature recue (RG-11 : pas de compte candidat)."""
+    statut = forms.ChoiceField(
+        label="Statut",
+        choices=(
+            (StatutCandidature.ENTRETIEN, "Entretien planifié"),
+            (StatutCandidature.RETENUE, "Candidat recruté"),
+        ),
+    )
 
     class Meta:
         model = Candidature
         fields = [
-            "nom_candidat", "email", "telephone", "localisation", "linkedin", "experience_annees",
+            "offre", "nom_candidat", "prenom", "email", "telephone", "localisation", "linkedin", "experience_annees",
             "disponibilite", "salaire_souhaite", "competences", "cv", "lettre_motivation", "commentaire",
+            "document_fourni", "statut",
         ]
         widgets = {
             "commentaire": forms.Textarea(attrs={"rows": 3}),
             "competences": forms.TextInput(attrs={"placeholder": "Stratégie digitale, SEO, Leadership"}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["statut"].initial = StatutCandidature.ENTRETIEN
 
     def _valider(self, champ):
         fichier = self.cleaned_data.get(champ)
@@ -126,3 +138,6 @@ class CandidatureForm(forms.ModelForm):
 
     def clean_lettre_motivation(self):
         return self._valider("lettre_motivation")
+
+    def clean_document_fourni(self):
+        return self._valider("document_fourni")

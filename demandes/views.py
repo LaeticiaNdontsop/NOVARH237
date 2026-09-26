@@ -374,13 +374,14 @@ class MesAbsencesListView(LoginRequiredMixin, ListView):
         fiche = _fiche_employe_ou_403(self.request)
         annee = timezone.localdate().year
         toutes = Absence.objects.filter(employe=fiche)
-        ctx["nb_validees_annee"] = toutes.filter(statut=StatutAbsence.APPROUVEE, date_debut__year=annee).count()
-        ctx["nb_en_attente"] = toutes.filter(statut=StatutAbsence.EN_ATTENTE).count()
+        ctx["nb_validees_annee"] = toutes.filter(date_debut__year=annee).count()
+        ctx["nb_en_cours"] = toutes.filter(date_debut__lte=timezone.localdate(),
+                           date_fin__gte=timezone.localdate()).count()
         ctx["nb_total"] = toutes.count()
         return ctx
 
 
-def _destinataires_validation_absence(employe):
+def _destinataires_information_absence(employe):
     """Un employe : les RH (sauf lui). Un RH : les Administrateurs."""
     from accounts.models import Utilisateur
 
@@ -389,8 +390,8 @@ def _destinataires_validation_absence(employe):
     return list(Utilisateur.objects.filter(role="RH", is_active=True).exclude(pk=employe.utilisateur_id))
 
 
-def _absences_traitables(user):
-    """Absences qu'un utilisateur peut valider/refuser (jamais les siennes)."""
+def _absences_visibles(user):
+    """Absences visibles dans le suivi RH/admin, sans action de décision."""
     qs = Absence.objects.select_related("employe__utilisateur").exclude(employe__utilisateur=user)
     if user.est_admin:
         return qs.filter(employe__utilisateur__role="RH")
@@ -406,28 +407,29 @@ class CreerAbsenceView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         fiche = _fiche_employe_ou_403(self.request)
         form.instance.employe = fiche
+        form.instance.statut = StatutAbsence.DECLAREE
         response = super().form_valid(form)
-        for destinataire in _destinataires_validation_absence(fiche):
+        for destinataire in _destinataires_information_absence(fiche):
             notifier(self.request.user, destinataire,
-                     f"Absence a valider : {fiche.nom_complet} du {form.instance.date_debut:%d/%m/%Y} "
+                     f"Déclaration d'absence : {fiche.nom_complet} du {form.instance.date_debut:%d/%m/%Y} "
                      f"au {form.instance.date_fin:%d/%m/%Y}.")
         log_activity(
             self.request.user,
             "Declaration d'une absence",
             f"Absence declaree pour {fiche.nom_complet} du {form.instance.date_debut} au {form.instance.date_fin}.",
         )
-        messages.success(self.request, "Absence déclarée, en attente de validation.")
+        messages.success(self.request, "Votre déclaration d'absence a bien été enregistrée et transmise à titre informatif.")
         return response
 
 
 class AbsencesRHView(droit_requis("absences"), ListView):
-    """Suivi des absences : le RH valide celles des employes, l'Administrateur celles des RH."""
+    """Consultation des déclarations d'absence, sans traitement ni décision."""
     template_name = "demandes/rh_absences.html"
     context_object_name = "absences"
     paginate_by = 10
 
     def get_queryset(self):
-        qs = _absences_traitables(self.request.user)
+        qs = _absences_visibles(self.request.user)
         recherche = self.request.GET.get("q", "").strip()
         if recherche:
             qs = qs.filter(Q(employe__utilisateur__last_name__icontains=recherche)
@@ -440,50 +442,14 @@ class AbsencesRHView(droit_requis("absences"), ListView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        base = _absences_traitables(self.request.user)
+        base = _absences_visibles(self.request.user)
         aujourdhui = timezone.localdate()
-        ctx["nb_en_cours"] = base.filter(statut=StatutAbsence.APPROUVEE, date_debut__lte=aujourdhui,
-                                         date_fin__gte=aujourdhui).count()
-        ctx["nb_a_valider"] = base.filter(statut=StatutAbsence.EN_ATTENTE).count()
+        ctx["nb_en_cours"] = base.filter(date_debut__lte=aujourdhui, date_fin__gte=aujourdhui).count()
         ctx["nb_total"] = base.count()
         ctx["statuts"] = StatutAbsence.choices
         ctx["recherche"] = self.request.GET.get("q", "")
         ctx["statut_filtre"] = self.request.GET.get("statut", "")
         return ctx
-
-
-def _traiter_absence(request, pk, validation):
-    exiger_droit(request.user, "absences", "modification")
-    absence = get_object_or_404(_absences_traitables(request.user), pk=pk)
-    commentaire = request.POST.get("commentaire", "")
-    if validation:
-        absence.valider(request.user, commentaire)
-        verbe, message = "Validation", "validée"
-    else:
-        absence.rejeter(request.user, commentaire)
-        verbe, message = "Refus", "rejetée"
-    notifier(request.user, absence.employe.utilisateur,
-             f"Votre absence du {absence.date_debut:%d/%m/%Y} au {absence.date_fin:%d/%m/%Y} a ete "
-             f"{'validee' if validation else 'refusee'}.")
-    log_activity(
-        request.user,
-        f"{verbe} d'une absence",
-        f"Absence de {absence.employe.nom_complet} {'validee' if validation else 'rejetee'}.",
-    )
-    messages.success(request, f"Absence {message}.")
-    return redirect("demandes:rh_absences")
-
-
-@login_required
-@require_POST
-def valider_absence(request, pk):
-    return _traiter_absence(request, pk, True)
-
-
-@login_required
-@require_POST
-def rejeter_absence(request, pk):
-    return _traiter_absence(request, pk, False)
 
 
 # ---------------------------------------------------------------------------

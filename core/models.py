@@ -224,7 +224,8 @@ class Candidature(models.Model):
     canaux de l'entreprise) est importee et renseignee MANUELLEMENT par le Responsable RH.
     """
     offre = models.ForeignKey(Offre, on_delete=models.CASCADE, related_name="candidatures")
-    nom_candidat = models.CharField("Nom complet", max_length=150)
+    nom_candidat = models.CharField("Nom", max_length=150)
+    prenom = models.CharField("Prénom", max_length=100, blank=True)
     email = models.EmailField()
     telephone = models.CharField("Téléphone", max_length=30, blank=True)
     localisation = models.CharField(max_length=100, blank=True)
@@ -235,6 +236,7 @@ class Candidature(models.Model):
     salaire_souhaite = models.PositiveIntegerField("Salaire souhaité (FCFA / mois)", null=True, blank=True)
     cv = models.FileField("CV", upload_to="candidatures/", blank=True)
     lettre_motivation = models.FileField("Lettre de motivation", upload_to="candidatures/", blank=True)
+    document_fourni = models.FileField("Autre document fourni", upload_to="candidatures/", blank=True)
     statut = models.CharField(max_length=12, choices=StatutCandidature.choices, default=StatutCandidature.RECUE)
     commentaire = models.TextField(blank=True)
     date_entretien = models.DateTimeField("Entretien RH", null=True, blank=True)

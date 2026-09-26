@@ -8,7 +8,7 @@
         <div class="flex gap-5">
             <span class="w-20 h-20 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-2xl font-bold shrink-0">{{ candidature.nom_candidat|slice:":1"|upper }}</span>
             <div>
-                <h1 class="text-3xl font-bold text-slate-900">{{ candidature.nom_candidat }}</h1>
+                <h1 class="text-3xl font-bold text-slate-900">{% if candidature.prenom %}{{ candidature.prenom }} {% endif %}{{ candidature.nom_candidat }}</h1>
                 <p class="text-slate-500">{{ candidature.offre.poste }}</p>
                 <div class="mt-2">{% if candidature.recrute %}{% include "includes/badge_couleur.html" with couleur="vert" texte="Recruté(e)" %}{% elif candidature.statut == "RETENUE" %}{% include "includes/badge_couleur.html" with couleur="vert" texte="Retenue" %}{% elif candidature.statut == "REJETEE" %}{% include "includes/badge_couleur.html" with couleur="rouge" texte="Refusée" %}{% elif candidature.statut == "ENTRETIEN" %}{% include "includes/badge_couleur.html" with couleur="orange" texte="Entretien" %}{% else %}{% include "includes/badge_couleur.html" with couleur="orange" texte="À analyser" %}{% endif %}</div>
                 <p class="text-xs text-slate-400 mt-2">Candidature reçue le {{ candidature.date_candidature|date:"d F Y à H:i" }}{% if candidature.saisie_par %} · importée par {{ candidature.saisie_par.get_full_name }}{% endif %}</p>
@@ -76,6 +76,7 @@
                 <div class="space-y-3 text-sm">
                     <div class="flex items-center justify-between rounded-lg border border-slate-200 p-3"><span><i class='bx bxs-file-pdf text-xl text-red-500 align-middle'></i> CV</span>{% if candidature.cv %}<a href="{{ candidature.cv.url }}" class="px-3 py-1.5 rounded-lg border border-primary-200 text-primary-700 text-xs hover:bg-primary-50">Télécharger</a>{% else %}<span class="text-slate-400">Non fourni</span>{% endif %}</div>
                     <div class="flex items-center justify-between rounded-lg border border-slate-200 p-3"><span><i class='bx bxs-file text-xl text-primary-500 align-middle'></i> Lettre de motivation</span>{% if candidature.lettre_motivation %}<a href="{{ candidature.lettre_motivation.url }}" class="px-3 py-1.5 rounded-lg border border-primary-200 text-primary-700 text-xs hover:bg-primary-50">Télécharger</a>{% else %}<span class="text-slate-400">Non fournie</span>{% endif %}</div>
+                    <div class="flex items-center justify-between rounded-lg border border-slate-200 p-3"><span><i class='bx bxs-file-blank text-xl text-primary-500 align-middle'></i> Autre document</span>{% if candidature.document_fourni %}<a href="{{ candidature.document_fourni.url }}" class="px-3 py-1.5 rounded-lg border border-primary-200 text-primary-700 text-xs hover:bg-primary-50">Télécharger</a>{% else %}<span class="text-slate-400">Non fourni</span>{% endif %}</div>
                 </div>
             </div>
         </div>

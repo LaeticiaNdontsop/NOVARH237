@@ -36,7 +36,7 @@
         </div>
 
         <a href="{% url 'demandes:mes_demandes' %}" class="block">{% include "includes/kpi.html" with icone="bx-calendar-check" teinte="blue" valeur=demandes_en_cours|default:0 libelle="Demandes" sous_texte="En attente de traitement" %}</a>
-        <a href="{% url 'demandes:mes_absences' %}" class="block">{% include "includes/kpi.html" with icone="bx-calendar-x" teinte="green" valeur=nb_absences_attente|default:0 libelle="Absences" sous_texte="En attente de validation" %}</a>
+        <a href="{% url 'demandes:mes_absences' %}" class="block">{% include "includes/kpi.html" with icone="bx-calendar-x" teinte="green" valeur=nb_absences|default:0 libelle="Absences" sous_texte="Déclarations enregistrées" %}</a>
         <a href="{% url 'employees:mes_documents' %}" class="block">{% include "includes/kpi.html" with icone="bx-file" teinte="orange" valeur=nb_documents|default:0 libelle="Documents" sous_texte="Disponibles" %}</a>
     </div>
 
