@@ -32,9 +32,9 @@ def effectif_actif():
 
 def taux_absenteisme(annee=None, mois=None):
     """
-    Taux d'absenteisme du mois (par defaut le mois courant) :
+    Taux d'absenteisme du mois (par defaut le mois courant), calcule sur les absences declarees :
 
-        (somme des jours d'absence APPROUVEE du mois) / (effectif actif x jours ouvres du mois) x 100
+        (somme des jours d'absence declaree du mois) / (effectif actif x jours ouvres du mois) x 100
 
     Les absences qui chevauchent partiellement le mois ne comptent que pour
     leurs jours effectivement compris dans le mois (les bornes sont "clippees").
@@ -54,7 +54,7 @@ def taux_absenteisme(annee=None, mois=None):
 
     jours_absence = 0
     absences = Absence.objects.filter(
-        statut=StatutAbsence.APPROUVEE, date_debut__lte=fin_mois, date_fin__gte=debut_mois
+        statut=StatutAbsence.DECLAREE, date_debut__lte=fin_mois, date_fin__gte=debut_mois
     )
     for absence in absences:
         debut = max(absence.date_debut, debut_mois)
@@ -143,7 +143,7 @@ def demandes_en_attente_par_type():
         "conges_permissions": DemandeConge.objects.exclude(
             statut__in=[StatutDemande.APPROUVEE, StatutDemande.REJETEE_RH, StatutDemande.REJETEE_ADMIN]
         ).count(),
-        "absences": Absence.objects.filter(statut=StatutAbsence.EN_ATTENTE).count(),
+        "absences": Absence.objects.filter(statut=StatutAbsence.DECLAREE).count(),
         "demissions": Demission.objects.exclude(statut=StatutDemission.COMMUNIQUEE).count(),
     }
 
@@ -310,7 +310,7 @@ def absenteisme_par_service(annee=None, mois=None):
             resultats[service] = 0.0
             continue
         total = 0
-        for a in Absence.objects.filter(statut=StatutAbsence.APPROUVEE, employe__service=service,
+        for a in Absence.objects.filter(statut=StatutAbsence.DECLAREE, employe__service=service,
                                         date_debut__lte=fin_mois, date_fin__gte=debut_mois):
             total += (min(a.date_fin, fin_mois) - max(a.date_debut, debut_mois)).days + 1
         resultats[service] = round(min(total / capacite * 100, 100), 1)

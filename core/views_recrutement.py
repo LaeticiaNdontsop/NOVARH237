@@ -210,8 +210,11 @@ class AjouterCandidatureView(droit_requis("recrutements", "creation", "creation"
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        form.instance.offre = self.offre
+        self.offre = form.cleaned_data["offre"]
         form.instance.saisie_par = self.request.user
+        if form.cleaned_data["statut"] == StatutCandidature.RETENUE:
+            form.instance.recrute = True
+            form.instance.date_recrutement = timezone.now()
         response = super().form_valid(form)
         log_activity(
             self.request.user,
@@ -225,6 +228,11 @@ class AjouterCandidatureView(droit_requis("recrutements", "creation", "creation"
         ctx = super().get_context_data(**kwargs)
         ctx["offre"] = self.offre
         return ctx
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial["offre"] = self.offre.pk
+        return initial
 
     def get_success_url(self):
         return reverse_lazy("core:candidatures_offre", kwargs={"pk": self.offre.pk})

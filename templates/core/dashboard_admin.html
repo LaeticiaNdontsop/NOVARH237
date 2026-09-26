@@ -92,7 +92,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <a href="{% url 'demandes:admin_a_decider' %}" class="block">{% include "includes/kpi.html" with icone="bx-calendar-check" teinte="orange" valeur=demandes_a_decider libelle="Congés / permissions à décider" sous_texte="Voir les demandes" %}</a>
             <a href="{% url 'demandes:admin_demissions' %}" class="block">{% include "includes/kpi.html" with icone="bx-log-out-circle" teinte="violet" valeur=demissions_a_traiter libelle="Démissions à traiter" sous_texte="Fixer le préavis" %}</a>
-            <a href="{% url 'demandes:rh_absences' %}" class="block">{% include "includes/kpi.html" with icone="bx-calendar-x" teinte="teal" valeur=absences_rh_a_valider libelle="Absences de RH à valider" sous_texte="Voir les absences" %}</a>
+            <a href="{% url 'demandes:rh_absences' %}" class="block">{% include "includes/kpi.html" with icone="bx-calendar-x" teinte="teal" valeur=absences_rh_declarees libelle="Déclarations des RH" sous_texte="Suivi informatif" %}</a>
         </div>
     </div>
 </div>

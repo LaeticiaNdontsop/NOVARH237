@@ -60,7 +60,7 @@ class ListeEmployesView(droit_requis("employes"), ListView):
             "total": Employe.objects.count(),
             "peut_creer": self.request.user.a_droit("employes", "creation"),
             "peut_modifier": self.request.user.a_droit("employes", "modification"),
-            "peut_desactiver": self.request.user.a_droit("employes", "suppression"),
+            "peut_desactiver": self.request.user.est_admin and self.request.user.a_droit("employes", "suppression"),
         })
         return ctx
 
@@ -102,7 +102,7 @@ class DetailEmployeView(LoginRequiredMixin, DetailView):
             "peut_voir_documents": peut_voir_documents,
             "peut_voir_remuneration": peut_voir_remuneration,
             "peut_gerer": gestionnaire and user.a_droit("employes", "modification"),
-            "peut_desactiver": user.a_droit("employes", "suppression"),
+            "peut_desactiver": user.est_admin and user.a_droit("employes", "suppression"),
             "peut_ajouter_remuneration": user.a_droit("remunerations", "creation"),
             "onglets": onglets,
             "onglet": onglet,

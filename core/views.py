@@ -145,8 +145,8 @@ class DashboardAdminView(LoginRequiredMixin, TemplateView):
             "demandes_a_decider": DemandeConge.objects.filter(statut=StatutDemande.EN_ATTENTE_ADMIN).filter(
                 Q(admin_assigne=user) | Q(admin_assigne__isnull=True)).count(),
             "demissions_a_traiter": Demission.objects.filter(statut=StatutDemission.TRANSMISE_ADMIN).count(),
-            "absences_rh_a_valider": Absence.objects.filter(
-                statut=StatutAbsence.EN_ATTENTE, employe__utilisateur__role="RH").count(),
+            "absences_rh_declarees": Absence.objects.filter(
+                employe__utilisateur__role="RH").count(),
             "effectif_total": Employe.objects.filter(statut=StatutEmploye.ACTIF).count(),
             "turnover_12_mois": indicateurs.turnover(),
         })
@@ -170,7 +170,6 @@ class DashboardRHView(LoginRequiredMixin, TemplateView):
         if absences_precedent:
             variation_absences = round((absences_courant - absences_precedent) / absences_precedent * 100)
         absences = Absence.objects.exclude(employe__utilisateur=user)
-        aujourdhui = timezone.localdate()
         ctx.update({
             "effectif_total": Employe.objects.filter(statut=StatutEmploye.ACTIF).count(),
             "embauches_du_mois": indicateurs.embauches_du_mois(),
@@ -180,9 +179,7 @@ class DashboardRHView(LoginRequiredMixin, TemplateView):
                 statut=StatutDemande.EN_ATTENTE_RH, rh_assigne=user).count(),
             "demandes_a_communiquer": autres_demandes.filter(
                 statut=StatutDemande.APPROUVEE_A_NOTIFIER, rh_assigne=user).count(),
-            "nb_absences": absences.filter(statut=StatutAbsence.APPROUVEE, date_debut__lte=aujourdhui,
-                                           date_fin__gte=aujourdhui).count(),
-            "absences_a_valider": absences.filter(statut=StatutAbsence.EN_ATTENTE).count(),
+            "nb_absences": absences.count(),
             "demissions_en_cours": Demission.objects.exclude(statut=StatutDemission.COMMUNIQUEE).count(),
             "courbe": indicateurs.courbe_svg(historique),
             "repartition": indicateurs.repartition_departements(),
@@ -213,8 +210,7 @@ class DashboardEmployeView(LoginRequiredMixin, TemplateView):
                 statut__in=["APPROUVEE", "REJETEE_RH", "REJETEE_ADMIN"]).count()
             ctx["mes_demandes_recentes"] = demandes[:5]
             ctx["nb_documents"] = Document.objects.filter(employe=fiche).count()
-            ctx["nb_absences_attente"] = Absence.objects.filter(
-                employe=fiche, statut=StatutAbsence.EN_ATTENTE).count()
+            ctx["nb_absences"] = Absence.objects.filter(employe=fiche).count()
             ctx["nb_formations"] = ParticipationFormation.objects.filter(
                 employe=fiche, formation__annulee=False, formation__date_formation__gte=timezone.localdate()).count()
             contrat = fiche.contrats.order_by("-date_debut").first()

@@ -28,8 +28,6 @@ urlpatterns = [
     path("mes-absences/historique/", views.HistoriqueAbsencesView.as_view(), name="historique_absences"),
     path("mes-absences/nouvelle/", views.CreerAbsenceView.as_view(), name="creer_absence"),
     path("rh/absences/", views.AbsencesRHView.as_view(), name="rh_absences"),
-    path("rh/absences/<int:pk>/valider/", views.valider_absence, name="valider_absence"),
-    path("rh/absences/<int:pk>/rejeter/", views.rejeter_absence, name="rejeter_absence"),
 
     # Demission (RG-22 : Employe -> RH -> Admin -> RH -> Employe)
     path("ma-demission/", views.MaDemissionView.as_view(), name="ma_demission"),

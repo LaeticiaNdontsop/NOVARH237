@@ -157,10 +157,10 @@ class CircuitDemandesTest(Base):
 
 
 # ---------------------------------------------------------------------------
-# Absences : type, justificatif, validation
+# Absences : déclarations informatives et justificatifs
 # ---------------------------------------------------------------------------
 class AbsencesTest(Base):
-    def test_declaration_avec_justificatif_et_validation_par_le_rh(self):
+    def test_declaration_avec_justificatif_sans_validation(self):
         media = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, media, ignore_errors=True)
         with override_settings(MEDIA_ROOT=media):
@@ -171,14 +171,17 @@ class AbsencesTest(Base):
             self.assertEqual(reponse.status_code, 302)
             absence = Absence.objects.get()
             self.assertEqual(absence.type_absence, "MALADIE")
+            self.assertEqual(absence.statut, "DECLAREE")
             self.assertTrue(absence.justificatif.name.endswith(".pdf"))
             self.assertTrue(Notification.objects.filter(destinataire=self.rh, message__contains="Absence").exists())
 
             self.se_connecter(self.rh)
-            self.assertContains(self.client.get(reverse("demandes:rh_absences")), "Maladie")
-            self.client.post(reverse("demandes:valider_absence", args=[absence.pk]))
+            suivi = self.client.get(reverse("demandes:rh_absences"))
+            self.assertContains(suivi, "Maladie")
+            self.assertNotContains(suivi, "Valider")
+            self.assertNotContains(suivi, "Refuser")
             absence.refresh_from_db()
-            self.assertEqual(absence.statut, "APPROUVEE")
+            self.assertEqual(absence.statut, "DECLAREE")
 
     def test_justificatif_invalide_refuse(self):
         self.se_connecter(self.emp_user)
@@ -188,14 +191,15 @@ class AbsencesTest(Base):
         self.assertEqual(reponse.status_code, 200)
         self.assertFalse(Absence.objects.exists())
 
-    def test_l_administrateur_valide_l_absence_d_un_rh_et_le_rh_ne_valide_pas_la_sienne(self):
+    def test_l_administrateur_consulte_la_declaration_d_un_rh_sans_la_traiter(self):
         absence = Absence.objects.create(employe=self.fiche_rh, date_debut=date(2026, 11, 2), date_fin=date(2026, 11, 2))
-        self.se_connecter(self.rh)
-        self.assertEqual(self.client.post(reverse("demandes:valider_absence", args=[absence.pk])).status_code, 404)
         self.se_connecter(self.admin)
-        self.client.post(reverse("demandes:valider_absence", args=[absence.pk]))
+        suivi = self.client.get(reverse("demandes:rh_absences"))
+        self.assertContains(suivi, "Déclarée")
+        self.assertNotContains(suivi, "Valider")
+        self.assertNotContains(suivi, "Refuser")
         absence.refresh_from_db()
-        self.assertEqual(absence.statut, "APPROUVEE")
+        self.assertEqual(absence.statut, "DECLAREE")
 
 
 # ---------------------------------------------------------------------------

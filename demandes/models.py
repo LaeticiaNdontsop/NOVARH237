@@ -367,9 +367,7 @@ def reaffecter_demandes_expirees():
 # Absences
 # ---------------------------------------------------------------------------
 class StatutAbsence(models.TextChoices):
-    EN_ATTENTE = "EN_ATTENTE", "En attente de validation (RH)"
-    APPROUVEE = "APPROUVEE", "Approuvee"
-    REJETEE = "REJETEE", "Rejetee"
+    DECLAREE = "DECLAREE", "Déclarée"
 
 
 class TypeAbsence(models.TextChoices):
@@ -380,10 +378,7 @@ class TypeAbsence(models.TextChoices):
 
 
 class Absence(models.Model):
-    """
-    Declaration d'absence par l'employe, validee directement par le Responsable RH
-    (circuit plus court que les conges/permissions : pas d'escalade Admin requise).
-    """
+    """Déclaration d'absence à titre informatif, sans circuit de décision."""
     employe = models.ForeignKey(Employe, on_delete=models.CASCADE, related_name="absences")
     date_debut = models.DateField()
     date_fin = models.DateField()
@@ -392,7 +387,7 @@ class Absence(models.Model):
     motif = models.CharField("Commentaire", max_length=255, blank=True)
     justificatif = models.FileField(upload_to="justificatifs_absence/", null=True, blank=True)
 
-    statut = models.CharField(max_length=10, choices=StatutAbsence.choices, default=StatutAbsence.EN_ATTENTE)
+    statut = models.CharField(max_length=10, choices=StatutAbsence.choices, default=StatutAbsence.DECLAREE)
     date_declaration = models.DateTimeField(auto_now_add=True)
 
     traite_par = models.ForeignKey(
@@ -412,25 +407,7 @@ class Absence(models.Model):
 
     @property
     def couleur(self):
-        if self.statut == StatutAbsence.APPROUVEE:
-            return "vert"
-        if self.statut == StatutAbsence.REJETEE:
-            return "rouge"
-        return "orange"
-
-    def valider(self, utilisateur, commentaire=""):
-        self.statut = StatutAbsence.APPROUVEE
-        self.traite_par = utilisateur
-        self.commentaire_rh = commentaire
-        self.date_traitement = timezone.now()
-        self.save(update_fields=["statut", "traite_par", "commentaire_rh", "date_traitement"])
-
-    def rejeter(self, utilisateur, commentaire=""):
-        self.statut = StatutAbsence.REJETEE
-        self.traite_par = utilisateur
-        self.commentaire_rh = commentaire
-        self.date_traitement = timezone.now()
-        self.save(update_fields=["statut", "traite_par", "commentaire_rh", "date_traitement"])
+        return "bleu"
 
 
 # ---------------------------------------------------------------------------

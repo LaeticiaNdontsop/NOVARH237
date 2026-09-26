@@ -13,8 +13,8 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {% include "includes/kpi.html" with icone="bx-briefcase-alt" teinte="blue" valeur=nb_validees_annee libelle="absences cette année" sous_texte="Total validé" %}
-        {% include "includes/kpi.html" with icone="bx-time-five" teinte="orange" valeur=nb_en_attente libelle="en attente" sous_texte="Déclaration en cours de traitement" %}
+        {% include "includes/kpi.html" with icone="bx-briefcase-alt" teinte="blue" valeur=nb_validees_annee libelle="absences cette année" sous_texte="Déclarations enregistrées" %}
+        {% include "includes/kpi.html" with icone="bx-time-five" teinte="orange" valeur=nb_en_cours libelle="en cours aujourd'hui" sous_texte="Déclaration informative" %}
         {% include "includes/kpi.html" with icone="bx-calendar" teinte="green" valeur=nb_total libelle="absences déclarées" sous_texte="Depuis le début" %}
     </div>
 
@@ -43,7 +43,7 @@
         <aside class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 h-fit text-sm text-slate-600 space-y-3">
             <h2 class="font-semibold text-slate-800 flex items-center gap-2"><i class='bx bx-info-circle text-primary-600 text-xl'></i> Comment déclarer ?</h2>
             <p>Choisissez le motif de l'absence, les dates concernées, puis ajoutez si possible un justificatif (certificat médical, attestation...). Formats acceptés : PDF, JPG, PNG (max. 5 Mo).</p>
-            <p>Votre déclaration est validée par le Responsable RH{% if user.est_rh %} (pour un RH : par l'Administrateur){% endif %}. Vous êtes notifié de la décision.</p>
+            <p>Votre déclaration est transmise à titre informatif. Aucune réponse ni validation n'est attendue.</p>
         </aside>
     </div>
 </div>

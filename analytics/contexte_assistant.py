@@ -118,13 +118,13 @@ def contexte_pour_rh_ou_admin(utilisateur):
     else:
         lignes.append("- Aucune demande en attente.")
 
-    lignes.append("\nABSENCES EN ATTENTE DE VALIDATION :")
-    absences_attente = list(Absence.objects.filter(statut=StatutAbsence.EN_ATTENTE).select_related("employe__utilisateur")[:MAX_LIGNES_PAR_LISTE])
-    if absences_attente:
-        for a in absences_attente:
+    lignes.append("\nDECLARATIONS D'ABSENCE :")
+    absences_declarees = list(Absence.objects.filter(statut=StatutAbsence.DECLAREE).select_related("employe__utilisateur")[:MAX_LIGNES_PAR_LISTE])
+    if absences_declarees:
+        for a in absences_declarees:
             lignes.append(f"- {a.employe.nom_complet} : du {a.date_debut} au {a.date_fin}")
     else:
-        lignes.append("- Aucune absence en attente.")
+        lignes.append("- Aucune absence déclarée.")
 
     lignes.append("\nDEMISSIONS EN COURS DE TRAITEMENT :")
     demissions = list(Demission.objects.exclude(statut=StatutDemission.COMMUNIQUEE).select_related("employe__utilisateur")[:MAX_LIGNES_PAR_LISTE])

@@ -31,7 +31,7 @@
             <tbody>
             {% for c in candidatures %}
                 <tr class="border-b border-slate-100 hover:bg-slate-50/60">
-                    <td class="px-5 py-3"><p class="font-medium text-slate-800">{{ c.nom_candidat }}{% if c.recrute %} <span class="ml-1 text-xs px-2 py-0.5 rounded-md bg-green-50 text-green-700">Recruté</span>{% endif %}</p><p class="text-xs text-slate-400">{{ c.email }}</p></td>
+                    <td class="px-5 py-3"><p class="font-medium text-slate-800">{% if c.prenom %}{{ c.prenom }} {% endif %}{{ c.nom_candidat }}{% if c.recrute %} <span class="ml-1 text-xs px-2 py-0.5 rounded-md bg-green-50 text-green-700">Recruté</span>{% endif %}</p><p class="text-xs text-slate-400">{{ c.email }}</p></td>
                     <td class="px-5 py-3 text-slate-600">{{ c.date_candidature|date:"d M Y" }}</td>
                     <td class="px-5 py-3 text-slate-600">{% if c.experience_annees is not None %}{{ c.experience_annees }} an{{ c.experience_annees|pluralize }}{% else %}–{% endif %}</td>
                     <td class="px-5 py-3">{% if c.statut == "RETENUE" %}{% include "includes/badge_couleur.html" with couleur="vert" texte=c.get_statut_display %}{% elif c.statut == "REJETEE" %}{% include "includes/badge_couleur.html" with couleur="rouge" texte=c.get_statut_display %}{% elif c.statut == "ENTRETIEN" %}{% include "includes/badge_couleur.html" with couleur="orange" texte=c.get_statut_display %}{% else %}{% include "includes/badge_couleur.html" with couleur="bleu" texte=c.get_statut_display %}{% endif %}</td>

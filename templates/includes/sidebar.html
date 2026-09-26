@@ -34,7 +34,7 @@
             {% if peut.remunerations %}{% menu_item 'employees:liste_remunerations' 'Rémunérations' 'bx-wallet' %}{% endif %}
             {% if peut.absences %}{% menu_item 'demandes:rh_absences' 'Absences' 'bx-calendar-x' 'demandes:historique_absences' %}{% endif %}
             {% if peut.demissions %}{% menu_item 'demandes:rh_demissions_a_transmettre' 'Démissions' 'bx-log-out-circle' 'demandes:rh_demissions_a_communiquer,demandes:historique_demissions' %}{% endif %}
-            {% if peut.analyse %}{% menu_item 'analytics:analyse' 'Analyse intelligente' 'bx-line-chart' 'analytics:tableaux_bord,analytics:prediction_libre,analytics:prediction_employe,analytics:historique,analytics:historique_employe' %}{% endif %}
+            {% if peut.analyse %}{% menu_item 'analytics:analyse' 'Tableau de bord' 'bx-line-chart' 'analytics:tableaux_bord,analytics:prediction_libre,analytics:prediction_employe,analytics:historique,analytics:historique_employe' %}{% endif %}
             {% if user.est_rh and peut.assistant %}{% menu_item 'analytics:assistant' 'Assistant IA' 'bx-bot' %}{% endif %}
             {% if peut.utilisateurs %}{% menu_item 'accounts:liste_utilisateurs' 'Utilisateurs' 'bx-user-check' 'accounts:creer_utilisateur,accounts:modifier_utilisateur' %}{% endif %}
             {% if peut.journaux %}{% menu_item 'notifications:journal_activite' "Journaux d'activité" 'bx-file' %}{% endif %}
@@ -50,7 +50,7 @@
 
         <div class="pt-3 mt-3 border-t border-white/10"></div>
         {% menu_item 'notifications:mes_notifications' 'Notifications' 'bx-bell' '' nb_notifications_non_lues %}
-        {% menu_item 'accounts:profil' 'Mon profil' 'bx-user-circle' %}
+        {% if not user.est_admin %}{% menu_item 'accounts:profil' 'Mon profil' 'bx-user-circle' %}{% endif %}
     </nav>
 
     <div class="p-4 shrink-0">
