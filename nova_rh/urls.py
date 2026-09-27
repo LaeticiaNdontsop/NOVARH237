@@ -6,10 +6,19 @@ from django.conf.urls.static import static
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("core.urls")),
+    path("employe/", include("core.urls_employe")),
+    path("employe/", include("employees.urls_employe")),
+    path("employe/", include("demandes.urls_employe")),
+    path("responsable-rh/", include("core.urls_rh")),
+    path("responsable-rh/", include("employees.urls_rh")),
+    path("responsable-rh/", include("demandes.urls_rh")),
+    path("responsable-rh/", include("analytics.urls_rh")),
+    path("administrateur/", include("core.urls_admin")),
+    path("administrateur/", include("accounts.urls_admin")),
+    path("administrateur/", include("employees.urls_admin")),
+    path("administrateur/", include("demandes.urls_admin")),
+    path("administrateur/", include("notifications.urls_admin")),
     path("comptes/", include("accounts.urls")),
-    path("employes/", include("employees.urls")),
-    path("demandes/", include("demandes.urls")),
-    path("analytics/", include("analytics.urls")),
     path("notifications/", include("notifications.urls")),
 ]
 

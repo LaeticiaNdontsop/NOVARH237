@@ -69,13 +69,14 @@ class DocumentsEtFichiersTest(BaseCDCTest):
 
     def test_rh_ne_peut_pas_ouvrir_le_document_d_un_autre_employe(self):
         self.client.force_login(self.rh)
-        self.assertEqual(self.client.get(reverse("employees:document_detail", args=[self.doc.pk])).status_code, 403)
+        self.assertEqual(self.client.get(reverse("employees_admin:document_detail", args=[self.doc.pk])).status_code, 403)
 
     def test_proprietaire_et_admin_ouvrent_le_document(self):
-        for user in (self.emp_user, self.admin):
+        routes = ((self.emp_user, "employees_employe"), (self.admin, "employees_admin"))
+        for user, namespace in routes:
             self.client.force_login(user)
             self.assertEqual(
-                self.client.get(reverse("employees:document_detail", args=[self.doc.pk])).status_code, 200
+            self.client.get(reverse(f"{namespace}:document_detail", args=[self.doc.pk])).status_code, 200
             )
 
     def test_fichier_media_refuse_aux_anonymes(self):
@@ -105,7 +106,7 @@ class DocumentsEtFichiersTest(BaseCDCTest):
 class RhNeTraitePasSesPropresDemandesTest(BaseCDCTest):
     def demande_conge(self, client_user):
         self.client.force_login(client_user)
-        self.client.post(reverse("demandes:creer_demande"), {
+        self.client.post(reverse("demandes_employe:creer_demande"), {
             "type_demande": "CONGE", "date_debut": "2026-11-02", "date_fin": "2026-11-06", "motif": "Repos",
         })
         return DemandeConge.objects.latest("pk")
@@ -119,10 +120,10 @@ class RhNeTraitePasSesPropresDemandesTest(BaseCDCTest):
     def test_rh_ne_transmet_pas_sa_propre_demission(self):
         demission = Demission.objects.create(employe=self.fiche_rh, date_effective_souhaitee=date(2026, 12, 1))
         self.client.force_login(self.rh)
-        response = self.client.post(reverse("demandes:transmettre_demission", args=[demission.pk]))
+        response = self.client.post(reverse("demandes_rh:transmettre_demission", args=[demission.pk]))
         self.assertEqual(response.status_code, 404)
         self.client.force_login(self.rh2)
-        response = self.client.post(reverse("demandes:transmettre_demission", args=[demission.pk]))
+        response = self.client.post(reverse("demandes_rh:transmettre_demission", args=[demission.pk]))
         self.assertEqual(response.status_code, 302)
 
 
@@ -132,7 +133,7 @@ class RhNeTraitePasSesPropresDemandesTest(BaseCDCTest):
 class FormationsCibleesTest(BaseCDCTest):
     def creer_formation(self, cibles):
         self.client.force_login(self.rh)
-        self.client.post(reverse("core:creer_formation"), {
+        self.client.post(reverse("core_rh:creer_formation"), {
             "titre": "Securite", "description": "", "date_formation": (date.today() + timedelta(days=10)).isoformat(),
             "duree_heures": 4, "employes_cibles": [f.pk for f in cibles],
         })
@@ -141,9 +142,9 @@ class FormationsCibleesTest(BaseCDCTest):
     def test_employe_ne_voit_que_les_formations_qui_lui_sont_assignees(self):
         self.creer_formation([self.emp])
         self.client.force_login(self.emp_user)
-        self.assertContains(self.client.get(reverse("employees:mes_formations")), "Securite")
+        self.assertContains(self.client.get(reverse("employees_employe:mes_formations")), "Securite")
         self.client.force_login(self.autre_user)
-        self.assertNotContains(self.client.get(reverse("employees:mes_formations")), "Securite")
+        self.assertNotContains(self.client.get(reverse("employees_employe:mes_formations")), "Securite")
 
     def test_employe_cible_est_notifie(self):
         self.creer_formation([self.emp])
@@ -154,7 +155,7 @@ class FormationsCibleesTest(BaseCDCTest):
         participation = ParticipationFormation.objects.get(formation=formation, employe=self.emp)
         self.assertEqual(participation.statut, StatutParticipation.CIBLE)
         self.client.force_login(self.rh)
-        self.client.post(reverse("core:suivi_formation", args=[formation.pk]), {
+        self.client.post(reverse("core_rh:suivi_formation", args=[formation.pk]), {
             f"statut_{participation.pk}": "PARTICIPE",
         })
         participation.refresh_from_db()
@@ -163,7 +164,7 @@ class FormationsCibleesTest(BaseCDCTest):
     def test_modifier_la_cible_conserve_le_suivi_existant(self):
         formation = self.creer_formation([self.emp, self.autre])
         ParticipationFormation.objects.filter(formation=formation, employe=self.emp).update(statut="PARTICIPE")
-        self.client.post(reverse("core:modifier_formation", args=[formation.pk]), {
+        self.client.post(reverse("core_rh:modifier_formation", args=[formation.pk]), {
             "titre": "Securite", "description": "", "date_formation": formation.date_formation.isoformat(),
             "duree_heures": 4, "employes_cibles": [self.emp.pk],
         })
@@ -172,9 +173,9 @@ class FormationsCibleesTest(BaseCDCTest):
 
     def test_employe_ne_peut_pas_cibler_ni_suivre(self):
         self.client.force_login(self.emp_user)
-        self.assertEqual(self.client.get(reverse("core:creer_formation")).status_code, 403)
+        self.assertEqual(self.client.get(reverse("core_rh:creer_formation")).status_code, 403)
         formation = Formation.objects.create(titre="X", date_formation=date.today())
-        self.assertEqual(self.client.get(reverse("core:suivi_formation", args=[formation.pk])).status_code, 403)
+        self.assertEqual(self.client.get(reverse("core_rh:suivi_formation", args=[formation.pk])).status_code, 403)
 
 
 # ---------------------------------------------------------------------------
@@ -205,34 +206,34 @@ class RecrutementTest(BaseCDCTest):
 
     def test_crud_complet_des_offres(self):
         self.client.force_login(self.rh)
-        self.client.post(reverse("core:creer_offre"), {
+        self.client.post(reverse("core_rh:creer_offre"), {
             "poste": "Comptable", "departement": "Finance", "type_contrat": "CDI", "lieu": "Douala",
             "description": "Finance", "statut": "PUBLIEE", "responsable": self.rh.pk,
         })
         offre = Offre.objects.get(poste="Comptable")
         self.assertEqual(offre.creee_par, self.rh)
 
-        self.client.post(reverse("core:modifier_offre", args=[offre.pk]), {
+        self.client.post(reverse("core_rh:modifier_offre", args=[offre.pk]), {
             "poste": "Comptable senior", "departement": "Finance", "type_contrat": "CDI", "lieu": "Douala",
             "description": "Finance", "statut": "PUBLIEE",
         })
         offre.refresh_from_db()
         self.assertEqual(offre.poste, "Comptable senior")
 
-        self.assertContains(self.client.get(reverse("core:supprimer_offre", args=[offre.pk])), "Comptable senior")
-        self.client.post(reverse("core:supprimer_offre", args=[offre.pk]))
+        self.assertContains(self.client.get(reverse("core_rh:supprimer_offre", args=[offre.pk])), "Comptable senior")
+        self.client.post(reverse("core_rh:supprimer_offre", args=[offre.pk]))
         self.assertFalse(Offre.objects.exists())
 
     def test_employe_n_accede_ni_aux_offres_ni_au_recrutement(self):
         self.client.force_login(self.emp_user)
-        for route in ("core:offres", "core:recrutements", "core:creer_offre"):
+        for route in ("core_rh:offres", "core_rh:recrutements", "core_rh:creer_offre"):
             self.assertEqual(self.client.get(reverse(route)).status_code, 403, route)
 
     def test_le_personnel_saisit_une_candidature_externe_sans_creer_de_compte(self):
         offre = self.creer_offre(statut=StatutOffre.PUBLIEE)
         nb_users = User.objects.count()
         self.client.force_login(self.rh)
-        self.client.post(reverse("core:ajouter_candidature", args=[offre.pk]), {
+        self.client.post(reverse("core_rh:ajouter_candidature", args=[offre.pk]), {
             "nom_candidat": "Paul Externe", "email": "paul@example.com", "telephone": "690000000",
         })
         candidature = Candidature.objects.get(offre=offre)
@@ -245,7 +246,7 @@ class RecrutementTest(BaseCDCTest):
         candidature = Candidature.objects.create(offre=offre, nom_candidat="Paul", email="p@example.com")
         self.client.force_login(self.rh)
 
-        self.client.post(reverse("core:modifier_statut_candidature", args=[candidature.pk]), {
+        self.client.post(reverse("core_rh:modifier_statut_candidature", args=[candidature.pk]), {
             "statut": "ENTRETIEN", "date_entretien": "2026-10-05T09:30",
         })
         candidature.refresh_from_db()
@@ -253,7 +254,7 @@ class RecrutementTest(BaseCDCTest):
         self.assertEqual(timezone.localtime(candidature.date_entretien).hour, 9)
         self.assertEqual(Offre.objects.get(pk=offre.pk).etape, "Entretien")
 
-        self.client.post(reverse("core:recruter_candidat", args=[candidature.pk]))
+        self.client.post(reverse("core_rh:recruter_candidat", args=[candidature.pk]))
         candidature.refresh_from_db()
         self.assertTrue(candidature.recrute)
         self.assertIsNotNone(candidature.date_recrutement)
@@ -263,7 +264,7 @@ class RecrutementTest(BaseCDCTest):
         offre = self.creer_offre()
         candidature = Candidature.objects.create(offre=offre, nom_candidat="Paul", email="p@example.com", statut="REJETEE")
         self.client.force_login(self.rh)
-        self.client.post(reverse("core:recruter_candidat", args=[candidature.pk]))
+        self.client.post(reverse("core_rh:recruter_candidat", args=[candidature.pk]))
         candidature.refresh_from_db()
         self.assertFalse(candidature.recrute)
 
@@ -274,17 +275,17 @@ class RecrutementTest(BaseCDCTest):
         Candidature.objects.create(offre=finance, nom_candidat="B", email="b@example.com")
         self.client.force_login(self.rh)
 
-        response = self.client.get(reverse("core:recrutements"))
+        response = self.client.get(reverse("core_rh:recrutements"))
         self.assertEqual(response.context["nb_recrutements_en_cours"], 1)
         self.assertEqual(response.context["nb_candidatures"], 2)
         self.assertEqual(response.context["nb_entretiens"], 1)
         self.assertEqual(len(response.context["offres"]), 2)
 
-        response = self.client.get(reverse("core:recrutements"), {"departement": "RH"})
+        response = self.client.get(reverse("core_rh:recrutements"), {"departement": "RH"})
         self.assertEqual([o.pk for o in response.context["offres"]], [rh.pk])
-        response = self.client.get(reverse("core:recrutements"), {"etape": "Entretien"})
+        response = self.client.get(reverse("core_rh:recrutements"), {"etape": "Entretien"})
         self.assertEqual([o.pk for o in response.context["offres"]], [finance.pk])
-        response = self.client.get(reverse("core:recrutements"), {"statut": "BROUILLON"})
+        response = self.client.get(reverse("core_rh:recrutements"), {"statut": "BROUILLON"})
         self.assertEqual([o.pk for o in response.context["offres"]], [rh.pk])
 
     def test_cv_des_candidats_reserve_au_personnel_rh_et_admin(self):

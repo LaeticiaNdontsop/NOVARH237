@@ -90,10 +90,10 @@ class RedirectionDashboardView(LoginRequiredMixin, View):
         if user.doit_changer_mot_de_passe:
             return redirect("accounts:changer_mot_de_passe")
         if user.est_admin:
-            return redirect("core:dashboard_admin")
+            return redirect("core_admin:dashboard_admin")
         if user.est_rh:
-            return redirect("core:dashboard_rh")
-        return redirect("core:dashboard_employe")
+            return redirect("core_rh:dashboard_rh")
+        return redirect("core_employe:dashboard_employe")
 
 
 def _exiger_role(user, *roles):

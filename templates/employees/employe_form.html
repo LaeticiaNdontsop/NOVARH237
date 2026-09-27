@@ -50,7 +50,7 @@
         </section>
 
         <div class="flex justify-end gap-3">
-            <a href="{% url 'employees:liste_employes' %}" class="px-5 py-2.5 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Annuler</a>
+            <a href="{% if user.est_admin %}{% url 'employees_admin:liste_employes' %}{% else %}{% url 'employees_rh:liste_employes' %}{% endif %}" class="px-5 py-2.5 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Annuler</a>
             <button type="submit" class="px-5 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700">Enregistrer l'employé</button>
         </div>
     </form>

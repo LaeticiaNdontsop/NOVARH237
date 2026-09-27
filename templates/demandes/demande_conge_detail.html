@@ -29,27 +29,27 @@
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
                 <h2 class="font-semibold text-slate-800">Action à effectuer</h2>
                 {% if peut_transmettre %}
-                <form method="post" action="{% url 'demandes:transmettre_a_admin' demande.pk %}" class="flex flex-col sm:flex-row gap-3">{% csrf_token %}
+                <form method="post" action="{% url 'demandes_rh:transmettre_a_admin' demande.pk %}" class="flex flex-col sm:flex-row gap-3">{% csrf_token %}
                     <input type="text" name="commentaire" placeholder="Commentaire pour l'Administrateur (optionnel)" class="flex-1 rounded-lg border border-slate-300 px-3 py-2.5 text-sm">
                     <button class="px-4 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 inline-flex items-center gap-2 whitespace-nowrap"><i class='bx bx-send'></i> Transmettre à l'Administrateur</button>
                 </form>
-                <form method="post" action="{% url 'demandes:rejeter_par_rh' demande.pk %}" class="flex flex-col sm:flex-row gap-3" onsubmit="return confirm('Refuser cette demande ?');">{% csrf_token %}
+                <form method="post" action="{% url 'demandes_rh:rejeter_par_rh' demande.pk %}" class="flex flex-col sm:flex-row gap-3" onsubmit="return confirm('Refuser cette demande ?');">{% csrf_token %}
                     <input type="text" name="commentaire" required placeholder="Motif du refus" class="flex-1 rounded-lg border border-slate-300 px-3 py-2.5 text-sm">
                     <button class="px-4 py-2.5 rounded-lg border border-red-200 text-red-600 text-sm font-medium hover:bg-red-50 whitespace-nowrap">Refuser</button>
                 </form>
                 {% endif %}
                 {% if peut_communiquer %}
                 <p class="text-sm text-slate-600">L'Administrateur a approuvé cette demande. Communiquez la décision à l'employé.</p>
-                <form method="post" action="{% url 'demandes:cloturer_demande' demande.pk %}">{% csrf_token %}
+                <form method="post" action="{% url 'demandes_rh:cloturer_demande' demande.pk %}">{% csrf_token %}
                     <button class="px-4 py-2.5 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 inline-flex items-center gap-2"><i class='bx bx-check-circle'></i> Communiquer l'approbation à l'employé</button>
                 </form>
                 {% endif %}
                 {% if peut_decider %}
-                <form method="post" action="{% url 'demandes:approuver_par_admin' demande.pk %}" class="flex flex-col sm:flex-row gap-3">{% csrf_token %}
+                <form method="post" action="{% url 'demandes_admin:approuver_par_admin' demande.pk %}" class="flex flex-col sm:flex-row gap-3">{% csrf_token %}
                     <input type="text" name="commentaire" placeholder="Commentaire (optionnel)" class="flex-1 rounded-lg border border-slate-300 px-3 py-2.5 text-sm">
                     <button class="px-4 py-2.5 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 inline-flex items-center gap-2 whitespace-nowrap"><i class='bx bx-check'></i> Approuver</button>
                 </form>
-                <form method="post" action="{% url 'demandes:rejeter_par_admin' demande.pk %}" class="flex flex-col sm:flex-row gap-3" onsubmit="return confirm('Refuser cette demande ?');">{% csrf_token %}
+                <form method="post" action="{% url 'demandes_admin:rejeter_par_admin' demande.pk %}" class="flex flex-col sm:flex-row gap-3" onsubmit="return confirm('Refuser cette demande ?');">{% csrf_token %}
                     <input type="text" name="commentaire" required placeholder="Motif du refus" class="flex-1 rounded-lg border border-slate-300 px-3 py-2.5 text-sm">
                     <button class="px-4 py-2.5 rounded-lg border border-red-200 text-red-600 text-sm font-medium hover:bg-red-50 whitespace-nowrap">Refuser</button>
                 </form>

@@ -28,7 +28,7 @@
             {% for valeur, libelle in types_document %}<option value="{{ valeur }}" {% if valeur == type_filtre %}selected{% endif %}>{{ libelle }}</option>{% endfor %}
         </select>
         <button class="px-4 py-2.5 rounded-lg bg-primary-600 text-white text-sm">Filtrer</button>
-        <a href="{% url 'employees:mes_documents' %}" class="px-4 py-2.5 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Réinitialiser</a>
+        <a href="{% url 'employees_employe:mes_documents' %}" class="px-4 py-2.5 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Réinitialiser</a>
     </form>
 
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
@@ -42,7 +42,7 @@
                     <td class="px-5 py-4 text-slate-600">{{ document.date_ajout|date:"d F Y" }}</td>
                     <td class="px-5 py-4 text-slate-600">{% if document.fichier %}{{ document.fichier|taille_fichier }}{% else %}-{% endif %}</td>
                     <td class="px-5 py-4">{% if document.fichier %}{% include "includes/badge_couleur.html" with couleur="vert" texte="Disponible" %}{% else %}{% include "includes/badge_couleur.html" with couleur="gris" texte="Sans fichier" %}{% endif %}</td>
-                    <td class="px-5 py-4"><a href="{% url 'employees:document_detail' document.pk %}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-primary-200 text-primary-700 text-sm hover:bg-primary-50"><i class='bx bx-show'></i> Consulter</a>
+                    <td class="px-5 py-4"><a href="{% url 'employees_employe:document_detail' document.pk %}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-primary-200 text-primary-700 text-sm hover:bg-primary-50"><i class='bx bx-show'></i> Consulter</a>
                         {% if document.fichier %}<a href="{{ document.fichier.url }}" download class="inline-flex items-center px-2.5 py-1.5 rounded-lg border border-slate-200 text-primary-600 hover:bg-slate-50" title="Télécharger"><i class='bx bx-download'></i></a>{% endif %}</td>
                 </tr>
             {% empty %}

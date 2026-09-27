@@ -37,7 +37,7 @@
             </section>
             {% endif %}
             <div class="flex justify-between">
-                <a href="{% url 'accounts:liste_utilisateurs' %}" class="px-5 py-2.5 rounded-lg border border-slate-300 bg-white text-sm hover:bg-slate-50">Annuler</a>
+                <a href="{% url 'accounts_admin:liste_utilisateurs' %}" class="px-5 py-2.5 rounded-lg border border-slate-300 bg-white text-sm hover:bg-slate-50">Annuler</a>
                 <button type="submit" class="px-5 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 inline-flex items-center gap-2"><i class='bx bx-user-plus'></i> {% if mode_modification %}Enregistrer{% else %}Créer le compte{% endif %}</button>
             </div>
         </form>
@@ -50,7 +50,7 @@
             {% if mode_modification %}
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
                 <p class="font-semibold text-slate-800 mb-3">Mot de passe temporaire</p>
-                <form method="post" action="{% url 'accounts:reinitialiser_mot_de_passe' object.pk %}" class="space-y-3">{% csrf_token %}
+                <form method="post" action="{% url 'accounts_admin:reinitialiser_mot_de_passe' object.pk %}" class="space-y-3">{% csrf_token %}
                     {% include "includes/champ.html" with champ=form_mot_de_passe.mot_de_passe_temporaire %}
                     <button class="w-full px-4 py-2.5 rounded-lg border border-primary-600 text-primary-600 text-sm font-medium hover:bg-primary-50">Attribuer ce mot de passe</button>
                 </form>

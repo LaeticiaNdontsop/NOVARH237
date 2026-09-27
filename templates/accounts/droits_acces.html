@@ -25,7 +25,7 @@
             <select name="utilisateur" onchange="this.form.submit()" class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm min-w-[18rem]">
                 {% for u in utilisateurs %}<option value="{{ u.pk }}" {% if cible and u.pk == cible.pk %}selected{% endif %}>{{ u.get_full_name|default:u.username }} — {{ u.get_role_display }}</option>{% endfor %}
             </select></div>
-        {% if role_filtre %}<input type="hidden" name="role" value="{{ role_filtre }}"><a href="{% url 'accounts:droits_acces' %}" class="text-sm text-primary-600 hover:underline pb-3">Retirer le filtre de rôle</a>{% endif %}
+        {% if role_filtre %}<input type="hidden" name="role" value="{{ role_filtre }}"><a href="{% url 'accounts_admin:droits_acces' %}" class="text-sm text-primary-600 hover:underline pb-3">Retirer le filtre de rôle</a>{% endif %}
         <noscript><button class="px-4 py-2.5 rounded-lg bg-primary-600 text-white text-sm">Afficher</button></noscript>
     </form>
 

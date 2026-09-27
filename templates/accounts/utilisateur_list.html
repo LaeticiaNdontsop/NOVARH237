@@ -10,7 +10,7 @@
             <h1 class="text-3xl font-bold text-slate-900">Gestion des utilisateurs</h1>
             <p class="text-slate-500 mt-1">Gérez les comptes et les accès des utilisateurs de la plateforme.</p>
         </div>
-        {% if peut_creer %}<a href="{% url 'accounts:creer_utilisateur' %}" class="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700"><i class='bx bx-plus-circle text-lg'></i> Ajouter un utilisateur</a>{% endif %}
+        {% if peut_creer %}<a href="{% url 'accounts_admin:creer_utilisateur' %}" class="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700"><i class='bx bx-plus-circle text-lg'></i> Ajouter un utilisateur</a>{% endif %}
     </div>
 
     <form method="get" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-wrap items-end gap-4">
@@ -19,7 +19,7 @@
         <div><label class="block text-xs text-slate-500 mb-1">Filtrer par rôle</label><select name="role" class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm min-w-[10rem]"><option value="">Tous les rôles</option>{% for valeur, libelle in roles %}<option value="{{ valeur }}" {% if valeur == role_filtre %}selected{% endif %}>{{ libelle }}</option>{% endfor %}</select></div>
         <div><label class="block text-xs text-slate-500 mb-1">Filtrer par statut</label><select name="statut" class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm min-w-[10rem]"><option value="">Tous les statuts</option><option value="actif" {% if statut_filtre == "actif" %}selected{% endif %}>Actif</option><option value="desactive" {% if statut_filtre == "desactive" %}selected{% endif %}>Désactivé</option><option value="attente" {% if statut_filtre == "attente" %}selected{% endif %}>En attente</option></select></div>
         <button class="px-4 py-2.5 rounded-lg bg-primary-600 text-white text-sm">Filtrer</button>
-        <a href="{% url 'accounts:liste_utilisateurs' %}" class="px-4 py-2.5 rounded-lg border border-slate-300 text-sm inline-flex items-center gap-2 hover:bg-slate-50"><i class='bx bx-refresh'></i> Réinitialiser</a>
+        <a href="{% url 'accounts_admin:liste_utilisateurs' %}" class="px-4 py-2.5 rounded-lg border border-slate-300 text-sm inline-flex items-center gap-2 hover:bg-slate-50"><i class='bx bx-refresh'></i> Réinitialiser</a>
     </form>
 
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
@@ -37,8 +37,8 @@
                     <td class="px-3 py-3">{% if not u.is_active %}{% include "includes/badge_couleur.html" with couleur="rouge" texte="Désactivé" %}{% elif not u.last_login %}{% include "includes/badge_couleur.html" with couleur="orange" texte="En attente" %}{% else %}{% include "includes/badge_couleur.html" with couleur="vert" texte="Actif" %}{% endif %}</td>
                     <td class="px-3 py-3 text-slate-600">{% if u.last_login %}{{ u.last_login|date:"d/m/Y à H:i" }}{% else %}Jamais connecté{% endif %}</td>
                     <td class="px-3 py-3 whitespace-nowrap">
-                        {% if peut_modifier %}<a href="{% url 'accounts:modifier_utilisateur' u.pk %}" class="inline-flex w-9 h-9 items-center justify-center rounded-lg text-primary-600 hover:bg-primary-50" title="Modifier"><i class='bx bx-edit text-xl'></i></a>{% endif %}
-                        {% if peut_supprimer and u != user %}<a href="{% url 'accounts:supprimer_utilisateur' u.pk %}" class="inline-flex w-9 h-9 items-center justify-center rounded-lg text-red-500 hover:bg-red-50" title="Supprimer"><i class='bx bx-trash text-xl'></i></a>{% endif %}
+                        {% if peut_modifier %}<a href="{% url 'accounts_admin:modifier_utilisateur' u.pk %}" class="inline-flex w-9 h-9 items-center justify-center rounded-lg text-primary-600 hover:bg-primary-50" title="Modifier"><i class='bx bx-edit text-xl'></i></a>{% endif %}
+                        {% if peut_supprimer and u != user %}<a href="{% url 'accounts_admin:supprimer_utilisateur' u.pk %}" class="inline-flex w-9 h-9 items-center justify-center rounded-lg text-red-500 hover:bg-red-50" title="Supprimer"><i class='bx bx-trash text-xl'></i></a>{% endif %}
                     </td>
                 </tr>
             {% empty %}

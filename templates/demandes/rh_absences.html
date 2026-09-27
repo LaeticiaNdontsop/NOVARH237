@@ -9,7 +9,7 @@
             <h1 class="text-3xl font-bold text-slate-900">Suivi des absences</h1>
             <p class="text-slate-500 mt-1">Consultez les déclarations d'absence {% if user.est_admin %}des Responsables RH{% else %}des employés{% endif %}.</p>
         </div>
-        <a href="{% url 'demandes:historique_absences' %}" class="px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-sm hover:bg-slate-50">Historique</a>
+        <a href="{% url 'demandes_rh:historique_absences' %}" class="px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-sm hover:bg-slate-50">Historique</a>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -23,7 +23,7 @@
                 <input type="search" name="q" value="{{ recherche }}" placeholder="Rechercher un employé, un motif..." class="w-full rounded-lg border border-slate-300 pl-10 pr-3 py-2.5 text-sm"></div>
             <select name="statut" class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm"><option value="">Tous les statuts</option>{% for valeur, libelle in statuts %}<option value="{{ valeur }}" {% if valeur == statut_filtre %}selected{% endif %}>{{ libelle }}</option>{% endfor %}</select>
             <button class="px-4 py-2.5 rounded-lg bg-primary-600 text-white text-sm">Filtrer</button>
-            <a href="{% url 'demandes:rh_absences' %}" class="px-4 py-2.5 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Réinitialiser</a>
+            <a href="{% url 'demandes_rh:rh_absences' %}" class="px-4 py-2.5 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Réinitialiser</a>
         </form>
         <div class="overflow-x-auto">
         <table class="w-full text-sm">

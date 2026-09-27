@@ -7,12 +7,12 @@
 <div class="space-y-6 max-w-7xl">
     <div class="flex flex-wrap justify-end gap-2">
         {% if peut.employes %}
-        <a href="{% url 'employees:liste_employes' %}" class="px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-sm inline-flex items-center gap-2 hover:bg-slate-50"><i class='bx bx-arrow-back'></i> Retour à la liste</a>
+        <a href="{% if user.est_admin %}{% url 'employees_admin:liste_employes' %}{% else %}{% url 'employees_rh:liste_employes' %}{% endif %}" class="px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-sm inline-flex items-center gap-2 hover:bg-slate-50"><i class='bx bx-arrow-back'></i> Retour à la liste</a>
         {% endif %}
-        {% if peut_gerer %}<a href="{% url 'employees:modifier_employe' employe.pk %}" class="px-4 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-medium inline-flex items-center gap-2 hover:bg-primary-700"><i class='bx bx-edit'></i> Modifier</a>{% endif %}
-        {% if peut.analyse %}<a href="{% url 'analytics:prediction_employe' employe.pk %}" class="px-4 py-2.5 rounded-lg border border-primary-200 text-primary-700 bg-white text-sm inline-flex items-center gap-2 hover:bg-primary-50"><i class='bx bx-line-chart'></i> Prédire l'attrition</a>{% endif %}
+        {% if peut_gerer %}<a href="{% if user.est_admin %}{% url 'employees_admin:modifier_employe' employe.pk %}{% else %}{% url 'employees_rh:modifier_employe' employe.pk %}{% endif %}" class="px-4 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-medium inline-flex items-center gap-2 hover:bg-primary-700"><i class='bx bx-edit'></i> Modifier</a>{% endif %}
+        {% if peut.analyse %}<a href="{% url 'analytics_rh:prediction_employe' employe.pk %}" class="px-4 py-2.5 rounded-lg border border-primary-200 text-primary-700 bg-white text-sm inline-flex items-center gap-2 hover:bg-primary-50"><i class='bx bx-line-chart'></i> Prédire l'attrition</a>{% endif %}
         {% if peut_desactiver and employe.statut == "ACTIF" %}
-        <form method="post" action="{% url 'employees:desactiver_employe' employe.pk %}" onsubmit="return confirm('Désactiver cette fiche employé ?');">{% csrf_token %}
+        <form method="post" action="{% if user.est_admin %}{% url 'employees_admin:desactiver_employe' employe.pk %}{% else %}{% url 'employees_rh:desactiver_employe' employe.pk %}{% endif %}" onsubmit="return confirm('Désactiver cette fiche employé ?');">{% csrf_token %}
             <button type="submit" class="px-4 py-2.5 rounded-lg border border-red-200 text-red-600 bg-white text-sm hover:bg-red-50">Désactiver</button>
         </form>
         {% endif %}
@@ -61,7 +61,7 @@
 
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
             <div class="flex items-center justify-between mb-3"><h2 class="font-semibold text-slate-800">Informations professionnelles</h2>
-                {% if peut_gerer %}<a href="{% url 'employees:ajouter_contrat' employe.pk %}" class="text-xs text-primary-600 hover:underline font-medium">+ Contrat</a>{% endif %}</div>
+                {% if peut_gerer %}<a href="{% if user.est_admin %}{% url 'employees_admin:ajouter_contrat' employe.pk %}{% else %}{% url 'employees_rh:ajouter_contrat' employe.pk %}{% endif %}" class="text-xs text-primary-600 hover:underline font-medium">+ Contrat</a>{% endif %}</div>
             <dl class="text-sm divide-y divide-slate-100">
                 <div class="py-2.5 flex justify-between gap-4"><dt class="text-slate-500">Département</dt><dd class="font-medium text-right">{{ employe.service }}</dd></div>
                 <div class="py-2.5 flex justify-between gap-4"><dt class="text-slate-500">Poste</dt><dd class="font-medium text-right">{{ employe.poste }}</dd></div>
@@ -88,7 +88,7 @@
                     <div class="flex justify-between border-t pt-2"><dt class="font-medium">Rémunération totale</dt><dd class="font-bold text-primary-600"><span class="montant-fiche">********* FCFA</span><span class="montant-fiche hidden">{{ remuneration.total }} FCFA</span></dd></div>
                 </dl>
                 {% else %}<p class="text-sm text-slate-400">Aucune rémunération enregistrée.</p>{% endif %}
-                {% if peut_ajouter_remuneration %}<a href="{% url 'employees:ajouter_remuneration' employe.pk %}" class="mt-3 inline-block text-xs text-primary-600 hover:underline font-medium">+ Ajouter une rémunération</a>{% endif %}
+                {% if peut_ajouter_remuneration %}<a href="{% if user.est_admin %}{% url 'employees_admin:ajouter_remuneration' employe.pk %}{% else %}{% url 'employees_rh:ajouter_remuneration' employe.pk %}{% endif %}" class="mt-3 inline-block text-xs text-primary-600 hover:underline font-medium">+ Ajouter une rémunération</a>{% endif %}
             </div>
             {% endif %}
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
@@ -109,7 +109,7 @@
             <thead><tr class="text-left text-slate-500 border-b bg-slate-50/60"><th class="px-5 py-3 font-medium">ID</th><th class="px-5 py-3 font-medium">Type</th><th class="px-5 py-3 font-medium">Période</th><th class="px-5 py-3 font-medium">Motif</th><th class="px-5 py-3 font-medium">Statut</th></tr></thead>
             <tbody>
             {% for d in demandes %}
-                <tr class="border-b border-slate-100"><td class="px-5 py-3"><a class="text-primary-600 hover:underline" href="{% url 'demandes:detail_demande' d.pk %}">#{{ d.reference }}</a></td><td class="px-5 py-3">{{ d.get_type_demande_display }}</td><td class="px-5 py-3 text-slate-500">{{ d.date_debut|date:"d/m/Y" }} → {{ d.date_fin|date:"d/m/Y" }}</td><td class="px-5 py-3 text-slate-500">{{ d.motif|truncatechars:50 }}</td><td class="px-5 py-3">{% include "includes/badge_couleur.html" with couleur=d.couleur texte=d.get_statut_display %}</td></tr>
+                <tr class="border-b border-slate-100"><td class="px-5 py-3"><a class="text-primary-600 hover:underline" href="{% if user.est_admin %}{% url 'demandes_admin:detail_demande' d.pk %}{% else %}{% url 'demandes_rh:detail_demande' d.pk %}{% endif %}">#{{ d.reference }}</a></td><td class="px-5 py-3">{{ d.get_type_demande_display }}</td><td class="px-5 py-3 text-slate-500">{{ d.date_debut|date:"d/m/Y" }} → {{ d.date_fin|date:"d/m/Y" }}</td><td class="px-5 py-3 text-slate-500">{{ d.motif|truncatechars:50 }}</td><td class="px-5 py-3">{% include "includes/badge_couleur.html" with couleur=d.couleur texte=d.get_statut_display %}</td></tr>
             {% empty %}<tr><td colspan="5" class="px-5 py-8 text-center text-slate-400">Aucune demande.</td></tr>{% endfor %}
             </tbody>
         </table>
@@ -131,7 +131,7 @@
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
         <div class="flex items-center justify-between mb-3">
             <h2 class="font-semibold text-slate-800">Documents RH</h2>
-            {% if peut_gerer %}<a href="{% url 'employees:ajouter_document' employe.pk %}" class="text-sm text-primary-600 hover:underline font-medium">+ Ajouter un document</a>{% endif %}
+            {% if peut_gerer %}<a href="{% if user.est_admin %}{% url 'employees_admin:ajouter_document' employe.pk %}{% else %}{% url 'employees_rh:ajouter_document' employe.pk %}{% endif %}" class="text-sm text-primary-600 hover:underline font-medium">+ Ajouter un document</a>{% endif %}
         </div>
         {% for document in employe.documents.all %}
         <div class="flex items-center justify-between py-2.5 border-t border-slate-100 text-sm first:border-t-0">

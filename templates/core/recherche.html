@@ -14,15 +14,15 @@
 
     {% if resultats.employes %}
     <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"><h2 class="font-semibold text-slate-800 mb-2">Employés</h2>
-        {% for e in resultats.employes %}<a href="{% url 'employees:detail_employe' e.pk %}" class="flex justify-between py-2 border-t border-slate-100 first:border-0 text-sm hover:bg-slate-50"><span class="font-medium">{{ e.nom_complet }} <span class="text-slate-400 font-normal">{{ e.matricule }}</span></span><span class="text-slate-500">{{ e.poste }} · {{ e.service }}</span></a>{% endfor %}</section>
+        {% for e in resultats.employes %}<a href="{% if user.est_admin %}{% url 'employees_admin:detail_employe' e.pk %}{% else %}{% url 'employees_rh:detail_employe' e.pk %}{% endif %}" class="flex justify-between py-2 border-t border-slate-100 first:border-0 text-sm hover:bg-slate-50"><span class="font-medium">{{ e.nom_complet }} <span class="text-slate-400 font-normal">{{ e.matricule }}</span></span><span class="text-slate-500">{{ e.poste }} · {{ e.service }}</span></a>{% endfor %}</section>
     {% endif %}
     {% if resultats.demandes %}
     <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"><h2 class="font-semibold text-slate-800 mb-2">Demandes</h2>
-        {% for d in resultats.demandes %}<a href="{% url 'demandes:detail_demande' d.pk %}" class="flex justify-between py-2 border-t border-slate-100 first:border-0 text-sm hover:bg-slate-50"><span class="font-medium">#{{ d.reference }} · {{ d.get_type_demande_display }} · {{ d.employe.nom_complet }}</span><span class="text-slate-500">{{ d.get_statut_display }}</span></a>{% endfor %}</section>
+        {% for d in resultats.demandes %}<a href="{% if user.est_admin %}{% url 'demandes_admin:detail_demande' d.pk %}{% else %}{% url 'demandes_rh:detail_demande' d.pk %}{% endif %}" class="flex justify-between py-2 border-t border-slate-100 first:border-0 text-sm hover:bg-slate-50"><span class="font-medium">#{{ d.reference }} · {{ d.get_type_demande_display }} · {{ d.employe.nom_complet }}</span><span class="text-slate-500">{{ d.get_statut_display }}</span></a>{% endfor %}</section>
     {% endif %}
     {% if resultats.offres %}
     <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"><h2 class="font-semibold text-slate-800 mb-2">Offres d'emploi</h2>
-        {% for o in resultats.offres %}<a href="{% url 'core:candidatures_offre' o.pk %}" class="flex justify-between py-2 border-t border-slate-100 first:border-0 text-sm hover:bg-slate-50"><span class="font-medium">{{ o.poste }}</span><span class="text-slate-500">{{ o.departement }} · {{ o.statut_affiche }}</span></a>{% endfor %}</section>
+        {% for o in resultats.offres %}<a href="{% url 'core_rh:candidatures_offre' o.pk %}" class="flex justify-between py-2 border-t border-slate-100 first:border-0 text-sm hover:bg-slate-50"><span class="font-medium">{{ o.poste }}</span><span class="text-slate-500">{{ o.departement }} · {{ o.statut_affiche }}</span></a>{% endfor %}</section>
     {% endif %}
     {% if resultats.formations %}
     <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"><h2 class="font-semibold text-slate-800 mb-2">Formations</h2>
@@ -30,7 +30,7 @@
     {% endif %}
     {% if resultats.utilisateurs %}
     <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"><h2 class="font-semibold text-slate-800 mb-2">Utilisateurs</h2>
-        {% for u in resultats.utilisateurs %}<a href="{% url 'accounts:modifier_utilisateur' u.pk %}" class="flex justify-between py-2 border-t border-slate-100 first:border-0 text-sm hover:bg-slate-50"><span class="font-medium">{{ u.get_full_name|default:u.username }}</span><span class="text-slate-500">{{ u.get_role_display }}</span></a>{% endfor %}</section>
+        {% for u in resultats.utilisateurs %}<a href="{% url 'accounts_admin:modifier_utilisateur' u.pk %}" class="flex justify-between py-2 border-t border-slate-100 first:border-0 text-sm hover:bg-slate-50"><span class="font-medium">{{ u.get_full_name|default:u.username }}</span><span class="text-slate-500">{{ u.get_role_display }}</span></a>{% endfor %}</section>
     {% endif %}
 </div>
 {% endblock %}

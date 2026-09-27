@@ -21,13 +21,13 @@
                     </td>
                 </tr>
             {% empty %}
-                <tr><td colspan="3" class="py-4 text-slate-400">Aucun employé ciblé. <a class="text-primary-700 hover:underline" href="{% url 'core:modifier_formation' formation.pk %}">Définir la cible</a>.</td></tr>
+                <tr><td colspan="3" class="py-4 text-slate-400">Aucun employé ciblé. <a class="text-primary-700 hover:underline" href="{% url 'core_rh:modifier_formation' formation.pk %}">Définir la cible</a>.</td></tr>
             {% endfor %}
             </tbody>
         </table>
         <div class="flex gap-2 pt-4">
             {% if participations %}<button class="px-4 py-2 rounded-lg bg-primary-600 text-white text-sm">Enregistrer le suivi</button>{% endif %}
-            <a href="{% url 'core:formations' %}" class="px-4 py-2 rounded-lg border border-slate-300 text-sm">Retour</a>
+            <a href="{% url 'core_rh:formations' %}" class="px-4 py-2 rounded-lg border border-slate-300 text-sm">Retour</a>
         </div>
     </form>
 </div>

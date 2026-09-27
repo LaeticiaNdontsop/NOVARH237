@@ -94,7 +94,7 @@ class CreerDemandeCongeView(LoginRequiredMixin, CreateView):
     model = DemandeConge
     form_class = DemandeCongeForm
     template_name = "demandes/demande_conge_form.html"
-    success_url = reverse_lazy("demandes:mes_demandes")
+    success_url = reverse_lazy("demandes_employe:mes_demandes")
 
     def form_valid(self, form):
         fiche = _fiche_employe_ou_403(self.request)
@@ -238,7 +238,7 @@ def transmettre_a_admin(request, pk):
         f"Demande de {demande.get_type_demande_display()} transmise a l'Admin.",
     )
     messages.success(request, "Demande transmise à l'Administrateur pour décision.")
-    return redirect("demandes:rh_demandes")
+    return redirect("demandes_rh:rh_demandes")
 
 
 @login_required
@@ -256,7 +256,7 @@ def rejeter_par_rh(request, pk):
         f"Demande de {demande.get_type_demande_display()} rejetee par le RH.",
     )
     messages.success(request, "Demande rejetée. L'employé sera informé du motif.")
-    return redirect("demandes:rh_demandes")
+    return redirect("demandes_rh:rh_demandes")
 
 
 @login_required
@@ -275,7 +275,7 @@ def cloturer_demande(request, pk):
         f"Demande de {demande.get_type_demande_display()} cloturee et notifiee a l'employe.",
     )
     messages.success(request, "Demande clôturée : l'employé est notifié de l'approbation.")
-    return redirect("demandes:rh_demandes")
+    return redirect("demandes_rh:rh_demandes")
 
 
 # ---------------------------------------------------------------------------
@@ -321,7 +321,7 @@ def approuver_par_admin(request, pk):
         f"Demande de {demande.get_type_demande_display()} approuvee par l'Admin.",
     )
     messages.success(request, "Demande approuvée.")
-    return redirect("demandes:admin_a_decider")
+    return redirect("demandes_admin:admin_a_decider")
 
 
 @login_required
@@ -340,7 +340,7 @@ def rejeter_par_admin(request, pk):
         f"Demande de {demande.get_type_demande_display()} rejetee par l'Admin.",
     )
     messages.success(request, "Demande rejetée.")
-    return redirect("demandes:admin_a_decider")
+    return redirect("demandes_admin:admin_a_decider")
 
 
 # ---------------------------------------------------------------------------
@@ -402,7 +402,7 @@ class CreerAbsenceView(LoginRequiredMixin, CreateView):
     model = Absence
     form_class = AbsenceForm
     template_name = "demandes/absence_form.html"
-    success_url = reverse_lazy("demandes:mes_absences")
+    success_url = reverse_lazy("demandes_employe:mes_absences")
 
     def form_valid(self, form):
         fiche = _fiche_employe_ou_403(self.request)
@@ -488,7 +488,7 @@ class MaDemissionView(LoginRequiredMixin, TemplateView):
         fiche = _fiche_employe_ou_403(request)
         if getattr(fiche, "demission", None):
             messages.error(request, "Une demission a deja ete declaree ; elle est irrevocable.")
-            return redirect("demandes:ma_demission")
+            return redirect("demandes_employe:ma_demission")
         form = DemissionForm(request.POST)
         if form.is_valid():
             demission = form.save(commit=False)
@@ -504,7 +504,7 @@ class MaDemissionView(LoginRequiredMixin, TemplateView):
                 "Votre demission a ete enregistree. Elle est irrevocable. "
                 "L'Administrateur va decider de la duree du preavis.",
             )
-            return redirect("demandes:ma_demission")
+            return redirect("demandes_employe:ma_demission")
         return self.render_to_response({"form": form, "demission": None})
 
 
@@ -533,7 +533,7 @@ def transmettre_demission(request, pk):
         f"Demission de {demission.employe.nom_complet} transmise a l'Admin.",
     )
     messages.success(request, "Demission transmise a l'Administrateur pour determination du preavis.")
-    return redirect("demandes:rh_demissions_a_transmettre")
+    return redirect("demandes_rh:rh_demissions_a_transmettre")
 
 
 class DemissionsAdminView(RoleRequiredMixin, ListView):
@@ -562,7 +562,7 @@ def definir_preavis(request, pk):
                 f"Preavis de {demission.employe.nom_complet} defini a {form.cleaned_data['preavis_jours']} jours.",
             )
             messages.success(request, "Preavis defini. Le Responsable RH va le communiquer a l'employe.")
-            return redirect("demandes:admin_demissions")
+            return redirect("demandes_admin:admin_demissions")
     else:
         form = PreavisForm()
     return render(request, "demandes/definir_preavis.html", {"form": form, "demission": demission})
@@ -593,4 +593,4 @@ def communiquer_demission(request, pk):
         f"Preavis de {demission.employe.nom_complet} communique a l'employe.",
     )
     messages.success(request, "Decision communiquee a l'employe.")
-    return redirect("demandes:rh_demissions_a_communiquer")
+    return redirect("demandes_rh:rh_demissions_a_communiquer")

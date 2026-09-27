@@ -43,7 +43,7 @@
         <div class="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="font-semibold text-slate-800">Activité récente</h2>
-                {% if peut.journaux %}<a href="{% url 'notifications:journal_activite' %}" class="text-sm text-primary-600 hover:underline">Voir le journal &rarr;</a>{% endif %}
+                {% if peut.journaux %}<a href="{% url 'notifications_admin:journal_activite' %}" class="text-sm text-primary-600 hover:underline">Voir le journal &rarr;</a>{% endif %}
             </div>
             <table class="w-full text-sm">
                 <thead><tr class="text-left text-slate-500 border-b"><th class="py-2 font-medium">Utilisateur</th><th class="py-2 font-medium">Action</th><th class="py-2 font-medium">Date et heure</th><th class="py-2 font-medium">Adresse IP</th></tr></thead>
@@ -67,9 +67,9 @@
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
             <h2 class="font-semibold text-slate-800 mb-4">Accès rapides</h2>
             <div class="grid grid-cols-3 gap-3 text-center text-xs">
-                {% if peut.utilisateurs %}<a href="{% url 'accounts:creer_utilisateur' %}" class="rounded-xl border border-slate-200 p-3 hover:bg-primary-50"><i class='bx bx-user-plus text-2xl text-primary-600 block mb-1'></i>Ajouter un utilisateur</a>{% endif %}
-                <a href="{% url 'accounts:droits_acces' %}" class="rounded-xl border border-slate-200 p-3 hover:bg-primary-50"><i class='bx bx-shield-quarter text-2xl text-teal-600 block mb-1'></i>Gérer les droits</a>
-                {% if peut.journaux %}<a href="{% url 'notifications:journal_activite' %}" class="rounded-xl border border-slate-200 p-3 hover:bg-primary-50"><i class='bx bx-file text-2xl text-orange-500 block mb-1'></i>Consulter les journaux</a>{% endif %}
+                {% if peut.utilisateurs %}<a href="{% url 'accounts_admin:creer_utilisateur' %}" class="rounded-xl border border-slate-200 p-3 hover:bg-primary-50"><i class='bx bx-user-plus text-2xl text-primary-600 block mb-1'></i>Ajouter un utilisateur</a>{% endif %}
+                <a href="{% url 'accounts_admin:droits_acces' %}" class="rounded-xl border border-slate-200 p-3 hover:bg-primary-50"><i class='bx bx-shield-quarter text-2xl text-teal-600 block mb-1'></i>Gérer les droits</a>
+                {% if peut.journaux %}<a href="{% url 'notifications_admin:journal_activite' %}" class="rounded-xl border border-slate-200 p-3 hover:bg-primary-50"><i class='bx bx-file text-2xl text-orange-500 block mb-1'></i>Consulter les journaux</a>{% endif %}
             </div>
         </div>
 
@@ -90,9 +90,9 @@
     <div>
         <h2 class="font-semibold text-slate-800 mb-3">À traiter</h2>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <a href="{% url 'demandes:admin_a_decider' %}" class="block">{% include "includes/kpi.html" with icone="bx-calendar-check" teinte="orange" valeur=demandes_a_decider libelle="Congés / permissions à décider" sous_texte="Voir les demandes" %}</a>
-            <a href="{% url 'demandes:admin_demissions' %}" class="block">{% include "includes/kpi.html" with icone="bx-log-out-circle" teinte="violet" valeur=demissions_a_traiter libelle="Démissions à traiter" sous_texte="Fixer le préavis" %}</a>
-            <a href="{% url 'demandes:rh_absences' %}" class="block">{% include "includes/kpi.html" with icone="bx-calendar-x" teinte="teal" valeur=absences_rh_declarees libelle="Déclarations des RH" sous_texte="Suivi informatif" %}</a>
+            <a href="{% url 'demandes_admin:admin_a_decider' %}" class="block">{% include "includes/kpi.html" with icone="bx-calendar-check" teinte="orange" valeur=demandes_a_decider libelle="Congés / permissions à décider" sous_texte="Voir les demandes" %}</a>
+            <a href="{% url 'demandes_admin:admin_demissions' %}" class="block">{% include "includes/kpi.html" with icone="bx-log-out-circle" teinte="violet" valeur=demissions_a_traiter libelle="Démissions à traiter" sous_texte="Fixer le préavis" %}</a>
+            <a href="{% url 'demandes_admin:rh_absences' %}" class="block">{% include "includes/kpi.html" with icone="bx-calendar-x" teinte="teal" valeur=absences_rh_declarees libelle="Déclarations des RH" sous_texte="Suivi informatif" %}</a>
         </div>
     </div>
 </div>

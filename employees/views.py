@@ -13,6 +13,10 @@ from .forms import EmployeForm, ContratForm, RemunerationForm, DocumentForm
 from .models import Employe, Contrat, Remuneration, Document, StatutEmploye, TypeContrat
 
 
+def _espace_employes(request):
+    return "employees_admin" if request.user.est_admin else "employees_rh"
+
+
 # ---------------------------------------------------------------------------
 # Employes (BF-RH-01 / BF-RH-02 / BF-ADM08) : partage Admin + RH depuis la v6
 # ---------------------------------------------------------------------------
@@ -120,7 +124,9 @@ class CreerEmployeView(droit_requis("employes", "creation", "creation"), CreateV
     model = Employe
     form_class = EmployeForm
     template_name = "employees/employe_form.html"
-    success_url = reverse_lazy("employees:liste_employes")
+
+    def get_success_url(self):
+        return reverse_lazy(f"{_espace_employes(self.request)}:liste_employes")
 
     def form_valid(self, form):
         form.instance.cree_par = self.request.user
@@ -148,7 +154,9 @@ class ModifierEmployeView(droit_requis("employes", "modification", "modification
     model = Employe
     form_class = EmployeForm
     template_name = "employees/employe_form.html"
-    success_url = reverse_lazy("employees:liste_employes")
+
+    def get_success_url(self):
+        return reverse_lazy(f"{_espace_employes(self.request)}:liste_employes")
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -175,7 +183,7 @@ class DesactiverEmployeView(droit_requis("employes", "suppression", "suppression
             f"Fiche employe {employe.matricule} desactivee.",
         )
         messages.success(request, f"La fiche de {employe.nom_complet} a été désactivée.")
-        return redirect("employees:liste_employes")
+        return redirect(f"{_espace_employes(request)}:liste_employes")
 
 
 # ---------------------------------------------------------------------------
@@ -207,7 +215,7 @@ class AjouterContratView(droit_requis("employes", "modification", "modification"
         return ctx
 
     def get_success_url(self):
-        return reverse_lazy("employees:detail_employe", kwargs={"pk": self.employe.pk})
+        return reverse_lazy(f"{_espace_employes(self.request)}:detail_employe", kwargs={"pk": self.employe.pk})
 
 
 # ---------------------------------------------------------------------------
@@ -239,7 +247,7 @@ class AjouterRemunerationView(droit_requis("remunerations", "creation", "creatio
         return ctx
 
     def get_success_url(self):
-        return reverse_lazy("employees:detail_employe", kwargs={"pk": self.employe.pk})
+        return reverse_lazy("employees_rh:detail_employe", kwargs={"pk": self.employe.pk})
 
 
 class ListeRemunerationsView(droit_requis("remunerations"), ListView):
@@ -292,7 +300,7 @@ class ListeRemunerationsView(droit_requis("remunerations"), ListView):
     def post(self, request, *args, **kwargs):
         selection = self._selection()
         if selection is None:
-            return redirect("employees:liste_remunerations")
+            return redirect(f"{_espace_employes(request)}:liste_remunerations")
         log_activity(request.user, "Consultation de remuneration",
                      f"Donnees de remuneration de {selection.nom_complet} affichees.")
         self.object_list = self.get_queryset()
@@ -333,7 +341,7 @@ class AjouterDocumentView(droit_requis("employes", "modification", "modification
         return ctx
 
     def get_success_url(self):
-        return reverse_lazy("employees:detail_employe", kwargs={"pk": self.employe.pk})
+        return reverse_lazy(f"{_espace_employes(self.request)}:detail_employe", kwargs={"pk": self.employe.pk})
 
 
 class DocumentDetailView(LoginRequiredMixin, TemplateView):
@@ -392,7 +400,7 @@ class MesDocumentsView(LoginRequiredMixin, TemplateView):
         fiche = getattr(request.user, "fiche_employe", None)
         if fiche is None:
             messages.error(request, "Aucune fiche employé n'est associée à votre compte.")
-            return redirect("employees:mes_documents")
+            return redirect("employees_employe:mes_documents")
 
         form = DocumentForm(request.POST, request.FILES)
         if form.is_valid():
@@ -406,10 +414,10 @@ class MesDocumentsView(LoginRequiredMixin, TemplateView):
                 f"Document {document.get_type_document_display()} importe pour {fiche.nom_complet}.",
             )
             messages.success(request, "Document importé avec succès.")
-            return redirect("employees:mes_documents")
+            return redirect("employees_employe:mes_documents")
 
         messages.error(request, "Le document est invalide. Vérifiez le type et le fichier.")
-        return redirect("employees:mes_documents")
+        return redirect("employees_employe:mes_documents")
 
 
 class MesRemunerationsView(LoginRequiredMixin, ListView):

@@ -5,7 +5,7 @@
 {% block content %}
 <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-semibold text-slate-800">Preavis definis, a communiquer a l'employe</h1>
-    <a href="{% url 'demandes:historique_demissions' %}" class="px-3 py-2 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Historique</a>
+    <a href="{% url 'demandes_rh:historique_demissions' %}" class="px-3 py-2 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Historique</a>
 </div>
 
 {% for demission in demissions %}
@@ -18,7 +18,7 @@
         </div>
         {% include "includes/badge_couleur.html" with couleur="orange" texte="A communiquer" %}
     </div>
-    <form method="post" action="{% url 'demandes:communiquer_demission' demission.pk %}">
+    <form method="post" action="{% url 'demandes_rh:communiquer_demission' demission.pk %}">
         {% csrf_token %}
         <button type="submit" class="px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">
             <i class='bx bx-check'></i> Communiquer a l'employe

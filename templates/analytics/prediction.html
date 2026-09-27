@@ -13,9 +13,9 @@
         </p>
     </div>
     {% if employe %}
-    <a href="{% url 'analytics:historique_employe' employe.pk %}" class="text-sm text-primary-600 hover:underline">Historique →</a>
+    <a href="{% url 'analytics_rh:historique_employe' employe.pk %}" class="text-sm text-primary-600 hover:underline">Historique →</a>
     {% else %}
-    <a href="{% url 'analytics:historique' %}" class="text-sm text-primary-600 hover:underline">Historique →</a>
+    <a href="{% url 'analytics_rh:historique' %}" class="text-sm text-primary-600 hover:underline">Historique →</a>
     {% endif %}
 </div>
 

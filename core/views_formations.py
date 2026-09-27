@@ -64,7 +64,7 @@ class CreerFormationView(_NotifierCiblesMixin, droit_requis("formations", "creat
     model = Formation
     form_class = FormationForm
     template_name = "core/formation_form.html"
-    success_url = reverse_lazy("core:formations")
+    success_url = reverse_lazy("core_rh:formations")
 
     def form_valid(self, form):
         form.instance.creee_par = self.request.user
@@ -83,7 +83,7 @@ class ModifierFormationView(_NotifierCiblesMixin, droit_requis("formations"), Up
     model = Formation
     form_class = FormationForm
     template_name = "core/formation_form.html"
-    success_url = reverse_lazy("core:formations")
+    success_url = reverse_lazy("core_rh:formations")
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -129,4 +129,4 @@ class SuiviFormationView(droit_requis("formations"), TemplateView):
                 f"Formation {formation.titre} : {modifies} participation(s) mise(s) a jour.",
             )
         messages.success(request, "Suivi des participations enregistré.")
-        return redirect("core:suivi_formation", pk=formation.pk)
+        return redirect("core_rh:suivi_formation", pk=formation.pk)

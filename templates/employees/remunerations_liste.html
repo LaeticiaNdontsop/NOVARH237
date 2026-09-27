@@ -70,7 +70,7 @@
                             <p class="text-xs text-slate-400">Effective au {{ remuneration.date_effective|date:"d/m/Y" }}</p>
                         </dl>
                         {% else %}<p class="mt-3 text-sm text-slate-400">Aucune rémunération enregistrée.</p>{% endif %}
-                        {% if peut_ajouter %}<a href="{% url 'employees:ajouter_remuneration' selection.pk %}" class="mt-3 inline-block text-sm text-primary-600 hover:underline font-medium">+ Ajouter / modifier la rémunération</a>{% endif %}
+                        {% if peut_ajouter %}<a href="{% if user.est_admin %}{% url 'employees_admin:ajouter_remuneration' selection.pk %}{% else %}{% url 'employees_rh:ajouter_remuneration' selection.pk %}{% endif %}" class="mt-3 inline-block text-sm text-primary-600 hover:underline font-medium">+ Ajouter / modifier la rémunération</a>{% endif %}
                     {% else %}
                         <p class="mt-2 text-sm text-slate-500">Données sensibles masquées.</p>
                         <form method="post">{% csrf_token %}<input type="hidden" name="employe" value="{{ selection.pk }}">

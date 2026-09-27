@@ -10,8 +10,8 @@
             <p class="text-slate-500 mt-1">Planifiez les formations, ciblez les employés concernés et suivez leur participation</p>
         </div>
         <div class="flex gap-2">
-            <a href="{% url 'core:historique_formations' %}" class="px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-sm hover:bg-slate-50">Historique</a>
-            {% if peut_creer|default:True %}<a href="{% url 'core:creer_formation' %}" class="px-4 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 inline-flex items-center gap-2"><i class='bx bx-plus'></i> Ajouter une formation</a>{% endif %}
+            <a href="{% url 'core_rh:historique_formations' %}" class="px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-sm hover:bg-slate-50">Historique</a>
+            {% if peut_creer|default:True %}<a href="{% url 'core_rh:creer_formation' %}" class="px-4 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 inline-flex items-center gap-2"><i class='bx bx-plus'></i> Ajouter une formation</a>{% endif %}
         </div>
     </div>
 
@@ -39,7 +39,7 @@
                         <td class="px-5 py-3 text-slate-600 whitespace-nowrap">{{ f.date_formation|date:"d M" }}{% if f.date_fin and f.date_fin != f.date_formation %} – {{ f.date_fin|date:"d M Y" }}{% else %} {{ f.date_formation|date:"Y" }}{% endif %}</td>
                         <td class="px-5 py-3 text-slate-600">{{ f.nombre_cibles }} employé{{ f.nombre_cibles|pluralize }}</td>
                         <td class="px-5 py-3">{% if f.etat == "Terminée" %}{% include "includes/badge_couleur.html" with couleur="vert" texte=f.etat %}{% elif f.etat == "Annulée" %}{% include "includes/badge_couleur.html" with couleur="gris" texte=f.etat %}{% else %}{% include "includes/badge_couleur.html" with couleur="bleu" texte=f.etat %}{% endif %}</td>
-                        <td class="px-5 py-3 text-right whitespace-nowrap"><a href="{% url 'core:suivi_formation' f.pk %}" class="text-primary-600 hover:underline text-sm">Suivi</a><a href="{% url 'core:modifier_formation' f.pk %}" class="ml-3 text-slate-500 hover:underline text-sm">Modifier</a></td>
+                        <td class="px-5 py-3 text-right whitespace-nowrap"><a href="{% url 'core_rh:suivi_formation' f.pk %}" class="text-primary-600 hover:underline text-sm">Suivi</a><a href="{% url 'core_rh:modifier_formation' f.pk %}" class="ml-3 text-slate-500 hover:underline text-sm">Modifier</a></td>
                     </tr>
                 {% empty %}
                     <tr><td colspan="5" class="px-5 py-10 text-center text-slate-400">Aucune formation planifiée.</td></tr>
@@ -66,7 +66,7 @@
             </ul>
             <p class="mt-4 text-sm font-medium text-slate-700">Employés concernés</p>
             <ul class="mt-1 space-y-1 text-sm text-slate-600">{% for p in prochaine.participations.all|slice:":5" %}<li>{{ p.employe.nom_complet }} <span class="text-xs text-slate-400">· {{ p.employe.poste }}</span></li>{% empty %}<li class="text-slate-400">Aucun employé ciblé.</li>{% endfor %}</ul>
-            <a href="{% url 'core:suivi_formation' prochaine.pk %}" class="mt-4 block text-center px-4 py-2.5 rounded-lg border border-primary-200 text-primary-700 text-sm hover:bg-primary-50">Voir les détails</a>
+            <a href="{% url 'core_rh:suivi_formation' prochaine.pk %}" class="mt-4 block text-center px-4 py-2.5 rounded-lg border border-primary-200 text-primary-700 text-sm hover:bg-primary-50">Voir les détails</a>
             {% else %}<p class="text-sm text-slate-400">Aucune session à venir.</p>{% endif %}
         </aside>
     </div>

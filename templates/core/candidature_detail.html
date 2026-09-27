@@ -22,7 +22,7 @@
         </ul>
         <div class="space-y-3 min-w-[16rem]">
             <div class="flex flex-wrap gap-2 justify-end">
-                <a href="{% url 'core:candidatures_offre' candidature.offre.pk %}" class="px-3 py-2 rounded-lg border border-slate-300 text-sm hover:bg-slate-50 inline-flex items-center gap-1"><i class='bx bx-arrow-back'></i> Retour aux candidatures</a>
+                <a href="{% url 'core_rh:candidatures_offre' candidature.offre.pk %}" class="px-3 py-2 rounded-lg border border-slate-300 text-sm hover:bg-slate-50 inline-flex items-center gap-1"><i class='bx bx-arrow-back'></i> Retour aux candidatures</a>
             </div>
             <dl class="text-sm grid grid-cols-2 gap-x-4 gap-y-1">
                 <dt class="text-slate-500">Poste</dt><dd class="font-medium text-right">{{ candidature.offre.poste }}</dd>
@@ -36,18 +36,18 @@
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
         <h2 class="font-semibold text-slate-800 mb-3">Décision et entretiens</h2>
         <div class="flex flex-wrap gap-4">
-            <form method="post" action="{% url 'core:modifier_statut_candidature' candidature.pk %}" class="flex flex-wrap items-end gap-2">{% csrf_token %}
+            <form method="post" action="{% url 'core_rh:modifier_statut_candidature' candidature.pk %}" class="flex flex-wrap items-end gap-2">{% csrf_token %}
                 <input type="hidden" name="retour" value="detail"><input type="hidden" name="statut" value="ENTRETIEN">
                 <div><label class="block text-xs text-slate-500 mb-1">Entretien RH</label><input type="datetime-local" name="date_entretien" class="rounded-lg border border-slate-300 px-3 py-2 text-sm"></div>
                 <div><label class="block text-xs text-slate-500 mb-1">Entretien technique</label><input type="datetime-local" name="date_entretien_technique" class="rounded-lg border border-slate-300 px-3 py-2 text-sm"></div>
                 <button class="px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700">Passer à l'entretien</button>
             </form>
-            <form method="post" action="{% url 'core:modifier_statut_candidature' candidature.pk %}">{% csrf_token %}<input type="hidden" name="retour" value="detail"><input type="hidden" name="statut" value="RETENUE">
+            <form method="post" action="{% url 'core_rh:modifier_statut_candidature' candidature.pk %}">{% csrf_token %}<input type="hidden" name="retour" value="detail"><input type="hidden" name="statut" value="RETENUE">
                 <button class="px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 inline-flex items-center gap-1"><i class='bx bx-check'></i> Retenir</button></form>
-            <form method="post" action="{% url 'core:modifier_statut_candidature' candidature.pk %}" onsubmit="return confirm('Refuser cette candidature ?');">{% csrf_token %}<input type="hidden" name="retour" value="detail"><input type="hidden" name="statut" value="REJETEE">
+            <form method="post" action="{% url 'core_rh:modifier_statut_candidature' candidature.pk %}" onsubmit="return confirm('Refuser cette candidature ?');">{% csrf_token %}<input type="hidden" name="retour" value="detail"><input type="hidden" name="statut" value="REJETEE">
                 <button class="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 inline-flex items-center gap-1"><i class='bx bx-x'></i> Refuser</button></form>
             {% if not candidature.recrute and candidature.statut != "REJETEE" %}
-            <form method="post" action="{% url 'core:recruter_candidat' candidature.pk %}">{% csrf_token %}<input type="hidden" name="retour" value="detail">
+            <form method="post" action="{% url 'core_rh:recruter_candidat' candidature.pk %}">{% csrf_token %}<input type="hidden" name="retour" value="detail">
                 <button class="px-4 py-2 rounded-lg border border-green-600 text-green-700 text-sm font-medium hover:bg-green-50 inline-flex items-center gap-1"><i class='bx bx-user-check'></i> Marquer comme recruté</button></form>
             {% endif %}
         </div>

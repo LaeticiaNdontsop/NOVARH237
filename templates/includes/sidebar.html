@@ -9,43 +9,40 @@
     <nav class="flex-1 py-4 space-y-1">
     
         {% if user.est_admin %}
-            {% if peut.utilisateurs %}{% menu_item 'accounts:liste_utilisateurs' 'Utilisateurs' 'bx-group' 'accounts:creer_utilisateur,accounts:modifier_utilisateur,accounts:supprimer_utilisateur' %}
+            {% if peut.utilisateurs %}{% menu_item 'accounts_admin:liste_utilisateurs' 'Utilisateurs' 'bx-group' 'accounts_admin:creer_utilisateur,accounts_admin:modifier_utilisateur,accounts_admin:supprimer_utilisateur' %}
         {% endif %}
-            {% menu_item 'accounts:droits_acces' "Droits d'accès" 'bx-shield-quarter' %}
-            {% if peut.journaux %}{% menu_item 'notifications:journal_activite' "Journaux d'activité" 'bx-file' %}{% endif %}
+            {% menu_item 'accounts_admin:droits_acces' "Droits d'accès" 'bx-shield-quarter' %}
+            {% if peut.journaux %}{% menu_item 'notifications_admin:journal_activite' "Journaux d'activité" 'bx-file' %}{% endif %}
 
             {% if peut.demandes or peut.demissions or peut.absences %}
                 <div class="space-y-1">
                     <p class="px-7 pt-4 pb-1 text-xs uppercase tracking-wider text-white/40">Situations administratives</p>
-                    {% if peut.demandes %}{% menu_item 'demandes:admin_a_decider' 'Congés & permissions' 'bx-calendar-check' 'demandes:admin_a_decider' %}{% endif %}
-                    {% if peut.demissions %}{% menu_item 'demandes:admin_demissions' 'Démissions - préavis' 'bx-log-out-circle' 'demandes:admin_demissions,demandes:definir_preavis' %}{% endif %}
-                    {% if peut.absences %}{% menu_item 'demandes:rh_absences' 'Absences des RH' 'bx-calendar-x' 'demandes:rh_absences' %}{% endif %}
+                    {% if peut.demandes %}{% menu_item 'demandes_admin:admin_a_decider' 'Congés & permissions' 'bx-calendar-check' 'demandes_admin:detail_demande' %}{% endif %}
+                    {% if peut.demissions %}{% menu_item 'demandes_admin:admin_demissions' 'Démissions - préavis' 'bx-log-out-circle' 'demandes_admin:definir_preavis' %}{% endif %}
+                    {% if peut.absences %}{% menu_item 'demandes_admin:rh_absences' 'Absences des RH' 'bx-calendar-x' %}{% endif %}
                 </div>
             {% endif %}
         {% else %}
 
-            {% if peut.employes %}{% menu_item 'employees:liste_employes' 'Employés' 'bx-group' 'employees:detail_employe,employees:creer_employe,employees:modifier_employe' %}{% endif %}
+            {% if peut.employes %}{% menu_item 'employees_rh:liste_employes' 'Employés' 'bx-group' 'employees_rh:detail_employe,employees_rh:creer_employe,employees_rh:modifier_employe' %}{% endif %}
             {% if peut.recrutements %}
-                {% menu_item 'core:recrutements' 'Recrutements' 'bx-user-plus' 'core:candidatures_offre,core:ajouter_candidature,core:detail_candidature,core:historique_recrutements' %}
-                {% menu_item 'core:offres' "Offres d'emploi" 'bx-briefcase-alt-2' 'core:creer_offre,core:modifier_offre,core:supprimer_offre' %}
+                {% menu_item 'core_rh:recrutements' 'Recrutements' 'bx-user-plus' 'core_rh:candidatures_offre,core_rh:ajouter_candidature,core_rh:detail_candidature,core_rh:historique_recrutements' %}
+                {% menu_item 'core_rh:offres' "Offres d'emploi" 'bx-briefcase-alt-2' 'core_rh:creer_offre,core_rh:modifier_offre,core_rh:supprimer_offre' %}
             {% endif %}
-            {% if peut.demandes %}{% menu_item 'demandes:rh_demandes' 'Demandes' 'bx-file' 'demandes:rh_a_traiter,demandes:rh_a_notifier,demandes:historique_conges' %}{% endif %}
-            {% if peut.formations %}{% menu_item 'core:formations' 'Formations' 'bx-book-reader' 'core:creer_formation,core:modifier_formation,core:suivi_formation,core:historique_formations' %}{% endif %}
-            {% if peut.remunerations %}{% menu_item 'employees:liste_remunerations' 'Rémunérations' 'bx-wallet' %}{% endif %}
-            {% if peut.absences %}{% menu_item 'demandes:rh_absences' 'Absences' 'bx-calendar-x' 'demandes:historique_absences' %}{% endif %}
-            {% if peut.demissions %}{% menu_item 'demandes:rh_demissions_a_transmettre' 'Démissions' 'bx-log-out-circle' 'demandes:rh_demissions_a_communiquer,demandes:historique_demissions' %}{% endif %}
-            {% if peut.analyse %}{% menu_item 'analytics:analyse' 'Tableau de bord' 'bx-line-chart' 'analytics:tableaux_bord,analytics:prediction_libre,analytics:prediction_employe,analytics:historique,analytics:historique_employe' %}{% endif %}
-            {% if user.est_rh and peut.assistant %}{% menu_item 'analytics:assistant' 'Assistant IA' 'bx-bot' %}{% endif %}
-            {% if peut.utilisateurs %}{% menu_item 'accounts:liste_utilisateurs' 'Utilisateurs' 'bx-user-check' 'accounts:creer_utilisateur,accounts:modifier_utilisateur' %}{% endif %}
-            {% if peut.journaux %}{% menu_item 'notifications:journal_activite' "Journaux d'activité" 'bx-file' %}{% endif %}
-
+            {% if peut.demandes %}{% menu_item 'demandes_rh:rh_demandes' 'Demandes' 'bx-file' 'demandes_rh:rh_a_traiter,demandes_rh:rh_a_notifier,demandes_rh:historique_conges' %}{% endif %}
+            {% if peut.formations %}{% menu_item 'core_rh:formations' 'Formations' 'bx-book-reader' 'core_rh:creer_formation,core_rh:modifier_formation,core_rh:suivi_formation,core_rh:historique_formations' %}{% endif %}
+            {% if peut.remunerations %}{% menu_item 'employees_rh:liste_remunerations' 'Rémunérations' 'bx-wallet' %}{% endif %}
+            {% if peut.absences %}{% menu_item 'demandes_rh:rh_absences' 'Absences' 'bx-calendar-x' 'demandes_rh:historique_absences' %}{% endif %}
+            {% if peut.demissions %}{% menu_item 'demandes_rh:rh_demissions_a_transmettre' 'Démissions' 'bx-log-out-circle' 'demandes_rh:rh_demissions_a_communiquer,demandes_rh:historique_demissions' %}{% endif %}
+            {% if peut.analyse %}{% menu_item 'analytics_rh:analyse' 'Tableau de bord' 'bx-line-chart' 'analytics_rh:tableaux_bord,analytics_rh:prediction_libre,analytics_rh:prediction_employe,analytics_rh:historique,analytics_rh:historique_employe' %}{% endif %}
+            {% if user.est_rh and peut.assistant %}{% menu_item 'analytics_rh:assistant' 'Assistant IA' 'bx-bot' %}{% endif %}
             <p class="px-7 pt-5 pb-1 text-xs uppercase tracking-wider text-white/40">Mon espace</p>
-            {% menu_item 'demandes:mes_demandes' 'Mes demandes' 'bx-calendar-check' 'demandes:creer_demande' %}
-            {% menu_item 'demandes:mes_absences' 'Mes absences' 'bx-calendar-x' 'demandes:creer_absence' %}
-            {% menu_item 'demandes:ma_demission' 'Ma démission' 'bx-log-out-circle' %}
-            {% menu_item 'employees:mes_documents' 'Mes documents' 'bx-folder' %}
-            {% menu_item 'employees:mes_remunerations' 'Ma rémunération' 'bx-money' %}
-            {% menu_item 'employees:mes_formations' 'Mes formations' 'bx-book-reader' %}
+            {% menu_item 'demandes_employe:mes_demandes' 'Mes demandes' 'bx-calendar-check' 'demandes_employe:creer_demande' %}
+            {% menu_item 'demandes_employe:mes_absences' 'Mes absences' 'bx-calendar-x' 'demandes_employe:creer_absence' %}
+            {% menu_item 'demandes_employe:ma_demission' 'Ma démission' 'bx-log-out-circle' 'demandes_employe:historique_demissions' %}
+            {% menu_item 'employees_employe:mes_documents' 'Mes documents' 'bx-folder' 'employees_employe:document_detail' %}
+            {% menu_item 'employees_employe:mes_remunerations' 'Ma rémunération' 'bx-money' %}
+            {% menu_item 'employees_employe:mes_formations' 'Mes formations' 'bx-book-reader' %}
         {% endif %}
 
         <div class="pt-3 mt-3 border-t border-white/10"></div>

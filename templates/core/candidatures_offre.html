@@ -10,8 +10,8 @@
             <p class="text-slate-500 mt-1">Consultez et gérez les candidatures pour ce poste. Étape : <span class="font-medium text-slate-700">{{ offre.etape }}</span> · {{ offre.statut_affiche }}</p>
         </div>
         <div class="flex gap-2">
-            <a href="{% url 'core:recrutements' %}" class="px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-sm hover:bg-slate-50 inline-flex items-center gap-2"><i class='bx bx-arrow-back'></i> Recrutements</a>
-            <a href="{% url 'core:ajouter_candidature' offre.pk %}" class="px-4 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 inline-flex items-center gap-2"><i class='bx bx-import'></i> Importer une candidature</a>
+            <a href="{% url 'core_rh:recrutements' %}" class="px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-sm hover:bg-slate-50 inline-flex items-center gap-2"><i class='bx bx-arrow-back'></i> Recrutements</a>
+            <a href="{% url 'core_rh:ajouter_candidature' offre.pk %}" class="px-4 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 inline-flex items-center gap-2"><i class='bx bx-import'></i> Importer une candidature</a>
         </div>
     </div>
 
@@ -21,7 +21,7 @@
             <div><label class="block text-xs text-slate-500 mb-1">Statut</label><select name="statut" class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm"><option value="">Tous les statuts</option>{% for valeur, libelle in statuts %}<option value="{{ valeur }}" {% if valeur == statut_filtre %}selected{% endif %}>{{ libelle }}</option>{% endfor %}</select></div>
             <div class="flex-1 min-w-[14rem]"><label class="block text-xs text-slate-500 mb-1">Recherche</label><input type="search" name="q" value="{{ recherche }}" placeholder="Rechercher un candidat (nom, e-mail, téléphone...)" class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm"></div>
             <button class="px-4 py-2.5 rounded-lg bg-primary-600 text-white text-sm">Filtrer</button>
-            <a href="{% url 'core:candidatures_offre' offre.pk %}" class="px-4 py-2.5 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Réinitialiser</a>
+            <a href="{% url 'core_rh:candidatures_offre' offre.pk %}" class="px-4 py-2.5 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Réinitialiser</a>
         </form>
     </div>
 
@@ -37,7 +37,7 @@
                     <td class="px-5 py-3">{% if c.statut == "RETENUE" %}{% include "includes/badge_couleur.html" with couleur="vert" texte=c.get_statut_display %}{% elif c.statut == "REJETEE" %}{% include "includes/badge_couleur.html" with couleur="rouge" texte=c.get_statut_display %}{% elif c.statut == "ENTRETIEN" %}{% include "includes/badge_couleur.html" with couleur="orange" texte=c.get_statut_display %}{% else %}{% include "includes/badge_couleur.html" with couleur="bleu" texte=c.get_statut_display %}{% endif %}</td>
                     <td class="px-5 py-3">{% if c.cv %}<a href="{{ c.cv.url }}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-primary-200 text-primary-700 text-xs hover:bg-primary-50"><i class='bx bx-show'></i> Consulter le CV</a>{% else %}<span class="text-slate-400">–</span>{% endif %}</td>
                     <td class="px-5 py-3">{% if c.lettre_motivation %}<a href="{{ c.lettre_motivation.url }}" class="text-primary-600 hover:underline"><i class='bx bx-file text-xl'></i></a>{% else %}<span class="text-slate-400">–</span>{% endif %}</td>
-                    <td class="px-5 py-3"><a href="{% url 'core:detail_candidature' c.pk %}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary-600 text-white text-xs font-medium hover:bg-primary-700">Voir le détail <i class='bx bx-chevron-right'></i></a></td>
+                    <td class="px-5 py-3"><a href="{% url 'core_rh:detail_candidature' c.pk %}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary-600 text-white text-xs font-medium hover:bg-primary-700">Voir le détail <i class='bx bx-chevron-right'></i></a></td>
                 </tr>
             {% empty %}
                 <tr><td colspan="7" class="px-5 py-10 text-center text-slate-400">Aucune candidature enregistrée pour cette offre. Utilisez « Importer une candidature ».</td></tr>

@@ -11,7 +11,7 @@
             <p class="text-slate-500 mt-1">Consultez et gérez les collaborateurs de votre organisation</p>
         </div>
         {% if peut_creer %}
-        <a href="{% url 'employees:creer_employe' %}" class="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700"><i class='bx bx-plus-circle text-lg'></i> Ajouter un employé</a>
+        <a href="{% if user.est_admin %}{% url 'employees_admin:creer_employe' %}{% else %}{% url 'employees_rh:creer_employe' %}{% endif %}" class="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700"><i class='bx bx-plus-circle text-lg'></i> Ajouter un employé</a>
         {% endif %}
     </div>
 
@@ -45,7 +45,7 @@
         </div>
         <input type="hidden" name="par_page" value="{{ par_page }}">
         <button class="px-4 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-medium">Filtrer</button>
-        <a href="{% url 'employees:liste_employes' %}" class="px-4 py-2.5 rounded-lg border border-slate-300 text-sm inline-flex items-center gap-2 hover:bg-slate-50"><i class='bx bx-refresh'></i> Réinitialiser</a>
+        <a href="{% if user.est_admin %}{% url 'employees_admin:liste_employes' %}{% else %}{% url 'employees_rh:liste_employes' %}{% endif %}" class="px-4 py-2.5 rounded-lg border border-slate-300 text-sm inline-flex items-center gap-2 hover:bg-slate-50"><i class='bx bx-refresh'></i> Réinitialiser</a>
     </form>
 
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
@@ -72,10 +72,10 @@
                         <details class="relative inline-block text-left">
                             <summary class="list-none cursor-pointer w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center"><i class='bx bx-dots-vertical-rounded text-xl text-slate-600'></i></summary>
                             <div class="absolute right-0 mt-1 w-44 rounded-xl border border-slate-200 bg-white shadow-lg py-1 z-10 text-sm">
-                                <a href="{% url 'employees:detail_employe' e.pk %}" class="block px-4 py-2 hover:bg-slate-50">Voir la fiche</a>
-                                {% if peut_modifier %}<a href="{% url 'employees:modifier_employe' e.pk %}" class="block px-4 py-2 hover:bg-slate-50">Modifier</a>{% endif %}
+                                <a href="{% if user.est_admin %}{% url 'employees_admin:detail_employe' e.pk %}{% else %}{% url 'employees_rh:detail_employe' e.pk %}{% endif %}" class="block px-4 py-2 hover:bg-slate-50">Voir la fiche</a>
+                                {% if peut_modifier %}<a href="{% if user.est_admin %}{% url 'employees_admin:modifier_employe' e.pk %}{% else %}{% url 'employees_rh:modifier_employe' e.pk %}{% endif %}" class="block px-4 py-2 hover:bg-slate-50">Modifier</a>{% endif %}
                                 {% if peut_desactiver and e.statut == "ACTIF" %}
-                                <form method="post" action="{% url 'employees:desactiver_employe' e.pk %}" onsubmit="return confirm('Désactiver cette fiche employé ?');">{% csrf_token %}
+                                <form method="post" action="{% if user.est_admin %}{% url 'employees_admin:desactiver_employe' e.pk %}{% else %}{% url 'employees_rh:desactiver_employe' e.pk %}{% endif %}" onsubmit="return confirm('Désactiver cette fiche employé ?');">{% csrf_token %}
                                     <button class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50">Désactiver</button>
                                 </form>
                                 {% endif %}

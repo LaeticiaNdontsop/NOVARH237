@@ -71,7 +71,7 @@ class CreationUtilisateurView(droit_requis("utilisateurs", "creation", "creation
     model = Utilisateur
     form_class = CreationUtilisateurForm
     template_name = "accounts/utilisateur_form.html"
-    success_url = reverse_lazy("accounts:liste_utilisateurs")
+    success_url = reverse_lazy("accounts_admin:liste_utilisateurs")
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -92,7 +92,7 @@ class ModifierUtilisateurView(droit_requis("utilisateurs", "modification", "modi
     model = Utilisateur
     form_class = ModificationUtilisateurForm
     template_name = "accounts/utilisateur_form.html"
-    success_url = reverse_lazy("accounts:liste_utilisateurs")
+    success_url = reverse_lazy("accounts_admin:liste_utilisateurs")
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -132,7 +132,7 @@ class ReinitialiserMotDePasseView(droit_requis("utilisateurs", "modification", "
             messages.success(request, "Mot de passe temporaire attribué : l'utilisateur devra le changer à sa prochaine connexion.")
         else:
             messages.error(request, "Le mot de passe temporaire doit contenir au moins 8 caractères.")
-        return redirect("accounts:modifier_utilisateur", pk=pk)
+        return redirect("accounts_admin:modifier_utilisateur", pk=pk)
 
 
 class SupprimerUtilisateurView(droit_requis("utilisateurs", "lecture", "suppression"), View):
@@ -159,12 +159,12 @@ class SupprimerUtilisateurView(droit_requis("utilisateurs", "lecture", "suppress
         motif = self._motif_refus(request, utilisateur)
         if motif:
             messages.error(request, motif)
-            return redirect("accounts:liste_utilisateurs")
+            return redirect("accounts_admin:liste_utilisateurs")
         nom = utilisateur.get_full_name() or utilisateur.username
         utilisateur.delete()
         log_activity(request.user, "Suppression de compte", f"Compte {nom} supprime.")
         messages.success(request, "Compte supprimé.")
-        return redirect("accounts:liste_utilisateurs")
+        return redirect("accounts_admin:liste_utilisateurs")
 
 
 # ---------------------------------------------------------------------------
@@ -216,8 +216,8 @@ class DroitsAccesView(AdminRequiredMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         cible = self._utilisateur_choisi(request)
         if cible is None:
-            return redirect("accounts:droits_acces")
-        retour = redirect(f"{reverse('accounts:droits_acces')}?utilisateur={cible.pk}")
+            return redirect("accounts_admin:droits_acces")
+        retour = redirect(f"{reverse('accounts_admin:droits_acces')}?utilisateur={cible.pk}")
 
         if "reinitialiser" in request.POST:
             cible.droits_personnalises.all().delete()

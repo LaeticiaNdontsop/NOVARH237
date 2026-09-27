@@ -9,7 +9,7 @@
             <h1 class="text-3xl font-bold text-slate-900">Offres d'emploi</h1>
             <p class="text-slate-500 mt-1">Gérez et suivez toutes les offres d'emploi de votre entreprise.</p>
         </div>
-        <a href="{% url 'core:creer_offre' %}" class="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700"><i class='bx bx-plus'></i> Créer une offre</a>
+        <a href="{% url 'core_rh:creer_offre' %}" class="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700"><i class='bx bx-plus'></i> Créer une offre</a>
     </div>
 
     <div class="grid grid-cols-1 xl:grid-cols-4 gap-4">
@@ -20,7 +20,7 @@
             <div><label class="block text-xs text-slate-500 mb-1">Statut</label><select name="statut" class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm"><option value="">Tous les statuts</option>{% for valeur, libelle in statuts %}<option value="{{ valeur }}" {% if valeur == filtre_statut %}selected{% endif %}>{{ libelle }}</option>{% endfor %}</select></div>
             <div><label class="block text-xs text-slate-500 mb-1">Département</label><select name="departement" class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm"><option value="">Tous les départements</option>{% for d in departements %}<option value="{{ d }}" {% if d == filtre_departement %}selected{% endif %}>{{ d }}</option>{% endfor %}</select></div>
             <button class="px-4 py-2.5 rounded-lg bg-primary-600 text-white text-sm">Filtrer</button>
-            <a href="{% url 'core:offres' %}" class="px-4 py-2.5 rounded-lg border border-slate-300 text-sm inline-flex items-center gap-2 hover:bg-slate-50"><i class='bx bx-refresh'></i> Réinitialiser</a>
+            <a href="{% url 'core_rh:offres' %}" class="px-4 py-2.5 rounded-lg border border-slate-300 text-sm inline-flex items-center gap-2 hover:bg-slate-50"><i class='bx bx-refresh'></i> Réinitialiser</a>
         </form>
     </div>
 
@@ -30,7 +30,7 @@
             <tbody>
             {% for offre in offres %}
                 <tr class="border-b border-slate-100 hover:bg-slate-50/60">
-                    <td class="px-5 py-4"><a href="{% url 'core:candidatures_offre' offre.pk %}" class="font-semibold text-primary-600 hover:underline">{{ offre.poste }}</a><p class="text-xs text-slate-400">Réf. {{ offre.reference }}</p></td>
+                    <td class="px-5 py-4"><a href="{% url 'core_rh:candidatures_offre' offre.pk %}" class="font-semibold text-primary-600 hover:underline">{{ offre.poste }}</a><p class="text-xs text-slate-400">Réf. {{ offre.reference }}</p></td>
                     <td class="px-5 py-4 text-slate-600">{{ offre.departement|default:"-" }}</td>
                     <td class="px-5 py-4 text-slate-600">{{ offre.date_publication|date:"d M Y"|default:"-" }}</td>
                     <td class="px-5 py-4 text-slate-600">{{ offre.date_limite|date:"d M Y"|default:"-" }}</td>
@@ -40,9 +40,9 @@
                         <details class="relative inline-block text-left">
                             <summary class="list-none cursor-pointer w-9 h-9 rounded-lg border border-slate-200 hover:bg-slate-50 flex items-center justify-center"><i class='bx bx-dots-vertical-rounded text-xl text-slate-600'></i></summary>
                             <div class="absolute right-0 mt-1 w-48 rounded-xl border border-slate-200 bg-white shadow-lg py-1 z-10 text-sm">
-                                <a href="{% url 'core:candidatures_offre' offre.pk %}" class="block px-4 py-2 hover:bg-slate-50">Voir les candidatures</a>
-                                <a href="{% url 'core:modifier_offre' offre.pk %}" class="block px-4 py-2 hover:bg-slate-50">Modifier</a>
-                                <a href="{% url 'core:supprimer_offre' offre.pk %}" class="block px-4 py-2 text-red-600 hover:bg-red-50">Supprimer</a>
+                                <a href="{% url 'core_rh:candidatures_offre' offre.pk %}" class="block px-4 py-2 hover:bg-slate-50">Voir les candidatures</a>
+                                <a href="{% url 'core_rh:modifier_offre' offre.pk %}" class="block px-4 py-2 hover:bg-slate-50">Modifier</a>
+                                <a href="{% url 'core_rh:supprimer_offre' offre.pk %}" class="block px-4 py-2 text-red-600 hover:bg-red-50">Supprimer</a>
                             </div>
                         </details>
                     </td>

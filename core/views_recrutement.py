@@ -117,7 +117,7 @@ class CreerOffreView(droit_requis("recrutements", "creation", "creation"), Creat
     model = Offre
     form_class = OffreForm
     template_name = "core/offre_form.html"
-    success_url = reverse_lazy("core:offres")
+    success_url = reverse_lazy("core_rh:offres")
 
     def get_initial(self):
         initial = super().get_initial()
@@ -141,7 +141,7 @@ class ModifierOffreView(droit_requis("recrutements"), UpdateView):
     model = Offre
     form_class = OffreForm
     template_name = "core/offre_form.html"
-    success_url = reverse_lazy("core:offres")
+    success_url = reverse_lazy("core_rh:offres")
 
     def form_valid(self, form):
         _statut_depuis_bouton(self.request, form)
@@ -169,7 +169,7 @@ class SupprimerOffreView(droit_requis("recrutements", "lecture", "suppression"),
         offre.delete()
         log_activity(request.user, "Suppression d'une offre", f"Offre {poste} supprimee.")
         messages.success(request, "Offre supprimée.")
-        return redirect("core:offres")
+        return redirect("core_rh:offres")
 
 
 class CandidaturesOffreView(droit_requis("recrutements"), TemplateView):
@@ -235,7 +235,7 @@ class AjouterCandidatureView(droit_requis("recrutements", "creation", "creation"
         return initial
 
     def get_success_url(self):
-        return reverse_lazy("core:candidatures_offre", kwargs={"pk": self.offre.pk})
+        return reverse_lazy("core_rh:candidatures_offre", kwargs={"pk": self.offre.pk})
 
 
 class DetailCandidatureView(droit_requis("recrutements"), DetailView):
@@ -282,9 +282,9 @@ def modifier_statut_candidature(request, pk):
     exiger_droit(request.user, "recrutements", "modification")
     candidature = get_object_or_404(Candidature, pk=pk)
     if request.POST.get("retour") == "detail":
-        retour = redirect("core:detail_candidature", pk=candidature.pk)
+        retour = redirect("core_rh:detail_candidature", pk=candidature.pk)
     else:
-        retour = redirect("core:candidatures_offre", pk=candidature.offre_id)
+        retour = redirect("core_rh:candidatures_offre", pk=candidature.offre_id)
 
     statut = request.POST.get("statut")
     if statut not in dict(candidature._meta.get_field("statut").choices):
@@ -319,8 +319,8 @@ def recruter_candidat(request, pk):
     """BF-RH-16 : enregistre le candidat comme effectivement recrute (sans creer de compte)."""
     exiger_droit(request.user, "recrutements", "modification")
     candidature = get_object_or_404(Candidature, pk=pk)
-    retour = redirect("core:detail_candidature", pk=candidature.pk) if request.POST.get("retour") == "detail" \
-        else redirect("core:candidatures_offre", pk=candidature.offre_id)
+    retour = redirect("core_rh:detail_candidature", pk=candidature.pk) if request.POST.get("retour") == "detail" \
+        else redirect("core_rh:candidatures_offre", pk=candidature.offre_id)
     if candidature.statut == StatutCandidature.REJETEE:
         messages.error(request, "Une candidature refusée ne peut pas être recrutée : changez d'abord son statut.")
         return retour

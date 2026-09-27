@@ -88,7 +88,7 @@ class CircuitDemandesTest(Base):
         self.assertEqual(demande.couleur, "orange")
 
         self.se_connecter(self.emp_user)
-        self.assertContains(self.client.get(reverse("demandes:mes_demandes")), "Approuvee")
+        self.assertContains(self.client.get(reverse("demandes_employe:mes_demandes")), "Approuvee")
 
         reaffecter_demandes_expirees()
         self.assertTrue(Notification.objects.filter(destinataire=self.rh, message__startswith="ALERTE").exists())
@@ -103,39 +103,39 @@ class CircuitDemandesTest(Base):
 
     def test_la_demande_d_un_rh_est_visible_par_l_administrateur_et_sa_decision_est_finale(self):
         self.se_connecter(self.rh)
-        self.client.post(reverse("demandes:creer_demande"), {
+        self.client.post(reverse("demandes_employe:creer_demande"), {
             "type_demande": "CONGE", "date_debut": "2026-12-01", "date_fin": "2026-12-05", "motif": "Repos"})
         demande = DemandeConge.objects.get(employe=self.fiche_rh)
         self.assertEqual(demande.statut, StatutDemande.EN_ATTENTE_ADMIN)
         self.assertTrue(Notification.objects.filter(destinataire=self.admin, message__contains=demande.reference).exists())
 
         self.se_connecter(self.admin)
-        self.assertContains(self.client.get(reverse("demandes:admin_a_decider")), demande.reference)
-        self.client.post(reverse("demandes:approuver_par_admin", args=[demande.pk]), {"commentaire": "OK"})
+        self.assertContains(self.client.get(reverse("demandes_admin:admin_a_decider")), demande.reference)
+        self.client.post(reverse("demandes_admin:approuver_par_admin", args=[demande.pk]), {"commentaire": "OK"})
         demande.refresh_from_db()
         self.assertEqual(demande.statut, StatutDemande.APPROUVEE)  # aucune etape RH pour une demande de RH
         self.assertTrue(Notification.objects.filter(destinataire=self.rh, message__contains="approuvee").exists())
 
     def test_circuit_complet_employe_rh_admin_rh(self):
         self.se_connecter(self.emp_user)
-        self.client.post(reverse("demandes:creer_demande"), {
+        self.client.post(reverse("demandes_employe:creer_demande"), {
             "type_demande": "PERMISSION", "date_debut": "2026-12-01", "date_fin": "2026-12-01", "motif": "RDV"})
         demande = DemandeConge.objects.get(employe=self.emp)
         self.assertEqual(demande.rh_assigne, self.rh)
 
         self.se_connecter(self.rh)
-        self.assertContains(self.client.get(reverse("demandes:rh_demandes")), "Traiter")
-        self.client.post(reverse("demandes:transmettre_a_admin", args=[demande.pk]), {"commentaire": "RAS"})
+        self.assertContains(self.client.get(reverse("demandes_rh:rh_demandes")), "Traiter")
+        self.client.post(reverse("demandes_rh:transmettre_a_admin", args=[demande.pk]), {"commentaire": "RAS"})
         demande.refresh_from_db()
         self.assertEqual(demande.statut, StatutDemande.EN_ATTENTE_ADMIN)
 
         self.se_connecter(self.admin)
-        self.client.post(reverse("demandes:approuver_par_admin", args=[demande.pk]))
+        self.client.post(reverse("demandes_admin:approuver_par_admin", args=[demande.pk]))
         demande.refresh_from_db()
         self.assertEqual(demande.statut, StatutDemande.APPROUVEE_A_NOTIFIER)
 
         self.se_connecter(self.rh)
-        self.client.post(reverse("demandes:cloturer_demande", args=[demande.pk]))
+        self.client.post(reverse("demandes_rh:cloturer_demande", args=[demande.pk]))
         demande.refresh_from_db()
         self.assertEqual(demande.statut, StatutDemande.APPROUVEE)
 
@@ -144,12 +144,12 @@ class CircuitDemandesTest(Base):
         media = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, media, ignore_errors=True)
         with override_settings(MEDIA_ROOT=media):
-            mauvais = self.client.post(reverse("demandes:creer_demande"), {
+            mauvais = self.client.post(reverse("demandes_employe:creer_demande"), {
                 "type_demande": "CONGE", "date_debut": "2026-12-01", "date_fin": "2026-12-02", "motif": "x",
                 "piece_jointe": SimpleUploadedFile("virus.exe", b"MZ")})
             self.assertEqual(mauvais.status_code, 200)
             self.assertFalse(DemandeConge.objects.exists())
-            bon = self.client.post(reverse("demandes:creer_demande"), {
+            bon = self.client.post(reverse("demandes_employe:creer_demande"), {
                 "type_demande": "CONGE", "date_debut": "2026-12-01", "date_fin": "2026-12-02", "motif": "x",
                 "commentaire": "Joignable", "piece_jointe": SimpleUploadedFile("attestation.pdf", b"%PDF")})
             self.assertEqual(bon.status_code, 302)
@@ -165,7 +165,7 @@ class AbsencesTest(Base):
         self.addCleanup(shutil.rmtree, media, ignore_errors=True)
         with override_settings(MEDIA_ROOT=media):
             self.se_connecter(self.emp_user)
-            reponse = self.client.post(reverse("demandes:creer_absence"), {
+            reponse = self.client.post(reverse("demandes_employe:creer_absence"), {
                 "date_debut": "2026-11-02", "date_fin": "2026-11-03", "type_absence": "MALADIE",
                 "motif": "Palu", "justificatif": SimpleUploadedFile("certificat.pdf", b"%PDF")})
             self.assertEqual(reponse.status_code, 302)
@@ -176,7 +176,7 @@ class AbsencesTest(Base):
             self.assertTrue(Notification.objects.filter(destinataire=self.rh, message__contains="Absence").exists())
 
             self.se_connecter(self.rh)
-            suivi = self.client.get(reverse("demandes:rh_absences"))
+            suivi = self.client.get(reverse("demandes_rh:rh_absences"))
             self.assertContains(suivi, "Maladie")
             self.assertNotContains(suivi, "Valider")
             self.assertNotContains(suivi, "Refuser")
@@ -185,7 +185,7 @@ class AbsencesTest(Base):
 
     def test_justificatif_invalide_refuse(self):
         self.se_connecter(self.emp_user)
-        reponse = self.client.post(reverse("demandes:creer_absence"), {
+        reponse = self.client.post(reverse("demandes_employe:creer_absence"), {
             "date_debut": "2026-11-02", "date_fin": "2026-11-03", "type_absence": "AUTRE",
             "justificatif": SimpleUploadedFile("script.sh", b"#!/bin/sh")})
         self.assertEqual(reponse.status_code, 200)
@@ -194,7 +194,7 @@ class AbsencesTest(Base):
     def test_l_administrateur_consulte_la_declaration_d_un_rh_sans_la_traiter(self):
         absence = Absence.objects.create(employe=self.fiche_rh, date_debut=date(2026, 11, 2), date_fin=date(2026, 11, 2))
         self.se_connecter(self.admin)
-        suivi = self.client.get(reverse("demandes:rh_absences"))
+        suivi = self.client.get(reverse("demandes_admin:rh_absences"))
         self.assertContains(suivi, "Déclarée")
         self.assertNotContains(suivi, "Valider")
         self.assertNotContains(suivi, "Refuser")
@@ -209,13 +209,13 @@ class DroitsAccesTest(Base):
     def enregistrer(self, cible, cases):
         donnees = {"utilisateur": cible.pk}
         donnees.update({case: "on" for case in cases})
-        return self.client.post(reverse("accounts:droits_acces"), donnees)
+        return self.client.post(reverse("accounts_admin:droits_acces"), donnees)
 
     def test_seul_l_administrateur_gere_les_droits(self):
         self.se_connecter(self.rh)
-        self.assertEqual(self.client.get(reverse("accounts:droits_acces")).status_code, 403)
+        self.assertEqual(self.client.get(reverse("accounts_admin:droits_acces")).status_code, 403)
         self.se_connecter(self.emp_user)
-        self.assertEqual(self.client.post(reverse("accounts:droits_acces"), {"utilisateur": self.emp_user.pk,
+        self.assertEqual(self.client.post(reverse("accounts_admin:droits_acces"), {"utilisateur": self.emp_user.pk,
                                                                              "employes__lecture": "on"}).status_code, 403)
 
     def test_droits_par_defaut_des_roles(self):
@@ -226,7 +226,7 @@ class DroitsAccesTest(Base):
 
     def test_attribuer_un_droit_a_un_employe_puis_le_revoquer(self):
         self.se_connecter(self.emp_user)
-        self.assertEqual(self.client.get(reverse("employees:liste_employes")).status_code, 403)
+        self.assertEqual(self.client.get(reverse("employees_rh:liste_employes")).status_code, 403)
 
         self.se_connecter(self.admin)
         self.enregistrer(self.emp_user, ["employes__lecture", "dashboard__lecture", "assistant__lecture",
@@ -234,19 +234,19 @@ class DroitsAccesTest(Base):
         self.assertTrue(DroitUtilisateur.objects.filter(utilisateur=self.emp_user, module="employes").exists())
 
         self.se_connecter(self.emp_user)
-        self.assertEqual(self.client.get(reverse("employees:liste_employes")).status_code, 200)
-        self.assertEqual(self.client.get(reverse("employees:creer_employe")).status_code, 403)  # pas de creation
-        self.assertContains(self.client.get(reverse("core:dashboard_employe")), "Employés")  # menu mis a jour
+        self.assertEqual(self.client.get(reverse("employees_rh:liste_employes")).status_code, 200)
+        self.assertEqual(self.client.get(reverse("employees_rh:creer_employe")).status_code, 403)  # pas de creation
+        self.assertContains(self.client.get(reverse("core_employe:dashboard_employe")), "Employés")  # menu mis a jour
 
         self.se_connecter(self.admin)
-        self.client.post(reverse("accounts:droits_acces"), {"utilisateur": self.emp_user.pk, "reinitialiser": "1"})
+        self.client.post(reverse("accounts_admin:droits_acces"), {"utilisateur": self.emp_user.pk, "reinitialiser": "1"})
         self.assertFalse(DroitUtilisateur.objects.filter(utilisateur=self.emp_user).exists())
         self.se_connecter(self.emp_user)
-        self.assertEqual(self.client.get(reverse("employees:liste_employes")).status_code, 403)
+        self.assertEqual(self.client.get(reverse("employees_rh:liste_employes")).status_code, 403)
 
     def test_revoquer_un_droit_par_defaut_du_rh(self):
         self.se_connecter(self.rh)
-        self.assertEqual(self.client.get(reverse("core:recrutements")).status_code, 200)
+        self.assertEqual(self.client.get(reverse("core_rh:recrutements")).status_code, 200)
         defauts_rh = ["dashboard__lecture", "employes__lecture", "employes__creation", "employes__modification",
                       "employes__suppression", "demandes__lecture", "demandes__modification", "absences__lecture",
                       "absences__modification", "demissions__lecture", "demissions__modification",
@@ -256,12 +256,12 @@ class DroitsAccesTest(Base):
         self.se_connecter(self.admin)
         self.enregistrer(self.rh, defauts_rh)  # plus aucun droit sur « recrutements »
         self.se_connecter(self.rh)
-        self.assertEqual(self.client.get(reverse("core:recrutements")).status_code, 403)
-        self.assertEqual(self.client.get(reverse("employees:liste_employes")).status_code, 200)
+        self.assertEqual(self.client.get(reverse("core_rh:recrutements")).status_code, 403)
+        self.assertEqual(self.client.get(reverse("employees_rh:liste_employes")).status_code, 200)
 
     def test_enregistrer_les_droits_par_defaut_ne_cree_aucune_ligne_et_est_journalise(self):
         self.se_connecter(self.admin)
-        self.client.post(reverse("accounts:droits_acces"), {"utilisateur": self.emp_user.pk, "dashboard__lecture": "on",
+        self.client.post(reverse("accounts_admin:droits_acces"), {"utilisateur": self.emp_user.pk, "dashboard__lecture": "on",
                                                             "assistant__lecture": "on", "notifications__lecture": "on"})
         self.assertFalse(DroitUtilisateur.objects.filter(utilisateur=self.emp_user).exists())
         self.assertTrue(ActivityLog.objects.filter(action="Modification des droits").exists())
@@ -278,45 +278,45 @@ class DroitsAccesTest(Base):
 class ComptesTest(Base):
     def test_le_rh_n_accede_pas_a_la_gestion_des_comptes(self):
         self.se_connecter(self.rh)
-        self.assertEqual(self.client.get(reverse("accounts:liste_utilisateurs")).status_code, 403)
-        self.assertEqual(self.client.post(reverse("accounts:creer_utilisateur"), {}).status_code, 403)
+        self.assertEqual(self.client.get(reverse("accounts_admin:liste_utilisateurs")).status_code, 403)
+        self.assertEqual(self.client.post(reverse("accounts_admin:creer_utilisateur"), {}).status_code, 403)
 
     def test_creer_modifier_supprimer(self):
         self.se_connecter(self.admin)
-        reponse = self.client.post(reverse("accounts:creer_utilisateur"), {
+        reponse = self.client.post(reverse("accounts_admin:creer_utilisateur"), {
             "last_name": "Mavoungou", "first_name": "Arnaud", "email": "arnaud@exemple.cm", "telephone": "670123456",
             "username": "amavoungou", "role": "RH", "is_active": "on", "mot_de_passe_temporaire": "Temporaire#2026"})
-        self.assertRedirects(reponse, reverse("accounts:liste_utilisateurs"))
+        self.assertRedirects(reponse, reverse("accounts_admin:liste_utilisateurs"))
         cree = User.objects.get(username="amavoungou")
         self.assertTrue(cree.doit_changer_mot_de_passe)
         self.assertTrue(cree.check_password("Temporaire#2026"))
 
-        self.client.post(reverse("accounts:modifier_utilisateur", args=[cree.pk]), {
+        self.client.post(reverse("accounts_admin:modifier_utilisateur", args=[cree.pk]), {
             "last_name": "Mavoungou", "first_name": "Arnaud", "email": "arnaud@exemple.cm", "telephone": "699",
             "role": "EMPLOYE", "is_active": "on"})
         cree.refresh_from_db()
         self.assertEqual(cree.role, "EMPLOYE")
 
-        self.client.post(reverse("accounts:supprimer_utilisateur", args=[cree.pk]))
+        self.client.post(reverse("accounts_admin:supprimer_utilisateur", args=[cree.pk]))
         self.assertFalse(User.objects.filter(username="amavoungou").exists())
 
     def test_email_deja_utilise_refuse(self):
         self.se_connecter(self.admin)
-        reponse = self.client.post(reverse("accounts:creer_utilisateur"), {
+        reponse = self.client.post(reverse("accounts_admin:creer_utilisateur"), {
             "last_name": "X", "first_name": "Y", "email": "EMP@exemple.cm", "username": "nouveau", "role": "EMPLOYE",
             "is_active": "on", "mot_de_passe_temporaire": "Temporaire#2026"})
         self.assertContains(reponse, "déjà utilisée")
 
     def test_suppression_bloquee_pour_un_compte_avec_fiche_ou_pour_soi_meme(self):
         self.se_connecter(self.admin)
-        self.client.post(reverse("accounts:supprimer_utilisateur", args=[self.emp_user.pk]))
+        self.client.post(reverse("accounts_admin:supprimer_utilisateur", args=[self.emp_user.pk]))
         self.assertTrue(User.objects.filter(pk=self.emp_user.pk).exists())
-        self.client.post(reverse("accounts:supprimer_utilisateur", args=[self.admin.pk]))
+        self.client.post(reverse("accounts_admin:supprimer_utilisateur", args=[self.admin.pk]))
         self.assertTrue(User.objects.filter(pk=self.admin.pk).exists())
 
     def test_reinitialisation_du_mot_de_passe_temporaire(self):
         self.se_connecter(self.admin)
-        self.client.post(reverse("accounts:reinitialiser_mot_de_passe", args=[self.emp_user.pk]),
+        self.client.post(reverse("accounts_admin:reinitialiser_mot_de_passe", args=[self.emp_user.pk]),
                          {"mot_de_passe_temporaire": "Nouveau#2026x"})
         self.emp_user.refresh_from_db()
         self.assertTrue(self.emp_user.check_password("Nouveau#2026x"))
@@ -324,9 +324,9 @@ class ComptesTest(Base):
 
     def test_filtres_de_la_liste(self):
         self.se_connecter(self.admin)
-        reponse = self.client.get(reverse("accounts:liste_utilisateurs"), {"role": "RH"})
+        reponse = self.client.get(reverse("accounts_admin:liste_utilisateurs"), {"role": "RH"})
         self.assertEqual([u.username for u in reponse.context["utilisateurs"]], ["rh"])
-        reponse = self.client.get(reverse("accounts:liste_utilisateurs"), {"q": "autre"})
+        reponse = self.client.get(reverse("accounts_admin:liste_utilisateurs"), {"q": "autre"})
         self.assertEqual([u.username for u in reponse.context["utilisateurs"]], ["autre"])
 
 
@@ -350,21 +350,21 @@ class JournalTest(Base):
     def test_journal_reserve_a_l_administrateur_avec_filtres_et_detail(self):
         self.client.post(reverse("accounts:login"), {"username": "ghost", "password": "x"})
         self.se_connecter(self.rh)
-        self.assertEqual(self.client.get(reverse("notifications:journal_activite")).status_code, 403)
+        self.assertEqual(self.client.get(reverse("notifications_admin:journal_activite")).status_code, 403)
 
         self.se_connecter(self.admin)
-        reponse = self.client.get(reverse("notifications:journal_activite"))
+        reponse = self.client.get(reverse("notifications_admin:journal_activite"))
         self.assertEqual(reponse.status_code, 200)
         self.assertEqual(reponse.context["nb_alertes_aujourdhui"], 1)
         evenement = ActivityLog.objects.get(action="Tentative de connexion refusee")
-        self.assertContains(self.client.get(reverse("notifications:journal_activite"), {"evenement": evenement.pk}),
+        self.assertContains(self.client.get(reverse("notifications_admin:journal_activite"), {"evenement": evenement.pk}),
                             "Détail de l")
-        filtre = self.client.get(reverse("notifications:journal_activite"), {"type": "CONNEXION"})
+        filtre = self.client.get(reverse("notifications_admin:journal_activite"), {"type": "CONNEXION"})
         self.assertTrue(all(e.type_action == "CONNEXION" for e in filtre.context["evenements"]))
 
     def test_les_actions_sont_journalisees_avec_un_type(self):
         self.se_connecter(self.admin)
-        self.client.post(reverse("accounts:creer_utilisateur"), {
+        self.client.post(reverse("accounts_admin:creer_utilisateur"), {
             "last_name": "N", "first_name": "M", "email": "nm@exemple.cm", "username": "nm", "role": "EMPLOYE",
             "is_active": "on", "mot_de_passe_temporaire": "Temporaire#2026"})
         journal = ActivityLog.objects.get(action="Creation de compte")
@@ -416,7 +416,7 @@ class NotificationsTest(Base):
     def test_la_cloche_affiche_le_nombre_de_non_lues(self):
         Notification.objects.create(destinataire=self.emp_user, message="Un", role_cible="TOUS")
         self.se_connecter(self.emp_user)
-        self.assertEqual(self.client.get(reverse("core:dashboard_employe")).context["nb_notifications_non_lues"], 1)
+        self.assertEqual(self.client.get(reverse("core_employe:dashboard_employe")).context["nb_notifications_non_lues"], 1)
 
 
 # ---------------------------------------------------------------------------
@@ -425,9 +425,9 @@ class NotificationsTest(Base):
 class AnalyseEtRechercheTest(Base):
     def test_analyse_par_departement_reservee_aux_droits(self):
         self.se_connecter(self.emp_user)
-        self.assertEqual(self.client.get(reverse("analytics:analyse")).status_code, 403)
+        self.assertEqual(self.client.get(reverse("analytics_rh:analyse")).status_code, 403)
         self.se_connecter(self.rh)
-        reponse = self.client.get(reverse("analytics:analyse"))
+        reponse = self.client.get(reverse("analytics_rh:analyse"))
         self.assertEqual(reponse.status_code, 200)
         self.assertContains(reponse, "aide à la décision")
         self.assertEqual({l["service"] for l in reponse.context["lignes"]}, {"RH", "Administration"})
@@ -435,7 +435,7 @@ class AnalyseEtRechercheTest(Base):
     def test_le_niveau_de_risque_repose_sur_des_regles_reelles(self):
         Employe.objects.filter(pk=self.autre.pk).update(statut="INACTIF", date_desactivation=timezone.now())
         self.se_connecter(self.rh)
-        lignes = self.client.get(reverse("analytics:analyse")).context["lignes"]
+        lignes = self.client.get(reverse("analytics_rh:analyse")).context["lignes"]
         admin_ligne = next(l for l in lignes if l["service"] == "Administration")
         self.assertEqual(admin_ligne["niveau"], "Élevé")  # 1 depart sur un effectif moyen de 1
 

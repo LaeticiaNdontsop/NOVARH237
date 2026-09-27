@@ -11,7 +11,7 @@
     {% endif %}
     <form method="post" class="flex gap-2">{% csrf_token %}
         <button class="px-4 py-2 rounded-lg bg-red-600 text-white text-sm">Supprimer définitivement</button>
-        <a href="{% url 'core:offres' %}" class="px-4 py-2 rounded-lg border border-slate-300 text-sm">Annuler</a>
+        <a href="{% url 'core_rh:offres' %}" class="px-4 py-2 rounded-lg border border-slate-300 text-sm">Annuler</a>
     </form>
 </div>
 {% endblock %}

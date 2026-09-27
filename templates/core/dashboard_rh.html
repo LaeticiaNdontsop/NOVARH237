@@ -11,10 +11,10 @@
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <a href="{% url 'employees:liste_employes' %}" class="block">{% include "includes/kpi.html" with icone="bx-group" teinte="blue" valeur=effectif_total libelle="Employés" sous_texte=embauches_du_mois|stringformat:"d"|add:" embauche(s) ce mois" %}</a>
-        <a href="{% url 'core:recrutements' %}" class="block">{% include "includes/kpi.html" with icone="bx-search-alt" teinte="teal" valeur=nb_recrutements libelle="Recrutements en cours" sous_texte="Offres actives" %}</a>
-        <a href="{% url 'demandes:rh_demandes' %}" class="block">{% include "includes/kpi.html" with icone="bx-file" teinte="orange" valeur=nb_demandes_attente libelle="Demandes en attente" sous_texte=texte_demandes %}</a>
-        <a href="{% url 'demandes:rh_absences' %}" class="block">{% include "includes/kpi.html" with icone="bx-calendar-x" teinte="red" valeur=nb_absences libelle="Déclarations d'absence" sous_texte="Suivi informatif" %}</a>
+        <a href="{% url 'employees_rh:liste_employes' %}" class="block">{% include "includes/kpi.html" with icone="bx-group" teinte="blue" valeur=effectif_total libelle="Employés" sous_texte=embauches_du_mois|stringformat:"d"|add:" embauche(s) ce mois" %}</a>
+        <a href="{% url 'core_rh:recrutements' %}" class="block">{% include "includes/kpi.html" with icone="bx-search-alt" teinte="teal" valeur=nb_recrutements libelle="Recrutements en cours" sous_texte="Offres actives" %}</a>
+        <a href="{% url 'demandes_rh:rh_demandes' %}" class="block">{% include "includes/kpi.html" with icone="bx-file" teinte="orange" valeur=nb_demandes_attente libelle="Demandes en attente" sous_texte=texte_demandes %}</a>
+        <a href="{% url 'demandes_rh:rh_absences' %}" class="block">{% include "includes/kpi.html" with icone="bx-calendar-x" teinte="red" valeur=nb_absences libelle="Déclarations d'absence" sous_texte="Suivi informatif" %}</a>
     </div>
 
     <div class="grid grid-cols-1 xl:grid-cols-5 gap-4">
@@ -61,14 +61,14 @@
         <div class="xl:col-span-3 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="font-semibold text-slate-800">Demandes récentes</h2>
-                <a href="{% url 'demandes:rh_demandes' %}" class="text-sm text-primary-600 hover:underline">Voir toutes les demandes &rarr;</a>
+                <a href="{% url 'demandes_rh:rh_demandes' %}" class="text-sm text-primary-600 hover:underline">Voir toutes les demandes &rarr;</a>
             </div>
             <table class="w-full text-sm">
                 <thead><tr class="text-left text-slate-500 border-b"><th class="py-2 font-medium">ID</th><th class="py-2 font-medium">Type</th><th class="py-2 font-medium">Employé</th><th class="py-2 font-medium">Département</th><th class="py-2 font-medium">Date</th><th class="py-2 font-medium">Statut</th></tr></thead>
                 <tbody>
                 {% for d in demandes_recentes %}
                     <tr class="border-b border-slate-100 last:border-0">
-                        <td class="py-2.5"><a href="{% url 'demandes:detail_demande' d.pk %}" class="text-primary-600 hover:underline">#{{ d.reference }}</a></td>
+                        <td class="py-2.5"><a href="{% url 'demandes_rh:detail_demande' d.pk %}" class="text-primary-600 hover:underline">#{{ d.reference }}</a></td>
                         <td class="py-2.5">{{ d.get_type_demande_display }}</td>
                         <td class="py-2.5">{{ d.employe.nom_complet }}</td>
                         <td class="py-2.5 text-slate-500">{{ d.employe.service }}</td>
@@ -85,7 +85,7 @@
         <div class="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="font-semibold text-slate-800">Analyse intelligente</h2>
-                <a href="{% url 'analytics:analyse' %}" class="text-xs px-3 py-1 rounded-full bg-primary-600 text-white">Aide à la décision</a>
+                <a href="{% url 'analytics_rh:analyse' %}" class="text-xs px-3 py-1 rounded-full bg-primary-600 text-white">Aide à la décision</a>
             </div>
             <ul class="space-y-4 text-sm">
                 <li class="flex gap-3">

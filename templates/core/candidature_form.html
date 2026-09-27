@@ -48,7 +48,7 @@
             {% include "includes/champ.html" with champ=form.statut %}
         </section>
         <div class="flex justify-end gap-3">
-            <a href="{% url 'core:candidatures_offre' offre.pk %}" class="px-5 py-2.5 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Annuler</a>
+            <a href="{% url 'core_rh:candidatures_offre' offre.pk %}" class="px-5 py-2.5 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Annuler</a>
             <button type="submit" class="px-5 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700">Enregistrer la candidature</button>
         </div>
     </form>

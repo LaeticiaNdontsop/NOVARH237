@@ -10,7 +10,7 @@
             <h1 class="text-3xl font-bold text-slate-900">Demandes des employés</h1>
             <p class="text-slate-500 mt-1">Gérez et traitez les demandes de congé et de permission soumises par vos collaborateurs.</p>
         </div>
-        <a href="{% url 'demandes:historique_conges' %}" class="px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-sm hover:bg-slate-50">Historique</a>
+        <a href="{% url 'demandes_rh:historique_conges' %}" class="px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-sm hover:bg-slate-50">Historique</a>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -20,9 +20,9 @@
     </div>
 
     <div class="flex flex-wrap gap-2">
-        <a href="{% url 'demandes:rh_demandes' %}" class="px-4 py-2 rounded-lg border text-sm {% if vue == 'toutes' %}border-primary-600 text-primary-600 bg-primary-50 font-medium{% else %}border-slate-200 text-slate-600 bg-white{% endif %}">Toutes</a>
-        <a href="{% url 'demandes:rh_a_traiter' %}" class="px-4 py-2 rounded-lg border text-sm {% if vue == 'a_traiter' %}border-primary-600 text-primary-600 bg-primary-50 font-medium{% else %}border-slate-200 text-slate-600 bg-white{% endif %}">À transmettre</a>
-        <a href="{% url 'demandes:rh_a_notifier' %}" class="px-4 py-2 rounded-lg border text-sm {% if vue == 'a_notifier' %}border-primary-600 text-primary-600 bg-primary-50 font-medium{% else %}border-slate-200 text-slate-600 bg-white{% endif %}">À communiquer</a>
+        <a href="{% url 'demandes_rh:rh_demandes' %}" class="px-4 py-2 rounded-lg border text-sm {% if vue == 'toutes' %}border-primary-600 text-primary-600 bg-primary-50 font-medium{% else %}border-slate-200 text-slate-600 bg-white{% endif %}">Toutes</a>
+        <a href="{% url 'demandes_rh:rh_a_traiter' %}" class="px-4 py-2 rounded-lg border text-sm {% if vue == 'a_traiter' %}border-primary-600 text-primary-600 bg-primary-50 font-medium{% else %}border-slate-200 text-slate-600 bg-white{% endif %}">À transmettre</a>
+        <a href="{% url 'demandes_rh:rh_a_notifier' %}" class="px-4 py-2 rounded-lg border text-sm {% if vue == 'a_notifier' %}border-primary-600 text-primary-600 bg-primary-50 font-medium{% else %}border-slate-200 text-slate-600 bg-white{% endif %}">À communiquer</a>
     </div>
 
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
@@ -45,9 +45,9 @@
                     <td class="px-5 py-3 text-slate-600">{{ d.motif|truncatechars:35 }}</td>
                     <td class="px-5 py-3">{% include "includes/badge_couleur.html" with couleur=d.couleur texte=d.get_statut_display %}{% if d.alerte_rh_envoyee and d.statut == "EN_ATTENTE_RH" %}<span class="ml-1 text-xs text-red-600" title="Plus de 5 h sans transmission"><i class='bx bx-error-circle'></i></span>{% endif %}</td>
                     <td class="px-5 py-3">
-                        {% if d.statut == "EN_ATTENTE_RH" and d.rh_assigne_id == request.user.id %}<a href="{% url 'demandes:detail_demande' d.pk %}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-primary-200 text-primary-700 text-sm hover:bg-primary-50"><i class='bx bx-right-arrow-circle'></i> Traiter</a>
-                        {% elif d.statut == "APPROUVEE_A_NOTIFIER" and d.rh_assigne_id == request.user.id %}<a href="{% url 'demandes:detail_demande' d.pk %}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-green-200 text-green-700 text-sm hover:bg-green-50"><i class='bx bx-check-circle'></i> Communiquer</a>
-                        {% else %}<a href="{% url 'demandes:detail_demande' d.pk %}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 text-sm hover:bg-slate-50"><i class='bx bx-show'></i> Voir</a>{% endif %}
+                        {% if d.statut == "EN_ATTENTE_RH" and d.rh_assigne_id == request.user.id %}<a href="{% url 'demandes_rh:detail_demande' d.pk %}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-primary-200 text-primary-700 text-sm hover:bg-primary-50"><i class='bx bx-right-arrow-circle'></i> Traiter</a>
+                        {% elif d.statut == "APPROUVEE_A_NOTIFIER" and d.rh_assigne_id == request.user.id %}<a href="{% url 'demandes_rh:detail_demande' d.pk %}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-green-200 text-green-700 text-sm hover:bg-green-50"><i class='bx bx-check-circle'></i> Communiquer</a>
+                        {% else %}<a href="{% url 'demandes_rh:detail_demande' d.pk %}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 text-sm hover:bg-slate-50"><i class='bx bx-show'></i> Voir</a>{% endif %}
                     </td>
                 </tr>
             {% empty %}
