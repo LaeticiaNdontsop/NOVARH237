@@ -116,8 +116,8 @@ class Employe(models.Model):
 class TypeContrat(models.TextChoices):
     CDI = "CDI", "Contrat a duree indeterminee (CDI)"
     CDD = "CDD", "Contrat a duree determinee (CDD)"
-    STAGE = "STAGE", "Stage"
-    PRESTATION = "PRESTATION", "Contrat de prestation"
+    STAGE = "STAGE", "Stagiaire"
+    PRESTATION = "PRESTATION", "Consultant"
 
 
 class Contrat(models.Model):

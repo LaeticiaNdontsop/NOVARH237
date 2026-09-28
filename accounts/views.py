@@ -265,6 +265,7 @@ class ProfilView(LoginRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["fiche"] = getattr(self.request.user, "fiche_employe", None)
+        ctx["remuneration"] = ctx["fiche"].remunerations.first() if ctx["fiche"] else None
         ctx["edition"] = self.request.GET.get("modifier") == "1" or bool(ctx["form"].errors)
         return ctx
 

@@ -12,7 +12,7 @@ class ConnexionForm(AuthenticationForm):
     )
     password = forms.CharField(
         label="Mot de passe",
-        widget=forms.PasswordInput(attrs={"placeholder": "********"}),
+        widget=forms.PasswordInput(attrs={"placeholder": "Votre mot de passe"}),
     )
 
 

@@ -17,6 +17,22 @@ def _espace_employes(request):
     return "employees_admin" if request.user.est_admin else "employees_rh"
 
 
+def _enregistrer_type_contrat(employe, type_contrat):
+    contrat = employe.contrats.order_by("-date_debut").first()
+    if contrat:
+        contrat.type_contrat = type_contrat
+        contrat.save(update_fields=["type_contrat"])
+        return
+    Contrat.objects.create(
+        employe=employe,
+        type_contrat=type_contrat,
+        poste=employe.poste,
+        service=employe.service,
+        salaire=0,
+        date_debut=employe.date_embauche,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Employes (BF-RH-01 / BF-RH-02 / BF-ADM08) : partage Admin + RH depuis la v6
 # ---------------------------------------------------------------------------
@@ -134,7 +150,7 @@ class CreerEmployeView(droit_requis("employes", "creation", "creation"), CreateV
         Contrat.objects.get_or_create(
             employe=self.object,
             defaults={
-                "type_contrat": "CDI",
+                "type_contrat": form.cleaned_data["type_contrat"],
                 "poste": self.object.poste,
                 "service": self.object.service,
                 "salaire": 0,
@@ -160,6 +176,7 @@ class ModifierEmployeView(droit_requis("employes", "modification", "modification
 
     def form_valid(self, form):
         response = super().form_valid(form)
+        _enregistrer_type_contrat(self.object, form.cleaned_data["type_contrat"])
         log_activity(
             self.request.user,
             "Modification d'une fiche employe",
@@ -418,18 +435,6 @@ class MesDocumentsView(LoginRequiredMixin, TemplateView):
 
         messages.error(request, "Le document est invalide. Vérifiez le type et le fichier.")
         return redirect("employees_employe:mes_documents")
-
-
-class MesRemunerationsView(LoginRequiredMixin, ListView):
-    model = Remuneration
-    template_name = "employees/mes_remunerations.html"
-    context_object_name = "remunerations"
-
-    def get_queryset(self):
-        fiche = getattr(self.request.user, "fiche_employe", None)
-        if fiche is None:
-            return Remuneration.objects.none()
-        return Remuneration.objects.filter(employe=fiche).select_related("employe")
 
 
 class MesFormationsView(LoginRequiredMixin, TemplateView):

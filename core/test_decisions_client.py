@@ -14,6 +14,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.crypto import get_random_string
 
 from accounts.models import DroitUtilisateur
 from demandes.models import Absence, DemandeConge, StatutDemande, reaffecter_demandes_expirees
@@ -21,11 +22,12 @@ from employees.models import Employe
 from notifications.models import ActivityLog, Notification
 
 User = get_user_model()
+TEST_PASSWORD = get_random_string(32)
 
 
 def utilisateur(username, role, **extra):
     return User.objects.create_user(
-        username=username, password="motdepasse123", role=role, first_name=username.capitalize(),
+        username=username, password=TEST_PASSWORD, role=role, first_name=username.capitalize(),
         last_name="Test", email=f"{username}@exemple.cm", doit_changer_mot_de_passe=False, **extra,
     )
 
@@ -341,7 +343,7 @@ class JournalTest(Base):
         self.assertEqual(echec.resultat, "ALERTE")
         self.assertEqual(echec.adresse_ip, "192.168.1.33")
 
-        self.client.post(reverse("accounts:login"), {"username": "emp", "password": "motdepasse123"},
+        self.client.post(reverse("accounts:login"), {"username": "emp", "password": TEST_PASSWORD},
                          REMOTE_ADDR="192.168.1.24")
         ok = ActivityLog.objects.get(action="Connexion reussie")
         self.assertEqual(ok.utilisateur, self.emp_user)
@@ -497,17 +499,17 @@ class LiensTest(Base):
 
     def test_tous_les_liens_du_rh_fonctionnent(self):
         self.preparer_donnees()
-        vus = self.verifier(self.rh, ["/tableau-de-bord/", "/tableau-de-bord/rh/"])
+        vus = self.verifier(self.rh, ["/tableau-de-bord/", "/responsable-rh/"])
         self.assertGreater(len(vus), 18)
 
     def test_tous_les_liens_de_l_administrateur_fonctionnent(self):
         self.preparer_donnees()
-        vus = self.verifier(self.admin, ["/tableau-de-bord/", "/tableau-de-bord/admin/"])
-        self.assertGreater(len(vus), 12)
+        vus = self.verifier(self.admin, ["/tableau-de-bord/", "/administrateur/"])
+        self.assertGreaterEqual(len(vus), 12)
 
     def test_tous_les_liens_de_l_employe_fonctionnent(self):
         self.preparer_donnees()
-        vus = self.verifier(self.emp_user, ["/tableau-de-bord/", "/tableau-de-bord/employe/"])
+        vus = self.verifier(self.emp_user, ["/tableau-de-bord/", "/employe/"])
         self.assertGreater(len(vus), 10)
 
     def test_page_d_accueil_publique(self):

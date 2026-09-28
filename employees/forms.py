@@ -1,6 +1,6 @@
 from django import forms
 from accounts.models import Utilisateur, Role
-from .models import Employe, Contrat, Remuneration, Document
+from .models import Employe, Contrat, Remuneration, Document, TypeContrat
 
 
 class EmployeForm(forms.ModelForm):
@@ -33,8 +33,15 @@ class EmployeForm(forms.ModelForm):
             "statut": "Statut",
         }
 
+    type_contrat = forms.ChoiceField(
+        label="Type de contrat",
+        choices=TypeContrat.choices,
+    )
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        contrat = self.instance.contrat_actuel if self.instance.pk else None
+        self.fields["type_contrat"].initial = contrat.type_contrat if contrat else TypeContrat.CDI
         # On ne propose que les comptes RH/Employe qui n'ont pas encore de fiche
         # (sauf celui de l'instance en cours d'edition, s'il y en a une).
         queryset = Utilisateur.objects.filter(role__in=[Role.RH, Role.EMPLOYE])

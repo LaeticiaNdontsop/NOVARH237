@@ -70,7 +70,7 @@ python manage.py migrate
 NOVA RH. Utilise plutot :
 
 ```bash
-python manage.py creer_admin --username admin --email admin@novarh.cm --password UnMotDePasseSolide123 --prenom Awa --nom Admin
+python manage.py creer_admin --username admin --email admin@novarh.cm --prenom Awa --nom Admin
 ```
 
 ## 7. Lancer le serveur

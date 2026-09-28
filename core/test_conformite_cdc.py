@@ -14,6 +14,7 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from django.utils.crypto import get_random_string
 from django.utils import timezone
 
 from core.models import Formation, ParticipationFormation, StatutParticipation
@@ -22,11 +23,12 @@ from employees.models import Document, Employe, TypeDocument
 from notifications.models import Notification
 
 User = get_user_model()
+TEST_PASSWORD = get_random_string(32)
 
 
 def creer_utilisateur(username, role, **extra):
     return User.objects.create_user(
-        username=username, password="motdepasse123", role=role,
+        username=username, password=TEST_PASSWORD, role=role,
         first_name=username.capitalize(), last_name="Test", doit_changer_mot_de_passe=False, **extra,
     )
 
@@ -234,7 +236,8 @@ class RecrutementTest(BaseCDCTest):
         nb_users = User.objects.count()
         self.client.force_login(self.rh)
         self.client.post(reverse("core_rh:ajouter_candidature", args=[offre.pk]), {
-            "nom_candidat": "Paul Externe", "email": "paul@example.com", "telephone": "690000000",
+            "offre": offre.pk, "statut": "ENTRETIEN", "nom_candidat": "Paul Externe",
+            "email": "paul@example.com", "telephone": "690000000",
         })
         candidature = Candidature.objects.get(offre=offre)
         self.assertEqual(candidature.saisie_par, self.rh)

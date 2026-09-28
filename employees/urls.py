@@ -8,7 +8,6 @@ urlpatterns = [
     path("remunerations/", views.ListeRemunerationsView.as_view(), name="liste_remunerations"),
     path("mes-documents/", views.MesDocumentsView.as_view(), name="mes_documents"),
     path("documents/<int:pk>/", views.DocumentDetailView.as_view(), name="document_detail"),
-    path("mes-remunerations/", views.MesRemunerationsView.as_view(), name="mes_remunerations"),
     path("mes-formations/", views.MesFormationsView.as_view(), name="mes_formations"),
     path("nouveau/", views.CreerEmployeView.as_view(), name="creer_employe"),
     path("<int:pk>/", views.DetailEmployeView.as_view(), name="detail_employe"),

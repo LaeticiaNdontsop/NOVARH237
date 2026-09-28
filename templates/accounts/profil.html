@@ -72,6 +72,22 @@
                 </dl>
             </div>
             {% endif %}
+            {% if fiche %}
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="font-semibold text-slate-800 flex items-center gap-2"><i class='bx bx-wallet text-primary-600 text-xl'></i> Ma rémunération</h2>
+                    {% if remuneration %}<button type="button" class="text-slate-400 hover:text-slate-700" title="Afficher ou masquer les montants" onclick="document.querySelectorAll('.montant-profil').forEach(function(e){e.classList.toggle('hidden')})"><i class='bx bx-show text-xl'></i></button>{% endif %}
+                </div>
+                {% if remuneration %}
+                <dl class="text-sm space-y-2">
+                    <div class="flex justify-between gap-4"><dt class="text-slate-500">Salaire de base</dt><dd><span class="montant-profil">******** FCFA</span><span class="montant-profil hidden">{{ remuneration.salaire_base }} FCFA</span></dd></div>
+                    <div class="flex justify-between gap-4"><dt class="text-slate-500">Primes et avantages</dt><dd><span class="montant-profil">******** FCFA</span><span class="montant-profil hidden">{{ remuneration.primes }} FCFA</span></dd></div>
+                    <div class="flex justify-between gap-4 border-t pt-2"><dt class="font-medium">Total</dt><dd class="font-bold text-primary-600"><span class="montant-profil">********* FCFA</span><span class="montant-profil hidden">{{ remuneration.total }} FCFA</span></dd></div>
+                    <p class="pt-1 text-xs text-slate-400">Effective au {{ remuneration.date_effective|date:"d/m/Y" }}</p>
+                </dl>
+                {% else %}<p class="text-sm text-slate-500">Aucune rémunération enregistrée pour le moment.</p>{% endif %}
+            </div>
+            {% endif %}
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
                 <h2 class="font-semibold text-slate-800 mb-3 flex items-center gap-2"><i class='bx bx-shield text-primary-600 text-xl'></i> Sécurité du compte</h2>
                 <dl class="text-sm divide-y divide-slate-100">
