@@ -12,17 +12,35 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = os.environ.get("SECRET_KEY")
-DEBUG = os.environ.get("DEBUG", "True").lower() == "true"
+DEBUG = os.environ.get("DEBUG", "False").strip().lower() == "true"
+
+def _env_list(name, default=""):
+    """Lit une variable CSV et nettoie espaces / slash final."""
+    return [
+        value.strip().rstrip("/")
+        for value in os.environ.get(name, default).split(",")
+        if value.strip()
+    ]
+
+ALLOWED_HOSTS = _env_list(
+    "ALLOWED_HOSTS",
+    "127.0.0.1,localhost,.vercel.app",
+)
+CSRF_TRUSTED_ORIGINS = _env_list(
+    "CSRF_TRUSTED_ORIGINS",
+    "https://localhost,https://*.vercel.app",
+)
+
 # Paramètres de sécurité activés uniquement en production
 if not DEBUG:
+    # Vercel transmet le protocole d'origine via X-Forwarded-Proto.
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
-CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", "https://localhost").split(",")
 
 # ---------------------------------------------------------------------------
 # Applications

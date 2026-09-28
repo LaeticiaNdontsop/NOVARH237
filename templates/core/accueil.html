@@ -6,7 +6,7 @@
 
     <!-- ===== Barre de navigation ===== -->
     <header class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-100">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-6">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 min-h-16 py-2 flex items-center justify-between gap-2 sm:gap-6">
             <a href="{% url 'core:accueil' %}" class="text-xl font-extrabold tracking-tight text-primary-900">NOVA <span class="font-semibold">RH</span></a>
 
             <nav class="hidden md:flex items-center gap-8 text-sm text-slate-600">
@@ -17,8 +17,19 @@
             </nav>
 
             <div class="flex items-center gap-2 sm:gap-3">
-                <a href="{% url 'accounts:login' %}" class="px-4 py-2 text-sm font-medium rounded-lg border border-slate-300 text-primary-900 hover:bg-slate-50 transition">Se connecter</a>
-                <a href="{% url 'accounts:login' %}" class="px-4 py-2 text-sm font-medium rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition">Commencer</a>
+                <details class="relative md:hidden">
+                    <summary class="list-none cursor-pointer w-10 h-10 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600" aria-label="Menu">
+                        <i class='bx bx-menu text-2xl'></i>
+                    </summary>
+                    <nav class="absolute right-0 mt-2 w-52 rounded-xl border border-slate-200 bg-white shadow-xl py-2 text-sm text-slate-700">
+                        <a href="#fonctionnalites" class="block px-4 py-2.5 hover:bg-slate-50">Fonctionnalités</a>
+                        <a href="#solutions" class="block px-4 py-2.5 hover:bg-slate-50">Solutions</a>
+                        <a href="#a-propos" class="block px-4 py-2.5 hover:bg-slate-50">À propos</a>
+                        <a href="#contact" class="block px-4 py-2.5 hover:bg-slate-50">Contact</a>
+                    </nav>
+                </details>
+                <a href="{% url 'accounts:login' %}" class="px-3 sm:px-4 py-2 text-sm font-medium rounded-lg border border-slate-300 text-primary-900 hover:bg-slate-50 transition whitespace-nowrap">Se connecter</a>
+                <a href="{% url 'accounts:login' %}" class="hidden sm:inline-flex px-4 py-2 text-sm font-medium rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition">Commencer</a>
             </div>
         </div>
     </header>

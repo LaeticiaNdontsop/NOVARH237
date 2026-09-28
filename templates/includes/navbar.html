@@ -1,47 +1,56 @@
 {% load nova_extras %}
-<header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between gap-4 px-6 sticky top-0 z-20">
-    <div class="flex items-center gap-2 text-sm min-w-0">
-        <div class="md:hidden font-semibold text-primary-700 mr-2">NOVA RH</div>
-        <a href="{% url 'core:redirection_dashboard' %}" class="text-primary-600 hover:underline hidden sm:inline">Tableau de bord</a>
-        <span class="text-slate-300 hidden sm:inline">&rsaquo;</span>
-        <span class="text-slate-500 truncate">{% block page_titre %}{% endblock %}</span>
+<header class="min-h-16 bg-white border-b border-slate-200 flex items-center justify-between gap-2 sm:gap-4 px-3 sm:px-4 md:px-6 py-2 sticky top-0 z-20">
+    <div class="flex items-center gap-2 min-w-0 flex-1">
+        <button type="button" data-sidebar-open aria-controls="app-sidebar" aria-expanded="false" class="md:hidden w-10 h-10 shrink-0 rounded-xl border border-slate-200 text-slate-600 flex items-center justify-center hover:bg-slate-50 hover:text-primary-600" aria-label="Ouvrir le menu">
+            <i class='bx bx-menu text-2xl'></i>
+        </button>
+
+        <div class="flex items-center gap-2 text-sm min-w-0">
+            <a href="{% url 'core:redirection_dashboard' %}" class="text-primary-600 hover:underline hidden sm:inline">Tableau de bord</a>
+            <span class="text-slate-300 hidden sm:inline">&rsaquo;</span>
+            <span class="text-slate-500 truncate max-w-[9rem] sm:max-w-[16rem] lg:max-w-none">{% block page_titre %}{% endblock %}</span>
+        </div>
     </div>
 
-    <div class="flex items-center gap-4">
+    <div class="flex items-center gap-2 sm:gap-4 shrink-0">
         <form method="get" action="{% url 'core:recherche' %}" class="hidden lg:block">
             <div class="relative">
                 <i class='bx bx-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg'></i>
                 <input type="search" name="q" placeholder="Rechercher un employé, une demande..." aria-label="Recherche"
-                       class="w-80 rounded-lg border border-slate-200 bg-white pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                       class="w-64 xl:w-80 rounded-lg border border-slate-200 bg-white pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
             </div>
         </form>
 
-        <a href="{% url 'notifications:mes_notifications' %}" class="relative text-slate-500 hover:text-primary-600" title="Notifications">
+        <a href="{% url 'core:recherche' %}" class="lg:hidden w-10 h-10 rounded-xl flex items-center justify-center text-slate-500 hover:text-primary-600 hover:bg-slate-50" title="Rechercher" aria-label="Rechercher">
+            <i class='bx bx-search text-2xl'></i>
+        </a>
+
+        <a href="{% url 'notifications:mes_notifications' %}" class="relative w-10 h-10 rounded-xl flex items-center justify-center text-slate-500 hover:text-primary-600 hover:bg-slate-50" title="Notifications" aria-label="Notifications">
             <i class='bx bx-bell text-2xl'></i>
             {% if nb_notifications_non_lues %}
-            <span class="absolute -top-1.5 -right-2 min-w-[1.2rem] h-5 px-1 rounded-full bg-primary-600 text-white text-[11px] font-semibold flex items-center justify-center">{{ nb_notifications_non_lues }}</span>
+            <span class="absolute top-0 right-0 min-w-[1.15rem] h-[1.15rem] px-1 rounded-full bg-primary-600 text-white text-[10px] font-semibold flex items-center justify-center">{{ nb_notifications_non_lues }}</span>
             {% endif %}
         </a>
 
         <details class="relative">
-            <summary class="list-none cursor-pointer flex items-center gap-3">
+            <summary class="list-none cursor-pointer flex items-center gap-2 sm:gap-3 rounded-xl p-1 hover:bg-slate-50">
                 {% if user.photo %}
-                <img src="{{ user.photo.url }}" alt="" class="w-9 h-9 rounded-full object-cover">
+                <img src="{{ user.photo.url }}" alt="" class="w-9 h-9 rounded-full object-cover shrink-0">
                 {% else %}
-                <span class="w-9 h-9 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-sm font-semibold">{{ user|initiales }}</span>
+                <span class="w-9 h-9 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-sm font-semibold shrink-0">{{ user|initiales }}</span>
                 {% endif %}
-                <span class="hidden sm:block text-left leading-tight">
-                    <span class="block text-sm font-medium text-slate-800">{{ user.get_full_name|default:user.username }}</span>
-                    <span class="block text-xs text-slate-500">{{ user.get_role_display }}</span>
+                <span class="hidden sm:block text-left leading-tight max-w-40">
+                    <span class="block text-sm font-medium text-slate-800 truncate">{{ user.get_full_name|default:user.username }}</span>
+                    <span class="block text-xs text-slate-500 truncate">{{ user.get_role_display }}</span>
                 </span>
-                <i class='bx bx-chevron-down text-slate-400'></i>
+                <i class='bx bx-chevron-down text-slate-400 hidden sm:block'></i>
             </summary>
-            <div class="absolute right-0 mt-2 w-52 rounded-xl border border-slate-200 bg-white shadow-lg py-1 text-sm">
-                <a href="{% url 'accounts:profil' %}" class="flex items-center gap-2 px-4 py-2 hover:bg-slate-50"><i class='bx bx-user-circle text-lg'></i> Mon profil</a>
-                <a href="{% url 'accounts:changer_mot_de_passe' %}" class="flex items-center gap-2 px-4 py-2 hover:bg-slate-50"><i class='bx bx-lock-alt text-lg'></i> Mot de passe</a>
+            <div class="absolute right-0 mt-2 w-52 max-w-[calc(100vw-1.5rem)] rounded-xl border border-slate-200 bg-white shadow-xl py-1 text-sm z-50">
+                <a href="{% url 'accounts:profil' %}" class="flex items-center gap-2 px-4 py-2.5 hover:bg-slate-50"><i class='bx bx-user-circle text-lg'></i> Mon profil</a>
+                <a href="{% url 'accounts:changer_mot_de_passe' %}" class="flex items-center gap-2 px-4 py-2.5 hover:bg-slate-50"><i class='bx bx-lock-alt text-lg'></i> Mot de passe</a>
                 <form method="post" action="{% url 'accounts:logout' %}">
                     {% csrf_token %}
-                    <button type="submit" class="w-full flex items-center gap-2 px-4 py-2 text-left text-red-600 hover:bg-red-50"><i class='bx bx-log-out text-lg'></i> Déconnexion</button>
+                    <button type="submit" class="w-full flex items-center gap-2 px-4 py-2.5 text-left text-red-600 hover:bg-red-50"><i class='bx bx-log-out text-lg'></i> Déconnexion</button>
                 </form>
             </div>
         </details>

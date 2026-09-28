@@ -12,7 +12,7 @@
         </div>
         <details class="relative">
             <summary class="list-none cursor-pointer inline-flex items-center gap-2 px-5 py-3 rounded-lg border border-primary-600 text-primary-600 bg-white text-sm font-semibold hover:bg-primary-50"><i class='bx bx-cloud-upload text-lg'></i> Importer un document</summary>
-            <form method="post" enctype="multipart/form-data" class="absolute right-0 mt-2 w-96 rounded-xl border border-slate-200 bg-white shadow-lg p-5 z-10 space-y-3">{% csrf_token %}
+            <form method="post" enctype="multipart/form-data" class="absolute right-0 mt-2 w-[calc(100vw-1.5rem)] sm:w-96 max-w-sm rounded-xl border border-slate-200 bg-white shadow-lg p-5 z-10 space-y-3">{% csrf_token %}
                 {% include "includes/champ.html" with champ=document_form.type_document %}
                 {% include "includes/champ.html" with champ=document_form.fichier %}
                 <button type="submit" class="px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">Importer</button>

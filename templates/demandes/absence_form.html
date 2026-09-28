@@ -19,7 +19,7 @@
             {% include "includes/champ.html" with champ=form.type_absence %}
             {% include "includes/champ.html" with champ=form.motif %}
             {% include "includes/champ.html" with champ=form.justificatif %}
-            <div class="flex justify-end gap-3 pt-2 border-t border-slate-100">
+            <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-2 border-t border-slate-100">
                 <a href="{% url 'demandes_employe:mes_absences' %}" class="px-5 py-2.5 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Annuler</a>
                 <button type="submit" class="px-5 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 inline-flex items-center gap-2"><i class='bx bx-send'></i> Envoyer la déclaration</button>
             </div>

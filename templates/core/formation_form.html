@@ -28,7 +28,7 @@
             <h2 class="font-semibold text-slate-800 mb-3">Employés ciblés</h2>
             {% include "includes/champ.html" with champ=form.employes_cibles %}
         </section>
-        <div class="flex justify-end gap-3">
+        <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
             <a href="{% url 'core_rh:formations' %}" class="px-5 py-2.5 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Annuler</a>
             <button type="submit" class="px-5 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700">Enregistrer</button>
         </div>

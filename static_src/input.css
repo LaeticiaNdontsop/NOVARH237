@@ -6,3 +6,49 @@
 [x-cloak] {
   display: none !important;
 }
+
+
+/* NOVA RH - Responsive hardening */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+@media (max-width: 767px) {
+  main table {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    scrollbar-width: thin;
+  }
+
+  main input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+  main select,
+  main textarea {
+    max-width: 100%;
+  }
+
+  main details > .absolute {
+    max-width: calc(100vw - 1.5rem);
+  }
+}
+
+@media (max-width: 639px) {
+  main h1 {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+
+  main .rounded-2xl.p-6,
+  main .rounded-xl.p-6 {
+    padding: 1rem;
+  }
+}

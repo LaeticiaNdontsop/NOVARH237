@@ -18,12 +18,13 @@
 
 {% if user.is_authenticated %}
 <div class="min-h-screen flex bg-slate-50">
+    <div id="sidebar-overlay" class="fixed inset-0 z-40 bg-slate-950/45 backdrop-blur-[1px] opacity-0 pointer-events-none transition-opacity duration-300 md:hidden" aria-hidden="true"></div>
     {% include "includes/sidebar.html" %}
 
     <div class="flex-1 flex flex-col min-w-0 md:ml-64">
         {% include "includes/navbar.html" %}
 
-        <main class="flex-1 p-6 lg:p-8 overflow-x-hidden">
+        <main class="flex-1 min-w-0 p-3 sm:p-5 lg:p-8 overflow-x-hidden">
             {% include "includes/messages.html" %}
             {% block content %}{% endblock %}
         </main>
@@ -31,6 +32,65 @@
 </div>
 {% else %}
     {% block contenu_public %}{% endblock %}
+{% endif %}
+
+{% if user.is_authenticated %}
+<script>
+(function () {
+    const sidebar = document.getElementById('app-sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    if (!sidebar || !overlay) return;
+
+    const openButtons = document.querySelectorAll('[data-sidebar-open]');
+    const closeButtons = document.querySelectorAll('[data-sidebar-close]');
+
+    function openSidebar() {
+        sidebar.classList.remove('-translate-x-full');
+        sidebar.classList.add('translate-x-0');
+        overlay.classList.remove('opacity-0', 'pointer-events-none');
+        overlay.classList.add('opacity-100');
+        document.body.classList.add('overflow-hidden');
+        openButtons.forEach(btn => btn.setAttribute('aria-expanded', 'true'));
+    }
+
+    function closeSidebar() {
+        if (window.innerWidth >= 768) return;
+        sidebar.classList.add('-translate-x-full');
+        sidebar.classList.remove('translate-x-0');
+        overlay.classList.add('opacity-0', 'pointer-events-none');
+        overlay.classList.remove('opacity-100');
+        document.body.classList.remove('overflow-hidden');
+        openButtons.forEach(btn => btn.setAttribute('aria-expanded', 'false'));
+    }
+
+    openButtons.forEach(btn => btn.addEventListener('click', openSidebar));
+    closeButtons.forEach(btn => btn.addEventListener('click', closeSidebar));
+    overlay.addEventListener('click', closeSidebar);
+
+    sidebar.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth < 768) closeSidebar();
+        });
+    });
+
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') closeSidebar();
+    });
+
+    window.addEventListener('resize', () => {
+        if (window.innerWidth >= 768) {
+            document.body.classList.remove('overflow-hidden');
+            overlay.classList.add('opacity-0', 'pointer-events-none');
+            overlay.classList.remove('opacity-100');
+            sidebar.classList.remove('-translate-x-full');
+            sidebar.classList.add('translate-x-0');
+        } else if (!overlay.classList.contains('opacity-100')) {
+            sidebar.classList.add('-translate-x-full');
+            sidebar.classList.remove('translate-x-0');
+        }
+    });
+})();
+</script>
 {% endif %}
 
 </body>
